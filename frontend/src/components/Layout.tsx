@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,17 +35,8 @@ export default function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <main>{children}</main>
 
-      {/* Footer */}
-      <footer className="border-t border-gold/20 mt-16 py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-gray-500 text-sm">
-          <p>
-            Understanding is temporary. To know is to unlearn. Reflection is the only path left.
-          </p>
-          <p className="mt-2">
-            © 2025 The Mirror Virtual Platform — All Reflections Reserved.
-          </p>
-        </div>
-      </footer>
+      {/* Footer Component */}
+      <Footer />
     </div>
   );
 }
