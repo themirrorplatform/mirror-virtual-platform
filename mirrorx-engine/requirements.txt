@@ -6,16 +6,31 @@ uvicorn[standard]==0.27.0
 
 # Database
 asyncpg==0.29.0
+supabase==2.3.0
 
 # HTTP Client (for AI API calls)
 httpx==0.26.0
 
-# AI Provider SDKs (optional, we use direct HTTP)
+# AI Provider SDKs
 openai==1.10.0
 anthropic==0.21.3
+google-generativeai==0.3.2
+google-auth==2.27.0
+perplexityai==0.1.0
+
+# Emotion Detection
+hume==0.5.0
 
 # Validation
 pydantic==2.5.3
 
 # Environment
 python-dotenv==1.0.0
+
+# Local model inference support (optional)
+llama-cpp-python>=0.2.0
+pyyaml>=6.0
+
+# Testing
+pytest>=7.0
+pytest-asyncio>=0.21.0
