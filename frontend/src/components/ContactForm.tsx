@@ -38,11 +38,26 @@ export const ContactForm: React.FC<ContactFormProps> = ({ className = '' }) => {
     setSubmitStatus('idle');
 
     try {
-      // TODO: Integrate with your backend API or email service
-      // For now, just simulate submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Form submitted:', formData);
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          message: formData.message || 'No message provided',
+          subject: 'Contact Form Submission',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to submit form');
+      }
+
       setSubmitStatus('success');
       
       // Reset form
