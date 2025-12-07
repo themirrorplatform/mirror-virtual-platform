@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 import os
 
 from app.db import init_db, close_db
-from app.routers import reflections, mirrorbacks, feed, profiles, signals
+from app.routers import reflections, mirrorbacks, feed, profiles, signals, notifications, search
 
 
 @asynccontextmanager
@@ -95,6 +95,8 @@ app.include_router(reflections.router, prefix="/api/reflections", tags=["Reflect
 app.include_router(mirrorbacks.router, prefix="/api/mirrorbacks", tags=["Mirrorbacks"])
 app.include_router(feed.router, prefix="/api/feed", tags=["Feed"])
 app.include_router(signals.router, prefix="/api/signals", tags=["Signals"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(search.router, prefix="/api/search", tags=["Search"])
 
 
 if __name__ == "__main__":

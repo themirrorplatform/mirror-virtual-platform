@@ -1,28 +1,31 @@
 """
 Profiles Router - Identity management
 """
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Depends
 from typing import Optional
+import os
+import uuid
+from supabase import create_client, Client
 from app.models import Profile, ProfileCreate, ProfileUpdate
 from app.db import execute_query, execute_one, execute_command
+from app.auth import require_auth, get_user_from_token
 
 router = APIRouter()
+
+# Initialize Supabase client for storage
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_ANON_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 
 def get_user_id_from_auth(authorization: Optional[str] = Header(None)) -> str:
     """
-    Extract user ID from authorization header.
-    In production, this would validate JWT from Supabase.
+    Legacy function - Use app.auth.require_auth or get_user_from_token instead.
     """
-    if not authorization:
+    user_id = get_user_from_token(authorization)
+    if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
-
-    # TODO: Validate JWT and extract user ID
-    # For now, assuming format: "Bearer {user_id}"
-    if authorization.startswith("Bearer "):
-        return authorization[7:]
-
-    raise HTTPException(status_code=401, detail="Invalid authorization header")
+    return user_id
 
 
 @router.get("/me", response_model=Profile)
@@ -225,3 +228,74 @@ async def unfollow_user(username: str, authorization: Optional[str] = Header(Non
     )
 
     return {"success": True, "message": f"Unfollowed {username}"}
+
+
+@router.post("/upload-avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    user_id: str = Depends(require_auth)
+):
+    """
+    Upload a profile avatar image to Supabase Storage.
+    Returns the public URL of the uploaded image.
+    """
+    if not supabase:
+        raise HTTPException(
+            status_code=500,
+            detail="Storage not configured. Set SUPABASE_URL and SUPABASE_KEY."
+        )
+    
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}"
+        )
+    
+    # Validate file size (5MB max)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+    
+    # Generate unique filename
+    file_ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{user_id}/{uuid.uuid4()}.{file_ext}"
+    
+    try:
+        # Upload to Supabase Storage
+        response = supabase.storage.from_("avatars").upload(
+            filename,
+            content,
+            {"content-type": file.content_type}
+        )
+        
+        # Get public URL
+        public_url = supabase.storage.from_("avatars").get_public_url(filename)
+        
+        # Update profile with new avatar URL
+        profile = await execute_one(
+            """
+            UPDATE profiles
+            SET avatar_url = $1, updated_at = NOW()
+            WHERE id = $2
+            RETURNING *
+            """,
+            public_url,
+            user_id
+        )
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        return {
+            "success": True,
+            "avatar_url": public_url,
+            "profile": dict(profile)
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload avatar: {str(e)}"
+        )

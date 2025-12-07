@@ -1,22 +1,30 @@
 """
 Reflections Router - Core content creation and retrieval
 """
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from typing import Optional, List
+from pydantic import BaseModel
 from app.models import Reflection, ReflectionCreate
 from app.db import execute_query, execute_one, execute_command
-from app.routers.profiles import get_user_id_from_auth
+from app.auth import require_auth, get_user_from_token
 
 router = APIRouter()
+
+
+class ReflectionUpdate(BaseModel):
+    """Model for updating a reflection"""
+    body: Optional[str] = None
+    lens_key: Optional[str] = None
+    visibility: Optional[str] = None
+    metadata: Optional[dict] = None
 
 
 @router.post("/", response_model=Reflection)
 async def create_reflection(
     reflection_data: ReflectionCreate,
-    authorization: Optional[str] = Header(None)
+    user_id: str = Depends(require_auth)
 ):
     """Create a new reflection."""
-    user_id = get_user_id_from_auth(authorization)
 
     reflection = await execute_one(
         """
@@ -35,13 +43,12 @@ async def create_reflection(
 
 
 @router.get("/{reflection_id}", response_model=Reflection)
-async def get_reflection(reflection_id: int, authorization: Optional[str] = Header(None)):
+async def get_reflection(
+    reflection_id: int,
+    authorization: Optional[str] = Header(None)
+):
     """Get a specific reflection by ID."""
-    user_id = None
-    try:
-        user_id = get_user_id_from_auth(authorization)
-    except HTTPException:
-        pass  # Anonymous access is allowed for public reflections
+    user_id = get_user_from_token(authorization)
 
     reflection = await execute_one(
         """
@@ -66,11 +73,7 @@ async def get_user_reflections(
     authorization: Optional[str] = Header(None)
 ):
     """Get reflections by a specific user."""
-    user_id = None
-    try:
-        user_id = get_user_id_from_auth(authorization)
-    except HTTPException:
-        pass
+    user_id = get_user_from_token(authorization)
 
     # Get target user
     target = await execute_one(
@@ -121,35 +124,37 @@ async def get_reflections_by_lens(
     return [dict(r) for r in reflections]
 
 
-@router.patch("/{reflection_id}")
+@router.patch("/{reflection_id}", response_model=Reflection)
 async def update_reflection(
     reflection_id: int,
-    body: Optional[str] = None,
-    lens_key: Optional[str] = None,
-    visibility: Optional[str] = None,
-    authorization: Optional[str] = Header(None)
+    update_data: ReflectionUpdate,
+    user_id: str = Depends(require_auth)
 ):
     """Update a reflection (only author can update)."""
-    user_id = get_user_id_from_auth(authorization)
-
-    # Build update query
+    
+    # Build update query dynamically
     updates = []
     values = []
     param_num = 1
 
-    if body is not None:
+    if update_data.body is not None:
         updates.append(f"body = ${param_num}")
-        values.append(body)
+        values.append(update_data.body)
         param_num += 1
 
-    if lens_key is not None:
+    if update_data.lens_key is not None:
         updates.append(f"lens_key = ${param_num}")
-        values.append(lens_key)
+        values.append(update_data.lens_key)
         param_num += 1
 
-    if visibility is not None:
+    if update_data.visibility is not None:
         updates.append(f"visibility = ${param_num}")
-        values.append(visibility)
+        values.append(update_data.visibility)
+        param_num += 1
+    
+    if update_data.metadata is not None:
+        updates.append(f"metadata = ${param_num}")
+        values.append(update_data.metadata)
         param_num += 1
 
     if not updates:
@@ -175,10 +180,9 @@ async def update_reflection(
 @router.delete("/{reflection_id}")
 async def delete_reflection(
     reflection_id: int,
-    authorization: Optional[str] = Header(None)
+    user_id: str = Depends(require_auth)
 ):
     """Delete a reflection (only author can delete)."""
-    user_id = get_user_id_from_auth(authorization)
 
     result = await execute_command(
         "DELETE FROM reflections WHERE id = $1 AND author_id = $2",

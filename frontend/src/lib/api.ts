@@ -14,10 +14,10 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Add auth token to requests if available
+// Add Supabase auth token to requests if available
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('supabase_auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -71,7 +71,23 @@ export interface FeedItem {
 
 export interface FeedResponse {
   items: FeedItem[];
-  next_cursor?: number;
+  next_cursor?: string;
+  has_more: boolean;
+}
+
+export interface Notification {
+  id: number;
+  recipient_id: string;
+  actor_id?: string;
+  type: string;
+  reflection_id?: number;
+  mirrorback_id?: number;
+  is_read: boolean;
+  metadata: Record<string, any>;
+  created_at: string;
+  actor_username?: string;
+  actor_display_name?: string;
+  actor_avatar_url?: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -96,6 +112,14 @@ export const profiles = {
   getFollowers: (username: string) => api.get(`/profiles/${username}/followers`),
 
   getFollowing: (username: string) => api.get(`/profiles/${username}/following`),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/profiles/upload-avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -110,6 +134,13 @@ export const reflections = {
   }) => api.post<Reflection>('/reflections', data),
 
   get: (id: number) => api.get<Reflection>(`/reflections/${id}`),
+
+  update: (id: number, data: {
+    body?: string;
+    lens_key?: string;
+    visibility?: string;
+    metadata?: Record<string, any>;
+  }) => api.patch<Reflection>(`/reflections/${id}`, data),
 
   getByUser: (username: string, limit = 20, offset = 0) =>
     api.get<Reflection[]>(`/reflections/user/${username}`, {
@@ -141,12 +172,12 @@ export const mirrorbacks = {
 // ────────────────────────────────────────────────────────────────────────────
 
 export const feed = {
-  get: (limit = 20, cursor?: number) =>
+  get: (limit = 20, cursor?: string) =>
     api.get<FeedResponse>('/feed', {
       params: { limit, cursor },
     }),
 
-  getPublic: (limit = 20, cursor?: number, lens_key?: string) =>
+  getPublic: (limit = 20, cursor?: string, lens_key?: string) =>
     api.get<FeedResponse>('/feed/public', {
       params: { limit, cursor, lens_key },
     }),
@@ -171,25 +202,77 @@ export const signals = {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
-// AUTH (placeholder - implement with Supabase)
+// NOTIFICATIONS
+// ────────────────────────────────────────────────────────────────────────────
+
+export const notifications = {
+  get: (limit = 50, offset = 0, unreadOnly = false) =>
+    api.get<Notification[]>('/notifications', {
+      params: { limit, offset, unread_only: unreadOnly },
+    }),
+
+  getUnreadCount: () =>
+    api.get<{ count: number }>('/notifications/unread-count'),
+
+  markRead: (notificationId: number) =>
+    api.patch(`/notifications/${notificationId}/read`),
+
+  markAllRead: () =>
+    api.post('/notifications/mark-all-read'),
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// SEARCH
+// ────────────────────────────────────────────────────────────────────────────
+
+export const search = {
+  reflections: (query: string, lensKey?: string, limit = 20, offset = 0) =>
+    api.get('/search/reflections', {
+      params: { q: query, lens_key: lensKey, limit, offset },
+    }),
+
+  profiles: (query: string, limit = 20, offset = 0) =>
+    api.get('/search/profiles', {
+      params: { q: query, limit, offset },
+    }),
+
+  all: (query: string, limit = 10) =>
+    api.get('/search', {
+      params: { q: query, limit },
+    }),
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// LENSES (convenience wrapper)
+// ────────────────────────────────────────────────────────────────────────────
+
+export const lenses = {
+  getByLens: (lensKey: string, limit = 20, cursor?: string | null) =>
+    api.get<FeedResponse>(`/reflections/lens/${lensKey}`, {
+      params: { limit, cursor },
+    }),
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// AUTH (Supabase integration)
 // ────────────────────────────────────────────────────────────────────────────
 
 export const auth = {
   setToken: (token: string) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
+      localStorage.setItem('supabase_auth_token', token);
     }
   },
 
   clearToken: () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('supabase_auth_token');
     }
   },
 
   getToken: () => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
+      return localStorage.getItem('supabase_auth_token');
     }
     return null;
   },

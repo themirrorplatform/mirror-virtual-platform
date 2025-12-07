@@ -2,13 +2,21 @@
 Feed Router - Reflection-first algorithm
 The feed prioritizes reflection over engagement.
 """
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Query
 from typing import Optional, List
+from pydantic import BaseModel
 from app.models import FeedItem, FeedResponse, Reflection, Profile
 from app.db import execute_query, execute_one
-from app.routers.profiles import get_user_id_from_auth
+from app.auth import get_user_from_token
 
 router = APIRouter()
+
+
+class CursorFeedResponse(BaseModel):
+    """Feed response with cursor-based pagination"""
+    items: List[FeedItem]
+    next_cursor: Optional[str] = None
+    has_more: bool
 
 
 async def score_reflection_for_user(reflection: dict, user_id: str) -> float:
@@ -119,17 +127,19 @@ async def score_reflection_for_user(reflection: dict, user_id: str) -> float:
     return score
 
 
-@router.get("/", response_model=FeedResponse)
+@router.get("/", response_model=CursorFeedResponse)
 async def get_feed(
-    limit: int = 20,
-    cursor: Optional[int] = None,
+    limit: int = Query(20, le=50),
+    cursor: Optional[str] = None,
     authorization: Optional[str] = Header(None)
 ):
     """
-    Get personalized feed for authenticated user.
+    Get personalized feed for authenticated user with cursor-based pagination.
     Uses reflection-first algorithm.
     """
-    user_id = get_user_id_from_auth(authorization)
+    user_id = get_user_from_token(authorization)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authentication required")
 
     # Get candidate reflections (exclude critical safety events)
     query = """
@@ -201,14 +211,21 @@ async def get_feed(
     # Take top N
     feed_items = scored_items[:limit]
 
-    # Determine next cursor
+    # Determine next cursor and has_more
     next_cursor = None
+    has_more = False
     if feed_items:
-        next_cursor = feed_items[-1]['reflection']['id']
+        last_reflection = feed_items[-1]['reflection']
+        # Create cursor from ID and timestamp
+        import base64
+        cursor_data = f"{last_reflection['id']}:{last_reflection['created_at'].isoformat()}"
+        next_cursor = base64.b64encode(cursor_data.encode()).decode()
+        has_more = len(scored_items) > limit
 
     return {
         "items": feed_items,
-        "next_cursor": next_cursor
+        "next_cursor": next_cursor,
+        "has_more": has_more
     }
 
 
@@ -275,12 +292,15 @@ async def get_public_feed(
 
 
 @router.post("/refresh")
-async def refresh_feed_state(authorization: Optional[str] = Header(None)):
+async def refresh_feed_state(
+    user_id: str = Header(None, alias="authorization")
+):
     """
     Manually refresh feed algorithm state for user.
     This recalculates identity axes, bias insights, etc.
     """
-    user_id = get_user_id_from_auth(authorization)
+    if user_id:
+        user_id = get_user_from_token(user_id)
 
     # Update feed_state timestamp
     await execute_query(

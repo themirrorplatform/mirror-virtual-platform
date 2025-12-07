@@ -11,6 +11,11 @@ asyncpg==0.29.0
 # HTTP Client (for MirrorX communication)
 httpx==0.26.0
 
+# Supabase & Auth
+supabase==2.3.0
+pyjwt==2.8.0
+cryptography==41.0.7
+
 # Validation
 pydantic==2.5.3
 pydantic-settings==2.1.0
