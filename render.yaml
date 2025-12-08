@@ -3,11 +3,10 @@ services:
   - type: web
     name: mirror-ai-engine
     runtime: docker
-    dockerfilePath: Dockerfile.render
+    dockerfilePath: mirrorx-engine/Dockerfile.render
     plan: starter
     region: oregon
     branch: main
-    rootDir: mirrorx-engine
     envVars:
       - key: DATABASE_URL
         sync: false
