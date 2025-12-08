@@ -1,0 +1,374 @@
+version: "1.0.0"
+description: "Formal invariants that every evolution must satisfy"
+
+# Constitutional Invariants
+# These are hard constraints that no evolution proposal can violate.
+# Automated checking before any proposal reaches voting.
+
+invariants:
+  
+  # ============================================================================
+  # I1: Constitutional Alignment
+  # ============================================================================
+  - id: I1_constitutional_alignment
+    name: "Constitutional Alignment Score"
+    description: >
+      Every proposal must maintain or increase alignment with constitution.
+      No regression allowed. Constitutional principles are immutable constraints
+      that all systems must obey.
+    
+    measurement:
+      type: "automated_check"
+      threshold: 0.90  # Minimum constitutional alignment score
+      
+    test_procedure:
+      - Load all constitutional documents (00-05)
+      - Parse core principles and requirements
+      - Run proposal through alignment checker
+      - Measure adherence to each constitutional principle
+      - Compare to current version's alignment
+      - Reject if score decreases or falls below threshold
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      Constitutional alignment score too low or regressed.
+      Proposal violates one or more constitutional principles.
+      Review constitution documents and revise proposal.
+  
+  
+  # ============================================================================
+  # I2: Sovereignty Integrity
+  # ============================================================================
+  - id: I2_sovereignty
+    name: "Data Sovereignty Preservation"
+    description: >
+      No change can introduce new data flows that violate sovereignty.
+      All data must remain local-first by default. Cloud sync optional.
+      No telemetry without explicit consent. User owns all data completely.
+    
+    checks:
+      - check_id: "no_new_required_cloud_deps"
+        description: "No new required cloud dependencies"
+        test: "Verify Layer 1 boots without any network connections"
+        
+      - check_id: "no_silent_telemetry"
+        description: "No telemetry without explicit consent"
+        test: "Verify no network calls without user opt-in"
+        
+      - check_id: "no_forced_sync"
+        description: "Cloud sync remains optional"
+        test: "Verify all sync features disabled by default"
+        
+      - check_id: "explicit_consent_for_any_upload"
+        description: "All data uploads require consent"
+        test: "Verify consent prompt before any network transmission"
+        
+      - check_id: "local_sqlite_default"
+        description: "SQLite local storage is default"
+        test: "Verify data storage uses local SQLite by default"
+        
+      - check_id: "complete_export_maintained"
+        description: "Complete data export always possible"
+        test: "Verify export functionality works without network"
+        
+      - check_id: "complete_deletion_maintained"
+        description: "Complete data deletion always possible"
+        test: "Verify all data can be deleted by user"
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      Sovereignty violation detected. Proposal introduces data flows
+      that compromise user ownership. See constitution/01_sovereignty.md.
+  
+  
+  # ============================================================================
+  # I3: Reflection Purity
+  # ============================================================================
+  - id: I3_reflection_purity
+    name: "Non-Directive Reflection Ratio"
+    description: >
+      Reflections must remain non-directive. Maximum advice threshold
+      cannot increase. Reflections show patterns without prescribing solutions.
+      No optimization toward external outcomes.
+    
+    measurement:
+      type: "behavioral_test"
+      metric: "directive_score"
+      threshold: 0.15  # Maximum 15% directive content allowed
+      
+    test_procedure:
+      - Load standard reflection test suite (1000 examples)
+      - Run current version on test suite
+      - Measure directive scores for all outputs
+      - Run proposed version on same test suite
+      - Measure directive scores for all outputs
+      - Compare distributions
+      - Reject if mean increases or max exceeds threshold
+    
+    directive_patterns:
+      # Patterns that indicate advice/prescription
+      - "you should"
+      - "you need to"
+      - "try to"
+      - "try doing"
+      - "make sure"
+      - "it would be good if"
+      - "consider doing"
+      - "might want to"
+      - "have you tried"
+      - "what if you"
+      - "instead of"
+      - "rather than"
+    
+    reflective_patterns:
+      # Patterns that indicate pure reflection
+      - "you wrote"
+      - "you mentioned"
+      - "there seems to be"
+      - "part of you"
+      - "this tension"
+      - "pattern of"
+      - "theme emerging"
+      - "noticed that"
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      Reflection purity violation. Proposal increases directive content
+      above constitutional threshold (15%). Reflections must remain
+      non-directive. See constitution/02_reflection.md.
+  
+  
+  # ============================================================================
+  # I4: Fork Freedom
+  # ============================================================================
+  - id: I4_forkability
+    name: "Pluralism Preservation"
+    description: >
+      No change can make forking harder or lock users into canonical line.
+      Code remains open source. No DRM. No platform lock-in. Always forkable.
+      Multiple valid evolutionary paths encouraged.
+    
+    checks:
+      - check_id: "code_remains_open_source"
+        description: "All code remains MIT licensed"
+        test: "Verify LICENSE file unchanged, no proprietary code"
+        
+      - check_id: "no_new_drm_or_licensing"
+        description: "No digital rights management added"
+        test: "Scan for license checks, activation, DRM patterns"
+        
+      - check_id: "no_forced_updates"
+        description: "Updates remain optional"
+        test: "Verify no auto-update without user consent"
+        
+      - check_id: "no_platform_lock_in"
+        description: "No dependency on single platform"
+        test: "Verify works without platform-specific services"
+        
+      - check_id: "export_import_maintained"
+        description: "Data export/import works"
+        test: "Verify migration to fork is possible"
+        
+      - check_id: "no_obfuscation"
+        description: "Code remains readable"
+        test: "Verify no code obfuscation added"
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      Fork freedom violation. Proposal makes forking harder or adds
+      platform lock-in. System must remain always forkable.
+      See constitution/04_corruption.md.
+  
+  
+  # ============================================================================
+  # I5: User Control
+  # ============================================================================
+  - id: I5_user_agency
+    name: "User Control Preservation"
+    description: >
+      Users must always be able to refuse updates, rollback changes,
+      export data, and delete everything. User agency cannot be reduced.
+      No features that remove user control.
+    
+    checks:
+      - check_id: "update_mechanism_optional"
+        description: "Updates are opt-in"
+        test: "Verify user can refuse any update"
+        
+      - check_id: "rollback_always_available"
+        description: "Can rollback to previous version"
+        test: "Verify downgrade functionality works"
+        
+      - check_id: "export_always_possible"
+        description: "Full data export anytime"
+        test: "Verify export works in all states"
+        
+      - check_id: "delete_always_possible"
+        description: "Complete deletion anytime"
+        test: "Verify can delete all data without platform"
+        
+      - check_id: "pause_functionality_maintained"
+        description: "Can pause/disable features"
+        test: "Verify user can turn off any feature"
+        
+      - check_id: "no_required_account"
+        description: "No forced account creation"
+        test: "Verify works without account/login"
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      User control violation. Proposal reduces user agency or removes
+      control mechanisms. Users must always control their Mirror.
+      See constitution/01_sovereignty.md.
+  
+  
+  # ============================================================================
+  # I6: Anti-Manipulation
+  # ============================================================================
+  - id: I6_anti_manipulation
+    name: "Anti-Manipulation Check"
+    description: >
+      No feature can be designed to maximize engagement, retention,
+      or any external optimization metric. No gamification. No social
+      pressure. No dark patterns. Reflection quality over platform metrics.
+    
+    checks:
+      - check_id: "no_gamification"
+        description: "No points, badges, achievements"
+        test: "Scan for score systems, reward mechanisms"
+        patterns: ["points", "badge", "achievement", "reward", "level", "xp"]
+        
+      - check_id: "no_streak_systems"
+        description: "No streak counters or maintenance"
+        test: "Scan for streak tracking, loss aversion triggers"
+        patterns: ["streak", "in a row", "don't break", "keep it going"]
+        
+      - check_id: "no_social_pressure"
+        description: "No social comparison or competition"
+        test: "Scan for leaderboards, rankings, comparisons"
+        patterns: ["leaderboard", "rank", "top", "compared to others"]
+        
+      - check_id: "no_fomo_patterns"
+        description: "No fear of missing out triggers"
+        test: "Scan for urgency, scarcity, time pressure"
+        patterns: ["limited time", "don't miss", "last chance", "ending soon"]
+        
+      - check_id: "no_dark_patterns"
+        description: "No manipulative UX patterns"
+        test: "Review UI for confirm-shaming, forced continuity, etc."
+        
+      - check_id: "no_engagement_optimization"
+        description: "No features designed to increase time-on-app"
+        test: "Review metrics - no optimization for session length"
+        
+      - check_id: "no_notification_pressure"
+        description: "No pushy notifications"
+        test: "Verify notifications optional and minimal"
+    
+    failure_action: "auto_reject"
+    failure_message: >
+      Manipulation detected. Proposal includes features designed to
+      increase engagement or optimize behavior. This violates core
+      principle of reflection without optimization.
+      See constitution/04_corruption.md.
+
+
+# ============================================================================
+# Invariant Checking Process
+# ============================================================================
+
+checking_process:
+  order:
+    - "I1: Constitutional Alignment (must pass first)"
+    - "I2: Sovereignty Integrity"
+    - "I3: Reflection Purity"
+    - "I4: Fork Freedom"
+    - "I5: User Control"
+    - "I6: Anti-Manipulation"
+  
+  failure_handling:
+    - "Any auto_reject failure stops checking immediately"
+    - "Proposal rejected with specific invariant cited"
+    - "Proposer can revise and resubmit"
+    - "Cannot bypass invariant checking"
+  
+  reporting:
+    - "All invariant checks logged publicly"
+    - "Failures documented with specific violations"
+    - "Pass/fail for each invariant shown"
+    - "Overall result: PASS or FAIL with reason"
+
+
+# ============================================================================
+# Invariant Evolution
+# ============================================================================
+
+invariant_evolution:
+  can_add_new_invariants: true
+  can_strengthen_existing: true
+  can_weaken_existing: false
+  can_remove_existing: false
+  
+  process:
+    - "New invariant proposals require constitutional amendment"
+    - "Guardian Council approval (4 of 7)"
+    - "Community vote (67% threshold)"
+    - "60-day review period"
+    - "Must strengthen, not weaken protections"
+  
+  rationale: >
+    Invariants can become more strict based on learning from forks
+    and corruption attempts. Cannot be weakened without full
+    constitutional amendment process.
+
+
+# ============================================================================
+# Testing Requirements
+# ============================================================================
+
+testing:
+  automated_test_suite:
+    - "Test suite for each invariant"
+    - "Run on every proposal before voting"
+    - "Results published with proposal"
+    - "Cannot proceed to vote if tests fail"
+  
+  human_review:
+    - "Guardian Council reviews invariant results"
+    - "Community can challenge results"
+    - "Edge cases reviewed by humans"
+    - "Final approval requires both automated and human verification"
+
+
+# ============================================================================
+# Exemptions
+# ============================================================================
+
+exemptions:
+  none_allowed: true
+  rationale: >
+    Invariants are constitutional constraints. No proposal can bypass them.
+    If invariant seems too strict, propose constitutional amendment to
+    modify invariant itself, not to create exemption.
+
+
+# ============================================================================
+# Implementation Notes
+# ============================================================================
+
+implementation:
+  checker_location: "platform/evolution_commons/governance/invariant_checker.py"
+  test_suites: "tests/constitutional/"
+  
+  execution_points:
+    - "Before proposal published for review"
+    - "Before voting opens"
+    - "Before implementation of approved proposal"
+    - "Continuous monitoring after deployment"
+  
+  failure_prevents:
+    - "Proposal publication (if fails before review)"
+    - "Voting (if fails before vote)"
+    - "Implementation (if fails before deployment)"
+    - "Deployment (if fails during continuous monitoring)"
+

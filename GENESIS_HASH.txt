@@ -1,0 +1,365 @@
+# Genesis Verification File
+
+This file contains cryptographic hashes that establish the canonical origin point
+of The Mirror project. Anyone can verify their copy traces back to this genesis.
+
+---
+
+## Genesis Commit
+
+**Repository:** https://github.com/themirrorplatform/mirror-virtual-platform  
+**Branch:** main  
+**Genesis Commit:** [To be computed on first release]  
+**Date:** 2025-12-08
+
+---
+
+## Genesis Components
+
+### 1. Genesis Document
+**File:** GENESIS.md  
+**SHA-256:** [To be computed on first release]
+
+### 2. Constitutional Documents
+**Folder:** constitution/
+
+Files:
+- 00_manifesto.md - SHA-256: [To be computed]
+- 01_sovereignty.md - SHA-256: [To be computed]
+- 02_reflection.md - SHA-256: [To be computed]
+- 03_safety.md - SHA-256: [To be computed]
+- 04_corruption.md - SHA-256: [To be computed]
+- 05_governance.md - SHA-256: [To be computed]
+
+**Combined Constitution Hash (SHA-256):**
+[To be computed from concatenated files in order]
+
+### 3. Constitutional Invariants
+**File:** constitution/invariants.yaml  
+**SHA-256:** [To be computed on first release]
+
+### 4. MirrorCore Version 0.1.0
+**Folder:** mirrorcore/
+
+Critical files:
+- evolution/observer.py - SHA-256: [To be computed]
+- evolution/critic.py - SHA-256: [To be computed]
+- engine/conductor.py - SHA-256: [To be computed]
+- engine/evolution_engine.py - SHA-256: [To be computed]
+- main.py - SHA-256: [To be computed]
+
+**MirrorCore v0.1.0 Hash (SHA-256):**
+[To be computed from git tree hash]
+
+---
+
+## Combined Genesis Hash
+
+This is the canonical origin hash computed from all genesis components:
+
+```
+SHA-256: [To be computed on first release]
+
+Computation method:
+1. Hash each constitutional document (00-05)
+2. Concatenate hashes in order
+3. Hash GENESIS.md
+4. Hash constitution/invariants.yaml
+5. Hash git tree for mirrorcore/ at v0.1.0
+6. Concatenate all component hashes
+7. Compute final SHA-256
+
+Formula:
+GENESIS_HASH = SHA256(
+    SHA256(GENESIS.md) +
+    SHA256(constitution/00_manifesto.md) +
+    SHA256(constitution/01_sovereignty.md) +
+    SHA256(constitution/02_reflection.md) +
+    SHA256(constitution/03_safety.md) +
+    SHA256(constitution/04_corruption.md) +
+    SHA256(constitution/05_governance.md) +
+    SHA256(constitution/invariants.yaml) +
+    SHA256(git-tree:mirrorcore@v0.1.0)
+)
+```
+
+---
+
+## Verification Instructions
+
+### For End Users
+
+Verify your Mirror installation traces back to genesis:
+
+```bash
+# Run genesis verification
+mirror verify-genesis
+
+# Expected output if valid:
+# ✓ Constitution files match canonical hash
+# ✓ Version chain traces back to genesis commit
+# ✓ No unsigned modifications detected
+# ✓ Sovereignty checks pass
+# ✓ Your Mirror is on the canonical lineage
+
+# If verification fails:
+# ⚠️ Genesis verification FAILED
+# [Details about what doesn't match]
+# You may be on a fork or corrupted copy
+```
+
+### For Developers
+
+Compute and verify hashes manually:
+
+```bash
+# Verify genesis document
+sha256sum GENESIS.md
+# Compare to hash in this file
+
+# Verify constitution files
+cd constitution
+sha256sum 00_manifesto.md 01_sovereignty.md 02_reflection.md 03_safety.md 04_corruption.md 05_governance.md invariants.yaml
+# Compare to hashes in this file
+
+# Verify MirrorCore
+cd mirrorcore
+git rev-parse HEAD
+# Compare to genesis commit
+
+# Compute combined genesis hash
+python scripts/compute_genesis_hash.py
+# Should match GENESIS_HASH in this file
+```
+
+---
+
+## Fork Identification
+
+If your copy doesn't match genesis hashes, check fork lineage:
+
+```bash
+# Check fork status
+mirror fork-info
+
+# Possible outputs:
+
+# 1. Canonical lineage
+# "On canonical Mirror lineage"
+# Fork: none
+# Genesis: verified
+
+# 2. Declared fork
+# "On declared fork: mirror-analytics-enhanced"
+# Fork point: commit abc123
+# Fork maintainer: @username
+# Genesis: traces back (clean fork)
+
+# 3. Undeclared deviation
+# "Unverified modifications detected"
+# Genesis: FAILED
+# [List of modified files]
+# This may be corrupted or undeclared fork
+```
+
+---
+
+## Constitutional Amendment Record
+
+All amendments to constitution after genesis are recorded here with signatures.
+
+### Amendment Format:
+```
+Amendment ID: E-YYYY-MMM-###
+Title: [Amendment Title]
+Date: YYYY-MM-DD
+Proposal: [Link to full proposal]
+Guardian Signatures: X/7
+Community Vote: XX% approval
+Genesis Impact: [Which files changed]
+New Hash: [SHA-256 of amended file]
+```
+
+### Amendments:
+
+[None yet - genesis version]
+
+---
+
+## Guardian Council Signatures
+
+Genesis requires initial Guardian Council approval.
+
+### Guardian 1: Ilya Davidov (Founder)
+**Role:** Philosophy + Systems  
+**GPG Key Fingerprint:** [To be added]  
+**Signature:** [To be signed on first release]  
+**Date:** 2025-12-08
+
+### Guardian 2-7: [To be elected by community]
+**Election Process:** Proof-of-Sovereignty vote  
+**Timeline:** Within 90 days of genesis  
+**Requirements:** 
+- Diverse domains (tech, ethics, therapy, art, etc.)
+- Different geographies
+- All running sovereign Mirrors
+- Community trust through contribution history
+
+---
+
+## Fork Registry
+
+Public registry of known forks for transparency and learning.
+
+### Canonical Line
+**Repository:** github.com/themirrorplatform/mirror-virtual-platform  
+**Branch:** main  
+**Status:** Active  
+**Maintainer:** Guardian Council
+
+### Declared Forks
+[None yet - genesis version]
+
+Format:
+```
+Fork Name: [Name]
+Repository: [URL]
+Fork Point: [Commit hash]
+Reason: [Why forked]
+Status: [Active/Inactive/Merged]
+Constitutional Violations: [None/List if any]
+```
+
+---
+
+## Corruption Detection Patterns
+
+If verification fails, check for these common corruption patterns:
+
+### 1. Silent Telemetry
+- New network calls not in genesis
+- Analytics code without consent mechanism
+- Data exfiltration patterns
+
+### 2. Engagement Optimization
+- Gamification elements (points, badges, streaks)
+- Social pressure mechanisms
+- Completion rate optimization
+
+### 3. Sovereignty Violations
+- Forced cloud sync
+- Required account creation
+- Data storage outside local SQLite
+
+### 4. Reflection Corruption
+- Increased advice/directive content
+- Optimization toward external goals
+- Judgment or prescription added
+
+### 5. Governance Bypass
+- Constitution changes without signatures
+- Unsigned code modifications
+- Disabled verification mechanisms
+
+If any detected: **Fork immediately to last clean commit**
+
+---
+
+## Verification Frequency
+
+Recommended verification schedule:
+
+- **On installation:** Verify genesis before first use
+- **Before updates:** Verify new version before upgrading
+- **Monthly:** Routine verification check
+- **After any unusual behavior:** Immediate verification
+- **Before sharing with others:** Verify you're distributing clean copy
+
+---
+
+## Recovery Procedures
+
+### If Verification Fails:
+
+1. **Check fork status**
+   ```bash
+   mirror fork-info
+   ```
+
+2. **If on declared fork:** Decide if acceptable
+   - Read fork documentation
+   - Check fork maintainer reputation
+   - Verify constitutional compliance
+   - Accept or reject consciously
+
+3. **If undeclared deviation:** Restore canonical
+   ```bash
+   mirror restore-canonical
+   ```
+   
+4. **If canonical compromised:** Fork from last good commit
+   ```bash
+   # Find last verified commit
+   mirror audit-history
+   
+   # Fork from clean point
+   git checkout [last-clean-commit]
+   git checkout -b mirror-fork-[your-name]
+   mirror init-fork
+   ```
+
+---
+
+## Contact for Genesis Verification Issues
+
+If you suspect genesis compromise:
+
+1. **Check GitHub repository**
+   - github.com/themirrorplatform/mirror-virtual-platform
+   - Compare your hashes to repository
+   
+2. **Check community forum**
+   - [Forum URL to be established]
+   - Search for verification issues
+   
+3. **Report to Guardian Council**
+   - [Contact method to be established]
+   - Provide verification output
+   - Describe deviation details
+
+---
+
+## License
+
+This verification file is public domain (CC0 1.0).
+
+Anyone can use, modify, or redistribute this verification system.
+
+---
+
+## Appendix: Hash Computation Scripts
+
+### scripts/compute_genesis_hash.py
+
+[To be created - Python script that computes genesis hash according to formula above]
+
+### scripts/verify_genesis.py
+
+[To be created - Python script that verifies current installation against genesis]
+
+---
+
+**This file establishes the cryptographic foundation of The Mirror.**
+
+**Any deviation from these hashes is a fork (declared or undeclared).**
+
+**Forks are not bad. Undeclared deviations might be corruption.**
+
+**Always verify. Trust the math, not the promises.**
+
+---
+
+Genesis Date: 2025-12-08  
+Document Version: 0.1.0  
+Last Updated: 2025-12-08
+
