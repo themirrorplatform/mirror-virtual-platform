@@ -11,17 +11,17 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from models import (
+from app.models import (
     ReflectRequest,
     ReflectResponse,
     UserCreateRequest,
     UserCreateResponse,
     UserHistoryResponse,
 )
-from safety import safety_check, detect_tone
-from mirrorcore import generate_mirrorback, mirrorcore_lint
-from orchestrator import process_reflection_orchestrated
-from database import (
+from app.safety import safety_check, detect_tone
+from app.mirrorcore import generate_mirrorback, mirrorcore_lint
+from app.orchestrator import process_reflection_orchestrated
+from app.database import (
     create_user,
     save_reflection_and_mirrorback,
     get_user_history,
@@ -31,10 +31,10 @@ from database import (
     save_conductor_bundle,
     supabase,
 )
-from tone_orchestrator import analyze_text_tone
-from conductor import handle_reflection as conductor_handle_reflection
-from identity_graph import apply_identity_delta_to_db, get_identity_context_from_db
-from evolution_engine import get_evolution_context_for_claude
+from app.tone_orchestrator import analyze_text_tone
+from app.conductor import handle_reflection as conductor_handle_reflection
+from app.identity_graph import apply_identity_delta_to_db, get_identity_context_from_db
+from app.evolution_engine import get_evolution_context_for_claude
 
 # ---------------------------------------------------------------------------
 # Logging configuration
