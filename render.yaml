@@ -3,7 +3,7 @@ services:
   - type: web
     name: mirror-ai-engine
     runtime: docker
-    dockerfilePath: ./Dockerfile.render
+    dockerfilePath: Dockerfile.render
     plan: starter
     region: oregon
     branch: main
