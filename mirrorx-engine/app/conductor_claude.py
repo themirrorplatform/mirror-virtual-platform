@@ -11,7 +11,7 @@ from typing import List
 from anthropic import Anthropic, NotFoundError
 from dotenv import load_dotenv
 
-from conductor_models import (
+from app.conductor_models import (
     UserEmotion,
     IdentitySnapshot,
     SemanticAnalysis,
@@ -19,7 +19,7 @@ from conductor_models import (
     GroundingContext,
     ToneDecision,
 )
-from conductor_tone import format_tone_for_claude
+from app.conductor_tone import format_tone_for_claude
 
 load_dotenv()
 

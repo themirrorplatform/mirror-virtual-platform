@@ -7,8 +7,8 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from supabase import Client, create_client
 
-from models import UserHistoryItem
-from conductor_models import IdentitySnapshot, OrchestratorBundle
+from app.models import UserHistoryItem
+from app.conductor_models import IdentitySnapshot, OrchestratorBundle
 
 import threading
 

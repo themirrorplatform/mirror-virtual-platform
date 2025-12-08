@@ -2,14 +2,14 @@ import logging
 from typing import Any, Dict, List
 
 from safety import safety_check
-from providers import (
+from app.providers import (
     generate_mirrorback as claude_generate_mirrorback,
     summarize_history as openai_summarize_history,
     extract_patterns as gemini_extract_patterns,
     get_web_context as perplexity_get_web_context,
 )
-from database import retrieve_recent_reflections, retrieve_belief_states
-from mirrorcore import mirrorcore_lint
+from app.database import retrieve_recent_reflections, retrieve_belief_states
+from app.mirrorcore import mirrorcore_lint
 
 logger = logging.getLogger("mirrorx.orchestrator")
 

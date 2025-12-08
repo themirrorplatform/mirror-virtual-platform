@@ -9,7 +9,7 @@ import json
 from typing import Optional, List, Dict, Any
 from uuid import UUID
 
-from conductor_models import (
+from app.conductor_models import (
     UserEmotion,
     SemanticAnalysis,
     OrchestratorBundle,

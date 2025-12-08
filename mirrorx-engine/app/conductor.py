@@ -21,7 +21,7 @@ import logging
 from typing import Optional
 from uuid import uuid4
 
-from conductor_models import (
+from app.conductor_models import (
     UserEmotion,
     IdentitySnapshot,
     IdentityDelta,
@@ -32,7 +32,7 @@ from conductor_models import (
     OrchestratorBundle,
     ConductorResult,
 )
-from conductor_providers import (
+from app.conductor_providers import (
     analyze_emotion,
     semantic_analysis,
     merge_identity,
@@ -41,10 +41,10 @@ from conductor_providers import (
     safety_and_style_filter,
     compute_identity_delta,
 )
-from conductor_tone import decide_tone
-from conductor_claude import generate_mirrorback_with_conductor
-from mirrorcore import mirrorcore_lint
-from safety import safety_check
+from app.conductor_tone import decide_tone
+from app.conductor_claude import generate_mirrorback_with_conductor
+from app.mirrorcore import mirrorcore_lint
+from app.safety import safety_check
 
 logger = logging.getLogger("mirrorx.conductor")
 

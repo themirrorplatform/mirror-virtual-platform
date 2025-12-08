@@ -9,7 +9,7 @@ import logging
 import json
 from typing import Dict, Any, List, Optional
 
-from conductor_models import (
+from app.conductor_models import (
     IdentityDelta,
     OrchestratorBundle,
 )

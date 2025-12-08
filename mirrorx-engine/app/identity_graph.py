@@ -12,12 +12,12 @@ import json
 from typing import Optional
 from uuid import UUID
 
-from conductor_models import (
+from app.conductor_models import (
     IdentityDelta,
     OrchestratorBundle,
 )
-from graph_manager import update_graph_for_reflection, get_graph_state
-from evolution_engine import detect_and_record_evolution
+from app.graph_manager import update_graph_for_reflection, get_graph_state
+from app.evolution_engine import detect_and_record_evolution
 
 logger = logging.getLogger("mirrorx.identity_graph")
 

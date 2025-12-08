@@ -17,7 +17,7 @@ from typing import Optional, Dict, Any, List
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-from conductor_models import (
+from app.conductor_models import (
     UserEmotion,
     SemanticAnalysis,
     IdentitySnapshot,

@@ -8,7 +8,7 @@ identity patterns, and logical structures.
 import logging
 from typing import List
 
-from conductor_models import (
+from app.conductor_models import (
     UserEmotion,
     IdentitySnapshot,
     LogicMap,
