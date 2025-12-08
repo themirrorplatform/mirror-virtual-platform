@@ -2,10 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===========================
+   MirrorX Design System
+   The Mirror Virtual Platform
+   =========================== */
+
 :root {
-  --gold: #d4af37;
-  --gold-dark: #b8941f;
+  /* Primary Gold Palette */
+  --color-mirror-gold: #CBA35D;
+  --color-mirror-gold-deep: #9C7C3C;
+  --color-mirror-gold-light: #E5C888;
+  --color-mirror-gold-glow: rgba(203, 163, 93, 0.4);
+
+  /* Obsidian Base */
+  --color-obsidian-base: #0B0B0D;
+  --color-obsidian-surface: #16161A;
+  --color-obsidian-elevated: #1F1F24;
+  --color-obsidian-border: #30303A;
+
+  /* Neutrals */
+  --color-neutral-100: #E5E5E5;
+  --color-neutral-200: #C4C4CF;
+  --color-neutral-300: #94949F;
+  --color-neutral-400: #6B6B76;
+
+  /* Semantic Colors */
+  --color-growth: #10B981;
+  --color-stagnation: #F59E0B;
+  --color-breakthrough: #CBA35D;
+  --color-regression: #EF4444;
+
+  /* Tone Colors */
+  --tone-soft: #CBA35D;
+  --tone-direct: #EF4444;
+  --tone-playful: #A855F7;
+  --tone-austere: #64748B;
+  --tone-silent: #4B5563;
+  --tone-provocative: #EAB308;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-moderate: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-prominent: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-gold-glow: 0 0 24px rgba(203, 163, 93, 0.3);
 }
+
+/* ===========================
+   Global Resets
+   =========================== */
 
 * {
   margin: 0;
@@ -13,38 +72,269 @@
   box-sizing: border-box;
 }
 
+html,
 body {
-  background: #000;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.text-gold {
-  color: var(--gold);
+body {
+  background: var(--color-obsidian-base);
+  color: var(--color-neutral-100);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
-.bg-gold {
-  background-color: var(--gold);
+/* ===========================
+   Glass Morphism
+   =========================== */
+
+.mirror-glass {
+  background: rgba(11, 11, 13, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(48, 48, 58, 0.3);
 }
 
-.border-gold {
-  border-color: var(--gold);
+.mirror-reflection {
+  background: rgba(22, 22, 26, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-/* Custom scrollbar */
+/* ===========================
+   Gradient Backgrounds
+   =========================== */
+
+.obsidian-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-obsidian-base) 0%,
+    var(--color-obsidian-surface) 50%,
+    var(--color-obsidian-elevated) 100%
+  );
+}
+
+.gold-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-mirror-gold-deep) 0%,
+    var(--color-mirror-gold) 50%,
+    var(--color-mirror-gold-light) 100%
+  );
+}
+
+.radial-gold {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(203, 163, 93, 0.15) 0%,
+    transparent 70%
+  );
+}
+
+/* ===========================
+   Glow Effects
+   =========================== */
+
+.glow-gold {
+  box-shadow: 0 0 20px rgba(203, 163, 93, 0.4),
+    0 0 40px rgba(203, 163, 93, 0.2);
+}
+
+.glow-gold-subtle {
+  box-shadow: 0 0 12px rgba(203, 163, 93, 0.2);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 8px rgba(203, 163, 93, 0.6);
+}
+
+/* ===========================
+   Noise Texture (Optional)
+   =========================== */
+
+.noise-overlay {
+  position: relative;
+}
+
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ===========================
+   Tone-Specific Styling
+   =========================== */
+
+.tone-soft {
+  border-color: var(--tone-soft);
+  background: rgba(203, 163, 93, 0.05);
+}
+
+.tone-direct {
+  border-color: var(--tone-direct);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.tone-playful {
+  border-color: var(--tone-playful);
+  background: rgba(168, 85, 247, 0.05);
+}
+
+.tone-austere {
+  border-color: var(--tone-austere);
+  background: rgba(100, 116, 139, 0.05);
+}
+
+.tone-silent {
+  border-color: var(--tone-silent);
+  background: rgba(75, 85, 99, 0.05);
+}
+
+.tone-provocative {
+  border-color: var(--tone-provocative);
+  background: rgba(234, 179, 8, 0.05);
+}
+
+/* ===========================
+   Custom Scrollbar
+   =========================== */
+
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: var(--color-obsidian-surface);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gold);
-  border-radius: 4px;
+  background: var(--color-mirror-gold);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-dark);
+  background: var(--color-mirror-gold-deep);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-mirror-gold) var(--color-obsidian-surface);
+}
+
+/* ===========================
+   Animations
+   =========================== */
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(203, 163, 93, 0.2) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ===========================
+   Utility Classes
+   =========================== */
+
+.text-gold {
+  color: var(--color-mirror-gold);
+}
+
+.bg-gold {
+  background-color: var(--color-mirror-gold);
+}
+
+.border-gold {
+  border-color: var(--color-mirror-gold);
+}
+
+.text-obsidian {
+  color: var(--color-obsidian-base);
+}
+
+.bg-obsidian {
+  background-color: var(--color-obsidian-base);
+}
+
+/* Focus states */
+.focus-gold:focus {
+  outline: 2px solid var(--color-mirror-gold);
+  outline-offset: 2px;
+}
+
+.focus-ring-gold:focus {
+  box-shadow: 0 0 0 3px rgba(203, 163, 93, 0.3);
+}
+
+/* ===========================
+   Responsive Helpers
+   =========================== */
+
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hide-mobile {
+    display: block;
+  }
+  .hide-desktop {
+    display: none;
+  }
 }
