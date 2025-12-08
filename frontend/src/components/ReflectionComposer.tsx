@@ -115,7 +115,7 @@ export default function ReflectionComposer({ onSubmit, submitting = false }: Ref
         className="w-full bg-gold text-black font-semibold py-3 rounded-lg
                  hover:bg-gold/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {submitting ? 'Reflecting...' : 'Share Reflection'}
+        {submitting ? 'Reflecting...' : 'Reflect'}
       </button>
     </form>
   );

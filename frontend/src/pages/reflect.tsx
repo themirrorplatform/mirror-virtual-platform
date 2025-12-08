@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ReflectionComposer from '@/components/ReflectionComposer';
-import { reflections } from '@/lib/api';
+import { reflections, mirrorbacks } from '@/lib/api';
 
 export default function Reflect() {
   const router = useRouter();
@@ -17,7 +17,19 @@ export default function Reflect() {
     try {
       setSubmitting(true);
       setError(null);
-      const response = await reflections.create(data);
+      
+      // Step 1: Create reflection
+      const reflectionResponse = await reflections.create(data);
+      const reflection = reflectionResponse.data;
+      
+      // Step 2: Auto-generate mirrorback (AI response)
+      try {
+        await mirrorbacks.create(reflection.id);
+      } catch (mirrorbackErr: any) {
+        // Don't fail the whole flow if mirrorback fails
+        console.error('Mirrorback generation failed:', mirrorbackErr);
+        // User can still see their reflection, mirrorback may generate async
+      }
 
       // Redirect to home feed
       router.push('/');

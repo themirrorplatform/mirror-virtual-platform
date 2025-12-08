@@ -217,6 +217,8 @@ export const mirrorbacks = {
 
   getForReflection: (reflection_id: number) =>
     api.get<Mirrorback[]>(`/mirrorbacks/reflection/${reflection_id}`),
+  
+  get: (id: number) => api.get<Mirrorback>(`/mirrorbacks/${id}`),
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -303,6 +305,40 @@ export const lenses = {
     api.get<FeedResponse>(`/reflections/lens/${lensKey}`, {
       params: { limit, cursor },
     }),
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+// THREADS
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface Thread {
+  id: string;
+  user_id: string;
+  title: string;
+  tone?: string;
+  reflection_count: number;
+  last_activity: string;
+  created_at: string;
+}
+
+export const threads = {
+  create: (data: { title: string; tone?: string }) =>
+    api.post<Thread>('/threads', data),
+
+  list: (limit = 50, offset = 0) =>
+    api.get<Thread[]>('/threads', { params: { limit, offset } }),
+
+  get: (threadId: string) =>
+    api.get<Thread>(`/threads/${threadId}`),
+
+  getReflections: (threadId: string, limit = 50, offset = 0) =>
+    api.get(`/threads/${threadId}/reflections`, { params: { limit, offset } }),
+
+  update: (threadId: string, data: { title?: string; tone?: string }) =>
+    api.patch<Thread>(`/threads/${threadId}`, data),
+
+  delete: (threadId: string) =>
+    api.delete(`/threads/${threadId}`),
 };
 
 // ────────────────────────────────────────────────────────────────────────────

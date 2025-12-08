@@ -7,10 +7,14 @@ import { MirrorXAssistant } from './MirrorXAssistant';
 import { ThreadsView } from './ThreadsView';
 import { IdentityView } from './IdentityView';
 import { SelfView } from './SelfView';
+import { MobileNav } from './MobileNav';
+import { MobileSidebar } from './MobileSidebar';
 
 export function MainPlatform() {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [currentView, setCurrentView] = useState('home');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [tone, setTone] = useState('soft');
 
   const renderView = () => {
     switch (currentView) {
@@ -39,15 +43,38 @@ export function MainPlatform() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Navigation 
-        onToggleAI={() => setShowAIAssistant(!showAIAssistant)} 
-        currentView={currentView}
-        onViewChange={setCurrentView}
-      />
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
+        <Navigation 
+          onToggleAI={() => setShowAIAssistant(!showAIAssistant)} 
+          currentView={currentView}
+          onViewChange={setCurrentView}
+        />
+      </div>
+      
+      {/* Mobile Navigation */}
+      <div className="md:hidden">
+        <MobileNav 
+          activeView={currentView}
+          onViewChange={setCurrentView}
+        />
+      </div>
       
       <div className="relative">
         {renderView()}
       </div>
+
+      {/* Mobile Sidebar */}
+      <MobileSidebar
+        isOpen={showMobileSidebar}
+        onClose={() => setShowMobileSidebar(false)}
+        tone={tone}
+        threads={[]}
+        activeThreadId={null}
+        onToneChange={setTone}
+        onThreadSelect={() => {}}
+        onNewThread={() => {}}
+      />
 
       {showAIAssistant && (
         <MirrorXAssistant onClose={() => setShowAIAssistant(false)} />

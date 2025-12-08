@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import svgPaths from "../imports/svg-wmrylxvfpj";
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 
@@ -48,10 +49,39 @@ function FloatingDots() {
   );
 }
 
+function GoldShimmerParticles() {
+  return (
+    <>
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-[#CBA35D] rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            opacity: [0.2, 0.8, 0.2],
+            scale: [1, 1.5, 1],
+            y: [0, -20, 0],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,18 +95,39 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     <div className="relative w-full min-h-screen overflow-hidden flex items-center justify-center">
       <BackgroundGradient />
       <FloatingDots />
+      <GoldShimmerParticles />
       
-      <div className="relative z-10 w-[448px]">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-[448px]"
+      >
         {/* Header */}
-        <div className="mb-[49px]">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-[49px]"
+        >
           <h1 className="font-['EB_Garamond:Regular',sans-serif] text-[48px] leading-[48px] text-neutral-200 text-center mb-[12px]">
             Welcome to MirrorX
           </h1>
-          <div className="h-px w-[128px] mx-auto bg-gradient-to-r from-transparent via-[#cba35d] to-transparent" />
-        </div>
+          <motion.div
+            className="h-px w-[128px] mx-auto bg-gradient-to-r from-transparent via-[#cba35d] to-transparent"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+          />
+        </motion.div>
 
         {/* Form */}
-        <div className="bg-[rgba(11,11,13,0.6)] rounded-[24px] border border-[rgba(48,48,58,0.3)] shadow-[0px_0px_20px_0px_rgba(0,0,0,0.5)] p-[41px]">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="bg-[rgba(11,11,13,0.6)] rounded-[24px] border border-[rgba(48,48,58,0.3)] shadow-[0px_0px_20px_0px_rgba(0,0,0,0.5)] p-[41px]"
+        >
           <form onSubmit={handleSubmit} className="space-y-[24px]">
             {/* Email Input */}
             <div className="space-y-[12px]">
@@ -84,15 +135,28 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 Email
               </label>
               <div className="relative">
-                <div className="absolute left-[16px] top-[20px] text-[rgba(196,196,207,0.4)]">
+                <motion.div
+                  className="absolute left-[16px] top-[20px]"
+                  animate={{
+                    color: focusedField === 'email' ? '#CBA35D' : 'rgba(196,196,207,0.4)',
+                  }}
+                >
                   <Mail size={18} />
-                </div>
-                <input
+                </motion.div>
+                <motion.input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="you@example.com"
                   className="w-full h-[58px] bg-[rgba(11,11,13,0.5)] border border-[rgba(48,48,58,0.4)] rounded-[16px] pl-[48px] pr-[16px] text-[16px] text-[rgba(196,196,207,0.9)] placeholder:text-[rgba(196,196,207,0.3)] focus:outline-none focus:border-[rgba(203,163,93,0.5)] transition-colors font-['Inter:Regular',sans-serif]"
+                  animate={{
+                    boxShadow:
+                      focusedField === 'email'
+                        ? '0 0 20px rgba(203,163,93,0.15)'
+                        : '0 0 0 rgba(0,0,0,0)',
+                  }}
                 />
               </div>
             </div>
@@ -103,22 +167,37 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 Password
               </label>
               <div className="relative">
-                <div className="absolute left-[16px] top-[20px] text-[rgba(196,196,207,0.4)]">
+                <motion.div
+                  className="absolute left-[16px] top-[20px]"
+                  animate={{
+                    color: focusedField === 'password' ? '#CBA35D' : 'rgba(196,196,207,0.4)',
+                  }}
+                >
                   <Lock size={18} />
-                </div>
-                <input
+                </motion.div>
+                <motion.input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="••••••••"
                   className="w-full h-[58px] bg-[rgba(11,11,13,0.5)] border border-[rgba(48,48,58,0.4)] rounded-[16px] pl-[48px] pr-[16px] text-[16px] text-[rgba(196,196,207,0.9)] placeholder:text-[rgba(196,196,207,0.3)] focus:outline-none focus:border-[rgba(203,163,93,0.5)] transition-colors font-['Inter:Regular',sans-serif]"
+                  animate={{
+                    boxShadow:
+                      focusedField === 'password'
+                        ? '0 0 20px rgba(203,163,93,0.15)'
+                        : '0 0 0 rgba(0,0,0,0)',
+                  }}
                 />
               </div>
             </div>
 
             {/* Submit Button */}
-            <button
+            <motion.button
               type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               className="relative w-full h-[56px] bg-[#cba35d] rounded-[16px] overflow-hidden group hover:bg-[#d6af36] transition-colors"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.2)] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -128,12 +207,17 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 </span>
                 <ArrowRight size={18} className="text-black" />
               </div>
-            </button>
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
 
         {/* Footer */}
-        <div className="mt-[32px] text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-[32px] text-center"
+        >
           <p className="font-['Inter:Regular',sans-serif] text-[14px] leading-[20px] text-[rgba(196,196,207,0.6)] tracking-[0.14px]">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             <button
@@ -143,12 +227,17 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               {isSignUp ? 'Sign in' : 'Sign up'}
             </button>
           </p>
-        </div>
+        </motion.div>
 
-        <p className="mt-[24px] text-center font-['Inter:Italic',sans-serif] italic text-[12px] leading-[16px] text-[rgba(196,196,207,0.3)] tracking-[0.12px]">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-[24px] text-center font-['Inter:Italic',sans-serif] italic text-[12px] leading-[16px] text-[rgba(196,196,207,0.3)] tracking-[0.12px]"
+        >
           Reflection over instruction
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     </div>
   );
 }

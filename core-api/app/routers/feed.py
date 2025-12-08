@@ -129,17 +129,29 @@ async def score_reflection_for_user(reflection: dict, user_id: str) -> float:
 
 @router.get("/", response_model=CursorFeedResponse)
 async def get_feed(
-    limit: int = Query(20, le=50),
-    cursor: Optional[str] = None,
+    limit: int = Query(20, le=50, description="Number of items to return"),
+    before_id: Optional[int] = Query(None, description="Get items before this reflection ID"),
     authorization: Optional[str] = Header(None)
 ):
     """
     Get personalized feed for authenticated user with cursor-based pagination.
     Uses reflection-first algorithm.
+    
+    Pagination: Pass before_id from the last item to get the next page.
     """
     user_id = get_user_from_token(authorization)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
+
+    # Get created_at timestamp for cursor if provided
+    before_created_at = None
+    if before_id is not None:
+        cursor_ref = await execute_one(
+            "SELECT created_at FROM reflections WHERE id = $1",
+            before_id
+        )
+        if cursor_ref:
+            before_created_at = cursor_ref['created_at']
 
     # Get candidate reflections (exclude critical safety events)
     query = """
@@ -152,11 +164,12 @@ async def get_feed(
     """
     params = [user_id]
 
-    if cursor:
-        query += " AND r.id < $2"
-        params.append(cursor)
+    # Apply cursor filter (created_at + id for stable pagination)
+    if before_created_at and before_id:
+        query += " AND (r.created_at < $2 OR (r.created_at = $2 AND r.id < $3))"
+        params.extend([before_created_at, before_id])
 
-    query += " ORDER BY r.created_at DESC LIMIT $" + str(len(params) + 1)
+    query += " ORDER BY r.created_at DESC, r.id DESC LIMIT $" + str(len(params) + 1)
     params.append(limit * 3)  # Get more candidates for scoring
 
     candidates = await execute_query(query, *params)
@@ -211,16 +224,12 @@ async def get_feed(
     # Take top N
     feed_items = scored_items[:limit]
 
-    # Determine next cursor and has_more
+    # Determine next cursor (before_id) and has_more
     next_cursor = None
-    has_more = False
+    has_more = len(scored_items) > limit
     if feed_items:
         last_reflection = feed_items[-1]['reflection']
-        # Create cursor from ID and timestamp
-        import base64
-        cursor_data = f"{last_reflection['id']}:{last_reflection['created_at'].isoformat()}"
-        next_cursor = base64.b64encode(cursor_data.encode()).decode()
-        has_more = len(scored_items) > limit
+        next_cursor = str(last_reflection['id'])  # Simple ID-based cursor
 
     return {
         "items": feed_items,

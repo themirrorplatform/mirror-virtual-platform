@@ -1,0 +1,7 @@
+[2025-12-07 01:40:26] Starting Mirror deployment script in C:\Users\ilyad\mirror-virtual-platform
+[2025-12-07 01:40:26] Supabase CLI not found in PATH.
+[2025-12-07 01:40:26] Supabase CLI is not installed or not in PATH.
+[2025-12-07 01:40:30] Attempting npm install -g supabase...
+[2025-12-07 01:40:30] npm install failed: The property 'Statement' cannot be found on this object. Verify that the property exists.
+[2025-12-07 01:40:30] Supabase CLI not found in PATH.
+[2025-12-07 01:40:36] Exiting.

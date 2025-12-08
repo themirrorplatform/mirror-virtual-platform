@@ -73,7 +73,7 @@ export default function LensPage() {
         setItems(response.data.items);
       }
       
-      setCursor(response.data.next_cursor);
+      setCursor(response.data.next_cursor || null);
       setHasMore(response.data.has_more);
     } catch (err) {
       console.error('Failed to load reflections:', err);

@@ -27,6 +27,9 @@ pydantic==2.5.3
 # Environment
 python-dotenv==1.0.0
 
+# Rate Limiting
+slowapi==0.1.9
+
 # Local model inference support (optional)
 llama-cpp-python>=0.2.0
 pyyaml>=6.0

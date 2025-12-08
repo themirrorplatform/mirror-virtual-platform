@@ -1,7 +1,7 @@
 """
 Reflections Router - Core content creation and retrieval
 """
-from fastapi import APIRouter, HTTPException, Header, Depends
+from fastapi import APIRouter, HTTPException, Header, Depends, Request
 from typing import Optional, List
 from pydantic import BaseModel
 from app.models import Reflection, ReflectionCreate
@@ -21,18 +21,34 @@ class ReflectionUpdate(BaseModel):
 
 @router.post("/", response_model=Reflection)
 async def create_reflection(
+    request: Request,
     reflection_data: ReflectionCreate,
     user_id: str = Depends(require_auth)
 ):
-    """Create a new reflection."""
-
+    """Create a new reflection. Rate limited to 30/minute."""
+    # Rate limit applied via decorator in main.py mount
+    
+    # Get or create primary identity for user
+    identity = await execute_one(
+        """
+        SELECT id FROM identities 
+        WHERE profile_id = $1 AND is_active = true 
+        ORDER BY created_at ASC 
+        LIMIT 1
+        """,
+        user_id
+    )
+    
+    identity_id = identity['id'] if identity else None
+    
     reflection = await execute_one(
         """
-        INSERT INTO reflections (author_id, body, lens_key, visibility, metadata)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO reflections (author_id, identity_id, body, lens_key, visibility, metadata)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
         """,
         user_id,
+        identity_id,
         reflection_data.body,
         reflection_data.lens_key,
         reflection_data.visibility.value,

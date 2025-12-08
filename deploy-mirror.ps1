@@ -302,7 +302,8 @@ if ($FunctionsPaths.Count -gt 0) {
                     & supabase functions deploy $funcName --project-ref $env:SUPABASE_PROJECT_REF 2>&1 | ForEach-Object { Write-Log $_ }
                     Write-Log "Deployment attempted for $funcName."
                 } catch {
-                    Write-Log "supabase functions deploy failed for $funcName: $_"
+                    $errMsg = $_.Exception.Message
+                    Write-Log "supabase functions deploy failed for $funcName : $errMsg"
                 }
             }
         }
