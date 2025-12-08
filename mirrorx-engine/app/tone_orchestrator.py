@@ -1,7 +1,7 @@
 import asyncio
 from typing import Optional
 
-from app.conductor_tone import ToneSnapshot
+from app.tone_models import ToneSnapshot
 # Note: tone_providers module exists but specific provider functions may need implementation
 # For now, returning None stubs to prevent import errors
 
