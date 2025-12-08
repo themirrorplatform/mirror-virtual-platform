@@ -1,1 +1,1 @@
-# MirrorX Engine - The Mirror Virtual Platform AI Brain
+# Mirror AI Engine - The Mirror Virtual Platform AI Brain

@@ -1,4 +1,4 @@
-# The Mirror Virtual Platform - MirrorX Engine Dependencies
+# The Mirror Virtual Platform - AI Engine Dependencies
 
 # FastAPI & Server
 fastapi==0.109.0
