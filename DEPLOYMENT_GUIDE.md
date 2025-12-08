@@ -39,8 +39,8 @@ Netlify will use settings from `netlify.toml`:
 In Netlify dashboard → Site settings → Environment variables:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://bfctvwjxlfkzeahmscbe.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmY3R2d2p4bGZremVhaG1zY2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNjUxMTksImV4cCI6MjA4MDY0MTExOX0.EdvAQJ_7C8HZW0jn4Q1CLxGfrpgod1KnvzO8pYXLotY
+NEXT_PUBLIC_SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
 NEXT_PUBLIC_CORE_API_URL=https://your-core-api.railway.app
 NEXT_PUBLIC_MIRRORX_API_URL=https://your-mirrorx-api.railway.app
 NODE_VERSION=18
@@ -89,20 +89,24 @@ Update proxy URLs in `netlify.toml` after deploying backend services.
 
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres.bfctvwjxlfkzeahmscbe:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
-SUPABASE_URL=https://bfctvwjxlfkzeahmscbe.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmY3R2d2p4bGZremVhaG1zY2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwNjUxMTksImV4cCI6MjA4MDY0MTExOX0.EdvAQJ_7C8HZW0jn4Q1CLxGfrpgod1KnvzO8pYXLotY
-SUPABASE_SERVICE_KEY=YOUR_SERVICE_KEY_HERE
-SUPABASE_JWT_SECRET=YOUR_JWT_SECRET_HERE
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzA3NzkzNCwiZXhwIjoyMDc4NjUzOTM0fQ.ZlMAlV7ptEG0ZzyjuACZXRgnSQswhLVdsFEUj13V6T0
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
 
 # CORS
-ALLOWED_ORIGINS=https://mirror-virtual-platform.vercel.app,http://localhost:3000
+ALLOWED_ORIGINS=https://themirrorplatform.online,http://localhost:3000,http://localhost:5173
+FRONTEND_ORIGIN=https://themirrorplatform.online
 
 # MirrorX Engine URL (add after deploying MirrorX)
 MIRRORX_API_URL=https://your-mirrorx-api.railway.app
 
-# Optional: Rate Limiting
-RATE_LIMIT_PER_MINUTE=60
+# Rate Limiting
+DEFAULT_RATE_LIMIT_PER_MINUTE=60
+
+# System Settings
+CACHE_TTL_SECONDS=300
+MAINTENANCE_MODE=false
 ```
 
 **Step 4: Deploy**
@@ -131,24 +135,41 @@ Railway will automatically build using `core-api/Dockerfile` and deploy.
 **Step 2: Add Environment Variables**
 
 ```bash
-# AI Provider Keys
-ANTHROPIC_API_KEY=your-anthropic-key
-OPENAI_API_KEY=your-openai-key
-GOOGLE_API_KEY=your-google-key (optional)
-HUME_API_KEY=your-hume-key (optional)
+# Supabase
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzA3NzkzNCwiZXhwIjoyMDc4NjUzOTM0fQ.ZlMAlV7ptEG0ZzyjuACZXRgnSQswhLVdsFEUj13V6T0
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
+
+# Anthropic (Claude)
+ANTHROPIC_API_KEY=sk-ant-api03-YOUR_ANTHROPIC_KEY_HERE
+ANTHROPIC_MODEL=claude-opus-4-5-20251101
+ANTHROPIC_TONE_MODEL=claude-3-haiku-20240307
+
+# OpenAI (GPT-4, GPT-3.5)
+OPENAI_API_KEY=sk-proj-YOUR_OPENAI_KEY_HERE
+
+# Google / Gemini
+GEMINI_API_KEY=YOUR_GEMINI_KEY_HERE
+GOOGLE_APPLICATION_CREDENTIALS=mirrorx-workers-ab0d14c8188b.json
+
+# Hume AI (emotion analysis)
+HUME_API_KEY=YOUR_HUME_KEY_HERE
+
+# Perplexity
+PERPLEXITY_API_KEY=pplx-YOUR_PERPLEXITY_KEY_HERE
 
 # Core API URL
 CORE_API_URL=https://mirror-core-api-production.up.railway.app
 
-# Database (same as Core API)
-DATABASE_URL=postgresql://postgres.bfctvwjxlfkzeahmscbe:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
-
 # CORS
-ALLOWED_ORIGINS=https://mirror-virtual-platform.vercel.app,http://localhost:3000
+ALLOWED_ORIGINS=https://themirrorplatform.online,http://localhost:3000,http://localhost:5173
+FRONTEND_ORIGIN=https://themirrorplatform.online
 
-# Optional: Conductor Settings
+# Conductor Settings
 MAX_TOKENS=1000
 TEMPERATURE=0.7
+MIRRORCORE_SYSTEM_PROMPT=mirrorcore_system_prompt.txt
 ```
 
 **Step 3: Deploy**
@@ -252,7 +273,7 @@ fly launch
 fly deploy
 ```
 
-### Option D: Google Cloud Run
+### Backend: Google Cloud Run (Alternative to Railway)
 
 ```bash
 # Core API
@@ -274,17 +295,18 @@ gcloud run deploy mirrorx-engine \
 
 ## Monitoring & Logs
 
+### Netlify
+
+- View logs: Netlify Dashboard → Site → Deploys → Deploy log
+- Functions logs: Netlify Dashboard → Functions
+- Analytics: Netlify Dashboard → Analytics
+- Real-time logs: `netlify watch`
+
 ### Railway
 
 - View logs: Railway Dashboard → Service → Logs
 - Metrics: Railway Dashboard → Service → Metrics
 - Set up alerts in Settings
-
-### Vercel
-
-- View logs: Vercel Dashboard → Project → Deployments → Logs
-- Analytics: Vercel Dashboard → Analytics
-- Real-time logs: `vercel logs`
 
 ### Supabase
 
@@ -296,32 +318,49 @@ gcloud run deploy mirrorx-engine \
 
 ## Environment Variables Summary
 
-### Frontend (Vercel)
+### Frontend (Netlify)
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://bfctvwjxlfkzeahmscbe.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+NEXT_PUBLIC_SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
 NEXT_PUBLIC_CORE_API_URL=<railway-core-api-url>
 NEXT_PUBLIC_MIRRORX_API_URL=<railway-mirrorx-url>
+NODE_VERSION=18
 ```
 
 ### Core API (Railway)
 ```env
-DATABASE_URL=<supabase-connection-string>
-SUPABASE_URL=<supabase-url>
-SUPABASE_ANON_KEY=<your-anon-key>
-SUPABASE_SERVICE_KEY=<your-service-key>
-SUPABASE_JWT_SECRET=<your-jwt-secret>
-ALLOWED_ORIGINS=<frontend-url>,http://localhost:3000
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzA3NzkzNCwiZXhwIjoyMDc4NjUzOTM0fQ.ZlMAlV7ptEG0ZzyjuACZXRgnSQswhLVdsFEUj13V6T0
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
+ALLOWED_ORIGINS=https://themirrorplatform.online,http://localhost:3000,http://localhost:5173
+FRONTEND_ORIGIN=https://themirrorplatform.online
 MIRRORX_API_URL=<railway-mirrorx-url>
+DEFAULT_RATE_LIMIT_PER_MINUTE=60
+CACHE_TTL_SECONDS=300
+MAINTENANCE_MODE=false
 ```
 
 ### MirrorX Engine (Railway)
 ```env
-ANTHROPIC_API_KEY=<your-anthropic-key>
-OPENAI_API_KEY=<your-openai-key>
-DATABASE_URL=<supabase-connection-string>
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://enfjnqfppfhofredyxyg.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzA3NzkzNCwiZXhwIjoyMDc4NjUzOTM0fQ.ZlMAlV7ptEG0ZzyjuACZXRgnSQswhLVdsFEUj13V6T0
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZmpucWZwcGZob2ZyZWR5eHlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNzc5MzQsImV4cCI6MjA3ODY1MzkzNH0.JbfoDSXYuzvA14A1Or22m6wS40GKwLPzrVb8qHgpsKc
+ANTHROPIC_API_KEY=sk-ant-api03-YOUR_ANTHROPIC_KEY_HERE
+ANTHROPIC_MODEL=claude-opus-4-5-20251101
+ANTHROPIC_TONE_MODEL=claude-3-haiku-20240307
+OPENAI_API_KEY=sk-proj-YOUR_OPENAI_KEY_HERE
+GEMINI_API_KEY=YOUR_GEMINI_KEY_HERE
+GOOGLE_APPLICATION_CREDENTIALS=mirrorx-workers-ab0d14c8188b.json
+HUME_API_KEY=YOUR_HUME_KEY_HERE
+PERPLEXITY_API_KEY=pplx-YOUR_PERPLEXITY_KEY_HERE
 CORE_API_URL=<railway-core-api-url>
-ALLOWED_ORIGINS=<frontend-url>,http://localhost:3000
+ALLOWED_ORIGINS=https://themirrorplatform.online,http://localhost:3000,http://localhost:5173
+FRONTEND_ORIGIN=https://themirrorplatform.online
+MAX_TOKENS=1000
+TEMPERATURE=0.7
+MIRRORCORE_SYSTEM_PROMPT=mirrorcore_system_prompt.txt
 ```
 
 ---
@@ -330,9 +369,10 @@ ALLOWED_ORIGINS=<frontend-url>,http://localhost:3000
 
 ### Free Tier (Development)
 
-- **Vercel**: Free (Hobby plan)
+- **Netlify**: Free (Starter plan)
   - 100 GB bandwidth/month
   - Unlimited deployments
+  - 300 build minutes/month
   
 - **Railway**: $5/month credit (Trial)
   - ~$5/service/month after trial
@@ -345,11 +385,11 @@ ALLOWED_ORIGINS=<frontend-url>,http://localhost:3000
 
 ### Production Scale
 
-- **Vercel Pro**: $20/month (team features, more bandwidth)
+- **Netlify Pro**: $19/month (team features, more bandwidth, faster builds)
 - **Railway**: ~$20-50/month (2 services with autoscaling)
 - **Supabase Pro**: $25/month (8 GB database, more connections)
 
-**Total**: $65-95/month for production traffic
+**Total**: $64-94/month for production traffic
 
 ---
 
@@ -391,14 +431,15 @@ Verify `DATABASE_URL` includes the correct password and uses the pooler port (65
 
 ## Next Steps
 
-1. ✅ Deploy frontend to Vercel
+1. ✅ Deploy frontend to Netlify (update base directory to `frontend/`)
 2. ✅ Deploy Core API to Railway
 3. ✅ Deploy MirrorX Engine to Railway
-4. ✅ Update frontend environment variables
-5. ✅ Test end-to-end flow
-6. 🎯 Set up monitoring and alerts
-7. 🎯 Configure custom domain (optional)
-8. 🎯 Set up CI/CD for automatic deployments
+4. ✅ Update frontend environment variables in Netlify
+5. ✅ Update API proxy URLs in `netlify.toml`
+6. ✅ Test end-to-end flow
+7. 🎯 Set up monitoring and alerts
+8. 🎯 Custom domain already configured (themirrorplatform.online)
+9. 🎯 CI/CD automatic on git push (already enabled)
 
 ---
 
