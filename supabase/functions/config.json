@@ -1,0 +1,49 @@
+{
+  "name": "mirror-platform-functions",
+  "version": "1.0.0",
+  "description": "Supabase Edge Functions for The Mirror Platform",
+  "functions": [
+    {
+      "name": "send-contact-notification",
+      "description": "Sends email notifications for new contact submissions",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "process-reflection",
+      "description": "Processes reflection creation and triggers AI mirrorback generation",
+      "verify_jwt": true,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "sync-user-profile",
+      "description": "Syncs user profile on auth.users creation",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "broadcast-reflection",
+      "description": "Broadcasts reflection events to realtime channels",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "analytics-aggregator",
+      "description": "Aggregates analytics data (scheduled)",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "cleanup-sessions",
+      "description": "Cleans up old sessions and data (scheduled)",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    },
+    {
+      "name": "webhook-handler",
+      "description": "Generic webhook handler for external integrations",
+      "verify_jwt": false,
+      "import_map": "./import_map.json"
+    }
+  ]
+}
