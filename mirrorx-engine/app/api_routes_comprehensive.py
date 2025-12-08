@@ -8,14 +8,14 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Optional, Dict, Any
 import logging
 
-from models import (
+from app.models import (
     ReflectRequest,
     ReflectResponse,
     UserCreateRequest,
     UserCreateResponse,
     UserHistoryResponse,
 )
-from database_comprehensive import (
+from app.database_comprehensive import (
     create_user,
     get_profile,
     save_reflection,
@@ -30,10 +30,10 @@ from database_comprehensive import (
     build_context_object,
     supabase,
 )
-from conductor import handle_reflection as conductor_handle_reflection
-from identity_graph import apply_identity_delta_to_db, get_identity_context_from_db
-from evolution_engine import detect_and_record_evolution
-from safety import safety_check
+from app.conductor import handle_reflection as conductor_handle_reflection
+from app.identity_graph import apply_identity_delta_to_db, get_identity_context_from_db
+from app.evolution_engine import detect_and_record_evolution
+from app.safety import safety_check
 
 logger = logging.getLogger("mirrorx.api")
 

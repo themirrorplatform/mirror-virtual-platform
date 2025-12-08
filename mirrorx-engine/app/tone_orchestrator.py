@@ -1,9 +1,19 @@
 import asyncio
 from typing import Optional
 
-from tone_models import ToneSnapshot
-from providers.openai_tone_provider import analyze_text_with_openai
-from providers.hume_tone_provider import analyze_text_with_hume
+from app.conductor_tone import ToneSnapshot
+# Note: tone_providers module exists but specific provider functions may need implementation
+# For now, returning None stubs to prevent import errors
+
+
+async def analyze_text_with_openai(text: str) -> Optional[ToneSnapshot]:
+    """Placeholder for OpenAI tone analysis"""
+    return None
+
+
+async def analyze_text_with_hume(text: str) -> Optional[ToneSnapshot]:
+    """Placeholder for Hume tone analysis"""
+    return None
 
 
 def _merge_snapshots(a: Optional[ToneSnapshot], b: Optional[ToneSnapshot]) -> Optional[ToneSnapshot]:

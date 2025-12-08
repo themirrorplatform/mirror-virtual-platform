@@ -109,7 +109,7 @@ async def analyze_emotion(text: str, audio_data: Optional[bytes] = None) -> User
             logger.warning(f"Hume API failed, falling back to tone analysis: {e}")
 
     # Fallback: Use existing tone detection + heuristics
-    from safety import detect_tone
+    from app.safety import detect_tone
 
     tone_label = detect_tone(text)
 

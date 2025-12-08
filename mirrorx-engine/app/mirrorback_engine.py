@@ -8,7 +8,7 @@ import logging
 import os
 from typing import Dict, Any, Optional
 
-from mirrorback_models import (
+from app.mirrorback_models import (
     OrchestratorBundle,
     MirrorbackResponse,
     EmotionSnapshot,
@@ -19,9 +19,9 @@ from mirrorback_models import (
     ToneDecision,
     EvolutionSnapshot,
 )
-from guardrails import lint_for_guardrails, CLAUDE_SYSTEM_PROMPT
-from gpt_synthesis import synthesize_for_mirrorback
-from gpt_filter import filter_mirrorback_draft
+from app.guardrails import lint_for_guardrails, CLAUDE_SYSTEM_PROMPT
+from app.gpt_synthesis import synthesize_for_mirrorback
+from app.gpt_filter import filter_mirrorback_draft
 
 logger = logging.getLogger("mirrorx.mirrorback_engine")
 

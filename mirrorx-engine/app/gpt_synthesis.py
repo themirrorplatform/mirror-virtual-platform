@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional
 
 from openai import OpenAI
 
-from mirrorback_models import (
+from app.mirrorback_models import (
     OrchestratorBundle,
     MirrorbackSynthesis,
     SynthesisSummary,
@@ -22,7 +22,7 @@ from mirrorback_models import (
     SynthesisReturn,
     SynthesisTone,
 )
-from guardrails import GPT_SYNTHESIS_PROMPT
+from app.guardrails import GPT_SYNTHESIS_PROMPT
 
 logger = logging.getLogger("mirrorx.gpt_synthesis")
 

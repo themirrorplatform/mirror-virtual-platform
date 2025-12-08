@@ -11,7 +11,7 @@ from typing import List
 
 from openai import OpenAI
 
-from guardrails import GPT_FILTER_PROMPT, lint_for_guardrails, GuardrailsViolation
+from app.guardrails import GPT_FILTER_PROMPT, lint_for_guardrails, GuardrailsViolation
 
 logger = logging.getLogger("mirrorx.gpt_filter")
 
