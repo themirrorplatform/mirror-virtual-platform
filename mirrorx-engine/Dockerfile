@@ -1,4 +1,4 @@
-# MirrorX Engine Dockerfile
+# Mirror AI Engine Dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
