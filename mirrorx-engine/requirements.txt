@@ -6,10 +6,10 @@ uvicorn[standard]==0.27.0
 
 # Database
 asyncpg==0.29.0
-supabase==2.3.0
+supabase>=2.3.0  # Allow newer versions for httpx compatibility
 
-# HTTP Client (for AI API calls) - version compatible with supabase 2.3.0
-httpx==0.24.1
+# HTTP Client (for AI API calls) - flexible version for compatibility
+httpx>=0.24.0
 
 # AI Provider SDKs
 openai==1.10.0
