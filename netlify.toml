@@ -1,0 +1,41 @@
+# Netlify Configuration for Mirror Virtual Platform
+
+# Frontend (Next.js) deployment
+[build]
+  base = "frontend/"
+  command = "npm run build"
+  publish = ".next"
+
+# Environment variables (set in Netlify UI)
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+# Redirect rules for Next.js
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+# API proxy for Core API
+[[redirects]]
+  from = "/api/core/*"
+  to = "https://your-core-api.railway.app/:splat"
+  status = 200
+  force = true
+  
+# API proxy for MirrorX Engine
+[[redirects]]
+  from = "/api/mirrorx/*"
+  to = "https://your-mirrorx-engine.railway.app/:splat"
+  status = 200
+  force = true
