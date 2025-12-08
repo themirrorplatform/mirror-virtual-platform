@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List
 
-from safety import safety_check
+from app.safety import safety_check
 from app.providers import (
     generate_mirrorback as claude_generate_mirrorback,
     summarize_history as openai_summarize_history,
