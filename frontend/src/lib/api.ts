@@ -2,7 +2,8 @@
  * API Client for The Mirror Virtual Platform
  * Handles all communication with the Core API
  */
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import Router from 'next/router';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -12,18 +13,69 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
-// Add Supabase auth token to requests if available
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('supabase_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Request interceptor: Add auth token
+api.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('supabase_auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Response interceptor: Handle errors globally
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    // Handle 401 Unauthorized
+    if (error.response?.status === 401) {
+      // Clear auth token
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase_auth_token');
+        
+        // Redirect to login if not already there
+        if (Router.pathname !== '/login') {
+          Router.push('/login?redirect=' + encodeURIComponent(Router.pathname));
+        }
+      }
+    }
+
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.error('Access forbidden:', error.response.data);
+    }
+
+    // Handle 404 Not Found
+    if (error.response?.status === 404) {
+      console.error('Resource not found:', error.config?.url);
+    }
+
+    // Handle 500 Server Error
+    if (error.response?.status === 500) {
+      console.error('Server error:', error.response.data);
+    }
+
+    // Handle network errors
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout');
+    }
+
+    if (!error.response) {
+      console.error('Network error - API may be down');
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // ────────────────────────────────────────────────────────────────────────────
 // TYPE DEFINITIONS
