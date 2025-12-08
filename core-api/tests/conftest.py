@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Set test environment variables before importing app
-os.environ.setdefault("DATABASE_URL", os.getenv("TEST_DATABASE_URL", os.getenv("DATABASE_URL")))
+os.environ.setdefault("DATABASE_URL", os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL") or "postgresql://postgres:postgres@localhost:5432/mirror_test")
 os.environ.setdefault("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
 
 from app.main import app

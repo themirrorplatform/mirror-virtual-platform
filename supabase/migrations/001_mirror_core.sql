@@ -71,6 +71,7 @@ END$$;
 
 CREATE TABLE IF NOT EXISTS public.profiles (
   id           uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username     text UNIQUE,
   display_name text,
   bio          text,
   avatar_url   text,
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
