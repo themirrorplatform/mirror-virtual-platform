@@ -1,4 +1,4 @@
-# Mirror AI Engine Dockerfile
+# Dockerfile for Render.com / Alternative Platforms
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -15,12 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 8100
+# Expose port (Render uses PORT env var)
+EXPOSE ${PORT:-8100}
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8100/health')"
-
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8100"]
+# Run the application (Render provides $PORT)
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8100}
