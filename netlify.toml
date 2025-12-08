@@ -1,10 +1,9 @@
 # Netlify Configuration for Mirror Virtual Platform
 
-# Frontend (Next.js) deployment
+# Static marketing site deployment
 [build]
-  base = "frontend/"
-  command = "npm run build"
-  publish = ".next"
+  command = "echo 'Static site - no build needed'"
+  publish = "."
 
 # Environment variables (set in Netlify UI)
 [build.environment]
