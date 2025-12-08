@@ -12,16 +12,16 @@ supabase>=2.3.0  # Allow newer versions for httpx compatibility
 httpx>=0.24.0
 
 # AI Provider SDKs
-openai==1.10.0
-anthropic==0.21.3
-google-generativeai==0.3.2
-google-auth==2.27.0
+openai>=1.10.0
+anthropic>=0.21.3
+google-generativeai>=0.3.2
+google-auth>=2.27.0
 
 # Emotion Detection
-hume==0.5.0
+hume>=0.5.0
 
-# Validation
-pydantic==2.5.3
+# Validation - flexible for compatibility
+pydantic>=2.5.3
 
 # Environment
 python-dotenv==1.0.0
