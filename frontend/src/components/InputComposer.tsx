@@ -100,7 +100,7 @@ export function InputComposer({
         {/* Textarea */}
         <textarea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setContent(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onKeyDown={handleKeyDown}
@@ -150,3 +150,4 @@ export function InputComposer({
     </motion.form>
   );
 }
+

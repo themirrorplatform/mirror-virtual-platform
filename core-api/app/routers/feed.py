@@ -2,14 +2,17 @@
 Feed Router - Reflection-first algorithm
 The feed prioritizes reflection over engagement.
 """
-from fastapi import APIRouter, HTTPException, Header, Query
+from fastapi import APIRouter, HTTPException, Header, Query, Request
 from typing import Optional, List
 from pydantic import BaseModel
 from app.models import FeedItem, FeedResponse, Reflection, Profile
 from app.db import execute_query, execute_one
 from app.auth import get_user_from_token
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class CursorFeedResponse(BaseModel):
@@ -128,7 +131,9 @@ async def score_reflection_for_user(reflection: dict, user_id: str) -> float:
 
 
 @router.get("/", response_model=CursorFeedResponse)
+@limiter.limit("60/minute")
 async def get_feed(
+    request: Request,
     limit: int = Query(20, le=50, description="Number of items to return"),
     before_id: Optional[int] = Query(None, description="Get items before this reflection ID"),
     authorization: Optional[str] = Header(None)
@@ -239,7 +244,9 @@ async def get_feed(
 
 
 @router.get("/public")
+@limiter.limit("60/minute")
 async def get_public_feed(
+    request: Request,
     limit: int = 20,
     cursor: Optional[int] = None,
     lens_key: Optional[str] = None
@@ -301,15 +308,18 @@ async def get_public_feed(
 
 
 @router.post("/refresh")
+@limiter.limit("10/minute")
 async def refresh_feed_state(
-    user_id: str = Header(None, alias="authorization")
+    request: Request,
+    authorization: str = Header(None)
 ):
     """
     Manually refresh feed algorithm state for user.
     This recalculates identity axes, bias insights, etc.
     """
-    if user_id:
-        user_id = get_user_from_token(user_id)
+    user_id = None
+    if authorization:
+        user_id = get_user_from_token(authorization)
 
     # Update feed_state timestamp
     await execute_query(

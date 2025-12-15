@@ -511,3 +511,131 @@ class LocalDB:
             "axes": self.fetch_one("SELECT COUNT(*) as count FROM axes")["count"],
             "sessions": self.fetch_one("SELECT COUNT(*) as count FROM sessions")["count"]
         }
+    
+    # =====================================================
+    # MISSING METHODS FOR REFLECTION ENGINE
+    # =====================================================
+    
+    def ensure_identity(self, identity_id: Optional[str] = None) -> str:
+        """
+        Ensure identity exists, create if needed.
+        
+        Args:
+            identity_id: Optional identity ID. If None, creates new identity.
+            
+        Returns:
+            Identity ID (existing or newly created)
+        """
+        if identity_id:
+            # Check if exists
+            row = self.fetch_one(
+                "SELECT id FROM identities WHERE id = ?",
+                (identity_id,)
+            )
+            if row:
+                return identity_id
+        
+        # Create new identity
+        new_id = str(uuid.uuid4())
+        now = datetime.utcnow().isoformat()
+        
+        self.execute(
+            "INSERT INTO identities (id, created_at, updated_at, metadata) VALUES (?, ?, ?, ?)",
+            (new_id, now, now, json.dumps({}))
+        )
+        self.commit()
+        
+        logger.info(f"Created new identity: {new_id}")
+        return new_id
+    
+    def log_engine_run(self, reflection_id: str, config_version: str, 
+                      engine_mode: str, patterns: Dict, tensions_surfaced: List,
+                      duration_ms: int, constitutional_flags: Dict) -> str:
+        """
+        Log an engine run for evolution tracking.
+        
+        Args:
+            reflection_id: ID of reflection generated
+            config_version: MirrorCore version used
+            engine_mode: Mode engine was running in
+            patterns: Patterns detected
+            tensions_surfaced: Tensions found
+            duration_ms: Duration in milliseconds
+            constitutional_flags: Constitutional compliance flags
+            
+        Returns:
+            Engine run ID
+        """
+        # Create engine_runs table if it doesn't exist
+        self.execute("""
+            CREATE TABLE IF NOT EXISTS engine_runs (
+                id TEXT PRIMARY KEY,
+                reflection_id TEXT,
+                config_version TEXT,
+                engine_mode TEXT,
+                patterns TEXT,
+                tensions_surfaced TEXT,
+                duration_ms INTEGER,
+                constitutional_flags TEXT,
+                created_at TEXT,
+                FOREIGN KEY (reflection_id) REFERENCES reflections(id)
+            )
+        """)
+        
+        run_id = str(uuid.uuid4())
+        now = datetime.utcnow().isoformat()
+        
+        self.execute("""
+            INSERT INTO engine_runs 
+            (id, reflection_id, config_version, engine_mode, patterns, 
+             tensions_surfaced, duration_ms, constitutional_flags, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id, reflection_id, config_version, engine_mode,
+            json.dumps(patterns), json.dumps(tensions_surfaced),
+            duration_ms, json.dumps(constitutional_flags), now
+        ))
+        self.commit()
+        
+        logger.debug(f"Logged engine run: {run_id}")
+        return run_id
+    
+    def log_user_feedback(self, reflection_id: str, feedback_type: str, 
+                         rating: Optional[int] = None, comment: Optional[str] = None) -> str:
+        """
+        Log user feedback on a reflection.
+        
+        Args:
+            reflection_id: ID of reflection being rated
+            feedback_type: Type of feedback (rating, flag, etc.)
+            rating: Numeric rating (1-5)
+            comment: Optional text comment
+            
+        Returns:
+            Feedback ID
+        """
+        # Create engine_feedback table if it doesn't exist
+        self.execute("""
+            CREATE TABLE IF NOT EXISTS engine_feedback (
+                id TEXT PRIMARY KEY,
+                reflection_id TEXT,
+                feedback_type TEXT,
+                rating INTEGER,
+                comment TEXT,
+                created_at TEXT,
+                FOREIGN KEY (reflection_id) REFERENCES reflections(id)
+            )
+        """)
+        
+        feedback_id = str(uuid.uuid4())
+        now = datetime.utcnow().isoformat()
+        
+        self.execute("""
+            INSERT INTO engine_feedback 
+            (id, reflection_id, feedback_type, rating, comment, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (feedback_id, reflection_id, feedback_type, rating, comment, now))
+        self.commit()
+        
+        logger.info(f"Logged user feedback: {feedback_id}")
+        return feedback_id

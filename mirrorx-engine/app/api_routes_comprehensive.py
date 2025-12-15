@@ -395,15 +395,30 @@ async def health_check():
     Returns:
         Status of database connection and AI providers
     """
+    import os
+    from datetime import datetime
+    
+    def check_api_key(env_var: str) -> dict:
+        """Check if API key is present and return status"""
+        key = os.getenv(env_var)
+        return {
+            "present": bool(key and len(key) > 0),
+            "configured": bool(key and len(key) > 20),  # Basic sanity check
+            "last_checked": datetime.utcnow().isoformat() + "Z"
+        }
+    
     status = {
         "status": "healthy",
         "database": "connected" if supabase else "not configured",
         "providers": {
-            "anthropic": "configured",  # TODO: Check actual API keys
-            "openai": "configured",
-            "google": "configured",
-            "perplexity": "configured",
-            "hume": "optional"
+            "anthropic": check_api_key("ANTHROPIC_API_KEY"),
+            "openai": check_api_key("OPENAI_API_KEY"),
+            "google": check_api_key("GOOGLE_API_KEY"),
+            "perplexity": check_api_key("PERPLEXITY_API_KEY"),
+            "hume": {
+                "present": bool(os.getenv("HUME_API_KEY")),
+                "optional": True
+            }
         }
     }
     

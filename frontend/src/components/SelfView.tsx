@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   User,
   Mail,
@@ -7,21 +8,155 @@ import {
   Sparkles,
   Clock,
   Target,
+  Shield,
+  Lock,
+  Smartphone,
+  Database,
+  Award,
+  FileText,
+  Eye,
 } from "lucide-react";
+import { useMirrorStateContext } from "@/contexts/MirrorStateContext";
+import { AnimatePresence } from "framer-motion";
+import { PrivacyDashboardInstrument } from "./instruments/PrivacyDashboardInstrument";
+import { EncryptionInstrument } from "./instruments/EncryptionInstrument";
+import { DeviceRegistryInstrument } from "./instruments/DeviceRegistryInstrument";
+import { DatabaseHealthInstrument } from "./instruments/DatabaseHealthInstrument";
+import { RecognitionInstrument } from "./instruments/RecognitionInstrument";
+import { ConstitutionViewerInstrument } from "./instruments/ConstitutionViewerInstrument";
+
+type SovereigntyInstrument = 
+  | 'privacy'
+  | 'encryption' 
+  | 'devices'
+  | 'database'
+  | 'recognition'
+  | 'constitution'
+  | null;
 
 export function SelfView() {
+  const { state, actions } = useMirrorStateContext();
+  const [activeInstrument, setActiveInstrument] = useState<SovereigntyInstrument>(null);
+
+  const handleInstrumentComplete = (instrumentType: string, data?: any) => {
+    setActiveInstrument(null);
+    actions.addReceipt({
+      id: `${instrumentType}-${Date.now()}`,
+      type: 'layer_switch',
+      timestamp: new Date().toISOString(),
+      title: `${instrumentType} Updated`,
+      description: 'Sovereignty settings configured',
+      layer: state.layer,
+      data: data || {}
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#14141a] to-[#0b0b0d]">
-      <div className="max-w-[1534px] mx-auto px-[24px] py-[40px]">
-        {/* Header */}
-        <div className="mb-[40px]">
-          <h1 className="font-['EB_Garamond:Regular',sans-serif] text-[60px] leading-[72px] text-neutral-200 mb-[8px]">
-            Self
-          </h1>
-          <p className="font-['Inter:Regular',sans-serif] text-[16px] leading-[24px] text-[rgba(196,196,207,0.6)]">
-            Your reflection journey and personal evolution
-          </p>
-        </div>
+    <>
+      {/* Constitutional Instruments */}
+      <AnimatePresence>
+        {activeInstrument === 'privacy' && (
+          <PrivacyDashboardInstrument
+            onComplete={(settings) => handleInstrumentComplete('Privacy', settings)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'encryption' && (
+          <EncryptionInstrument
+            onComplete={(config) => handleInstrumentComplete('Encryption', config)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'devices' && (
+          <DeviceRegistryInstrument
+            onComplete={(devices) => handleInstrumentComplete('Devices', devices)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'database' && (
+          <DatabaseHealthInstrument
+            onComplete={(health) => handleInstrumentComplete('Database', health)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'recognition' && (
+          <RecognitionInstrument
+            onComplete={(status) => handleInstrumentComplete('Recognition', status)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'constitution' && (
+          <ConstitutionViewerInstrument
+            onComplete={() => handleInstrumentComplete('Constitution')}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen bg-gradient-to-b from-[#14141a] to-[#0b0b0d]">
+        <div className="max-w-[1534px] mx-auto px-[24px] py-[40px]">
+          {/* Header with Recognition Status */}
+          <div className="mb-[40px]">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="font-['EB_Garamond:Regular',sans-serif] text-[60px] leading-[72px] text-neutral-200 mb-[8px]">
+                  Self Realm
+                </h1>
+                <p className="font-['Inter:Regular',sans-serif] text-[16px] leading-[24px] text-[rgba(196,196,207,0.6)]">
+                  Your sovereignty, privacy, and personal evolution
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-[rgba(203,163,93,0.1)] border border-[rgba(203,163,93,0.3)] rounded-lg">
+                <Award className="w-4 h-4 text-[#cba35d]" />
+                <span className="text-sm text-[#cba35d] capitalize">{state.recognition}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sovereignty Controls */}
+          <div className="mb-[48px]">
+            <h2 className="font-['EB_Garamond:Regular',sans-serif] text-[24px] leading-[32px] text-neutral-200 mb-[24px]">
+              Sovereignty & Privacy
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-[16px]">
+              <SovereigntyButton
+                icon={<Eye className="w-5 h-5" />}
+                label="Privacy"
+                description="Control visibility"
+                onClick={() => setActiveInstrument('privacy')}
+              />
+              <SovereigntyButton
+                icon={<Lock className="w-5 h-5" />}
+                label="Encryption"
+                description="Key management"
+                onClick={() => setActiveInstrument('encryption')}
+              />
+              <SovereigntyButton
+                icon={<Smartphone className="w-5 h-5" />}
+                label="Devices"
+                description="Trusted devices"
+                onClick={() => setActiveInstrument('devices')}
+              />
+              <SovereigntyButton
+                icon={<Database className="w-5 h-5" />}
+                label="Database"
+                description="System health"
+                onClick={() => setActiveInstrument('database')}
+              />
+              <SovereigntyButton
+                icon={<Award className="w-5 h-5" />}
+                label="Recognition"
+                description="Status & rights"
+                onClick={() => setActiveInstrument('recognition')}
+              />
+              <SovereigntyButton
+                icon={<FileText className="w-5 h-5" />}
+                label="Constitution"
+                description="View principles"
+                onClick={() => setActiveInstrument('constitution')}
+              />
+            </div>
+          </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-[48px]">
           {/* Profile Sidebar */}
@@ -335,5 +470,36 @@ function ActivityItem({
         </p>
       </div>
     </div>
+  );
+}
+
+interface SovereigntyButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  onClick: () => void;
+}
+
+function SovereigntyButton({
+  icon,
+  label,
+  description,
+  onClick,
+}: SovereigntyButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-[rgba(24,24,32,0.6)] border border-[rgba(48,48,58,0.3)] hover:border-[rgba(203,163,93,0.4)] rounded-[16px] p-[20px] text-left transition-all hover:bg-[rgba(24,24,32,0.8)] group"
+    >
+      <div className="text-[rgba(203,163,93,0.7)] group-hover:text-[#cba35d] mb-[12px] transition-colors">
+        {icon}
+      </div>
+      <h4 className="font-['Inter:Medium',sans-serif] text-[14px] text-neutral-200 mb-[4px]">
+        {label}
+      </h4>
+      <p className="font-['Inter:Regular',sans-serif] text-[11px] text-[rgba(196,196,207,0.6)]">
+        {description}
+      </p>
+    </button>
   );
 }

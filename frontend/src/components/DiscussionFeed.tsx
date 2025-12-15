@@ -1,7 +1,4 @@
 import { MessageCircle, Sparkles, Share2, Bookmark } from 'lucide-react';
-import imgElenaMartinez from "figma:asset/2a5e851c701f5326983fa0ad84946a9473db54de.png";
-import imgMarcusChen from "figma:asset/99edb5cf4fa57eb999d3fd0adb1e2c5e1a0e0314.png";
-import imgSophiaWilliams from "figma:asset/b5b2c186d3ac09bb883fd93bfe492a23f29cd22a.png";
 
 export function DiscussionFeed() {
   return (
@@ -15,7 +12,7 @@ export function DiscussionFeed() {
         
         <div className="space-y-[24px]">
           <DiscussionPost
-            avatar={imgElenaMartinez}
+            avatar=""
             name="Elena Martinez"
             role="Witness"
             time="2 hours ago"
@@ -29,7 +26,7 @@ export function DiscussionFeed() {
           />
 
           <DiscussionPost
-            avatar={imgMarcusChen}
+            avatar=""
             name="Marcus Chen"
             role="Seeker"
             time="5 hours ago"
@@ -43,7 +40,7 @@ export function DiscussionFeed() {
           />
 
           <DiscussionPost
-            avatar={imgSophiaWilliams}
+            avatar=""
             name="Sophia Williams"
             role="Guide"
             time="8 hours ago"
@@ -199,3 +196,4 @@ function DiscussionPost({
     </div>
   );
 }
+

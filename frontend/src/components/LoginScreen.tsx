@@ -146,7 +146,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 <motion.input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setEmail(e.target.value)}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="you@example.com"
@@ -178,7 +178,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 <motion.input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="••••••••"
@@ -241,3 +241,4 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     </div>
   );
 }
+

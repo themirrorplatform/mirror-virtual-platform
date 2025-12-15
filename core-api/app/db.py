@@ -43,6 +43,14 @@ def get_pool() -> Pool:
         raise RuntimeError("Database pool not initialized. Call init_db() first.")
     return _pool
 
+async def get_db():
+    """
+    Dependency for FastAPI routes that returns a database connection.
+    Usage: db = Depends(get_db)
+    """
+    pool = get_pool()
+    async with pool.acquire() as conn:
+        yield conn
 
 @asynccontextmanager
 async def get_db_connection():

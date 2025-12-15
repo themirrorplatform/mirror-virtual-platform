@@ -2,19 +2,24 @@
 Identity Router - Identity graph and evolution tracking
 Proxies requests to MirrorX Engine for identity intelligence
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional, List, Dict, Any
 import httpx
 import os
 from app.auth import require_auth
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 MIRRORX_ENGINE_URL = os.getenv("MIRRORX_ENGINE_URL", "http://localhost:8100")
 
 
 @router.get("/{user_id}/graph")
+@limiter.limit("30/minute")
 async def get_identity_graph(
+    request: Request,
     user_id: str,
     current_user: str = Depends(require_auth)
 ):
@@ -49,7 +54,9 @@ async def get_identity_graph(
 
 
 @router.get("/{user_id}/tensions")
+@limiter.limit("30/minute")
 async def get_tensions(
+    request: Request,
     user_id: str,
     current_user: str = Depends(require_auth)
 ):
@@ -96,7 +103,9 @@ async def get_tensions(
 
 
 @router.get("/{user_id}/loops")
+@limiter.limit("30/minute")
 async def get_loops(
+    request: Request,
     user_id: str,
     current_user: str = Depends(require_auth)
 ):
@@ -142,7 +151,9 @@ async def get_loops(
 
 
 @router.get("/{user_id}/evolution")
+@limiter.limit("30/minute")
 async def get_evolution_timeline(
+    request: Request,
     user_id: str,
     current_user: str = Depends(require_auth),
     limit: int = 20

@@ -1,13 +1,16 @@
 """
 Notifications Router - User notifications for follows, mirrorbacks, etc.
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import List, Optional
 from pydantic import BaseModel
 from app.db import execute_query, execute_one, execute_command
 from app.auth import require_auth
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class Notification(BaseModel):
@@ -28,7 +31,9 @@ class Notification(BaseModel):
 
 
 @router.get("/", response_model=List[Notification])
+@limiter.limit("30/minute")
 async def get_notifications(
+    request: Request,
     user_id: str = Depends(require_auth),
     limit: int = 50,
     offset: int = 0,
@@ -60,7 +65,8 @@ async def get_notifications(
 
 
 @router.get("/unread-count")
-async def get_unread_count(user_id: str = Depends(require_auth)):
+@limiter.limit("60/minute")
+async def get_unread_count(request: Request, user_id: str = Depends(require_auth)):
     """Get count of unread notifications."""
     
     result = await execute_one(
@@ -76,7 +82,9 @@ async def get_unread_count(user_id: str = Depends(require_auth)):
 
 
 @router.patch("/{notification_id}/read")
+@limiter.limit("30/minute")
 async def mark_notification_read(
+    request: Request,
     notification_id: int,
     user_id: str = Depends(require_auth)
 ):
@@ -99,7 +107,8 @@ async def mark_notification_read(
 
 
 @router.post("/mark-all-read")
-async def mark_all_read(user_id: str = Depends(require_auth)):
+@limiter.limit("10/minute")
+async def mark_all_read(request: Request, user_id: str = Depends(require_auth)):
     """Mark all notifications as read."""
     
     await execute_command(

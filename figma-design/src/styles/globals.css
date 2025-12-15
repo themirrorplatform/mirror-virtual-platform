@@ -1,0 +1,306 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import './shadows.css';
+
+/* 
+  THE MIRROR — ADAPTIVE VISUAL SYSTEM
+  Color for context, not manipulation.
+  Warmth for humans, not mysticism.
+  Calm across all environments.
+*/
+
+@theme {
+  /* === ADAPTIVE BASE THEMES === */
+  
+  /* Light (Paper) - Default for first-time users, daytime */
+  --color-base-light: #F6F5F2;
+  --color-surface-light: rgba(255, 255, 255, 0.85);
+  --color-border-light: rgba(0, 0, 0, 0.06);
+  --color-text-primary-light: #1B1E23;
+  --color-text-secondary-light: #5C6168;
+  --color-text-muted-light: #8A9098;
+
+  /* Dark (Slate) - Evening, extended sessions */
+  --color-base-dark: #14161A;
+  --color-surface-dark: rgba(20, 22, 26, 0.85);
+  --color-border-dark: rgba(255, 255, 255, 0.08);
+  --color-text-primary-dark: #E6E8EB;
+  --color-text-secondary-dark: #A9AFB7;
+  --color-text-muted-dark: #6E737A;
+
+  /* Active theme (auto-switches or manual override) */
+  --color-base-default: var(--color-base-dark);
+  --color-base-raised: #1A1C20;
+  --color-base-sunken: #0F1013;
+
+  --color-text-primary: var(--color-text-primary-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
+  --color-text-muted: var(--color-text-muted-dark);
+  --color-text-inverse: #000000;
+  --color-text-accent: #CBA35D;
+
+  /* Border Colors */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-emphasis: rgba(255, 255, 255, 0.12);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-border-critical: #F37373;
+  --color-border-warning: #F5C16A;
+
+  /* === LAYER TINTS (Muted, contextual only) === */
+  /* These appear as subtle accents, never full-screen */
+  --layer-sovereign: rgba(203, 163, 93, 0.1);
+  --layer-commons: rgba(147, 112, 219, 0.1);
+  --layer-builder: rgba(64, 224, 208, 0.1);
+  --layer-crisis: rgba(239, 68, 68, 0.12);
+
+  /* Accent Colors - For context markers, not rewards */
+  --color-accent-gold: #CBA35D;
+  --color-accent-gold-deep: #A17D3E;
+  --color-accent-violet: #9370DB;
+  --color-accent-cyan: #40E0D0;
+  --color-accent-blue: #3A8BFF;
+  --color-accent-green: #7AD4A8;
+  --color-accent-red: #EF4444;
+  --color-accent-purple: #AE55FF;
+
+  /* Semantic Colors (use sparingly, factually) */
+  --color-success: #7AD4A8;
+  --color-error: #F06449;
+  --color-warning: #F5C16A;
+
+  /* Surface Colors */
+  --color-surface-card: rgba(26, 28, 32, 0.85);
+  --color-surface-emphasis: #1A1C20;
+  --color-surface-overlay: #1F2126;
+  --color-surface-chip: #1F2126;
+
+  /* Typography */
+  --font-serif: "EB Garamond", "Georgia", serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Spacing Scale */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-24: 96px;
+
+  /* Radii - Softer, more approachable */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* Shadows - Soft depth, not glow */
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.24);
+}
+
+/* === LIGHT THEME OVERRIDE === */
+@media (prefers-color-scheme: light) {
+  @theme {
+    --color-base-default: var(--color-base-light);
+    --color-base-raised: rgba(255, 255, 255, 0.95);
+    --color-base-sunken: #EEEDE9;
+
+    --color-text-primary: var(--color-text-primary-light);
+    --color-text-secondary: var(--color-text-secondary-light);
+    --color-text-muted: var(--color-text-muted-light);
+    --color-text-inverse: #FFFFFF;
+
+    --color-border-subtle: rgba(0, 0, 0, 0.06);
+    --color-border-emphasis: rgba(0, 0, 0, 0.10);
+    --color-border-strong: rgba(0, 0, 0, 0.14);
+
+    --color-surface-card: rgba(255, 255, 255, 0.85);
+    --color-surface-emphasis: rgba(255, 255, 255, 0.95);
+    --color-surface-overlay: rgba(250, 250, 247, 0.85);
+
+    /* Softer shadows in light mode */
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* === BASE STYLES === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-base-default);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-kerning: normal;
+}
+
+/* === TYPOGRAPHY DEFAULTS === */
+h1 {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+p {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* === UTILITY CLASSES === */
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-accent {
+  color: var(--color-accent-gold);
+}
+
+/* === CONSTITUTIONAL UI PATTERNS === */
+.constitutional-text {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--color-text-primary);
+}
+
+.neutral-button {
+  /* Equal weight for all choices - no visual hierarchy */
+  background: var(--color-surface-emphasis);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-subtle);
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.neutral-button:hover {
+  background: var(--color-surface-overlay);
+  border-color: var(--color-border-emphasis);
+}
+
+/* === ACCESSIBILITY === */
+
+/* Keyboard focus indicators */
+*:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #CCCCCC;
+    --color-border-subtle: #555555;
+    --color-border-emphasis: #888888;
+  }
+}
+
+/* === SCROLLBAR === */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(203, 163, 93, 0.05);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(203, 163, 93, 0.3);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(203, 163, 93, 0.5);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 163, 93, 0.3) transparent;
+}
+
+/* === TEXT SELECTION === */
+::selection {
+  background: var(--color-accent-gold);
+  color: var(--color-text-inverse);
+}
+
+/* === SMOOTH SCROLLING === */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* === KBD TAG === */
+kbd {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: var(--color-surface-emphasis);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xs);
+}

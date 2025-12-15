@@ -2,17 +2,22 @@
 Signals Router - Logging engagement as learning data
 Signals are NOT likes/upvotes. They are data about how users relate to content.
 """
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional
 from app.models import ReflectionSignal, ReflectionSignalCreate
 from app.db import execute_query, execute_one, execute_command
 from app.routers.profiles import get_user_id_from_auth
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/", response_model=ReflectionSignal)
+@limiter.limit("30/minute")
 async def create_signal(
+    request: Request,
     signal_data: ReflectionSignalCreate,
     authorization: Optional[str] = Header(None)
 ):
@@ -70,7 +75,8 @@ async def create_signal(
 
 
 @router.get("/reflection/{reflection_id}")
-async def get_signals_for_reflection(reflection_id: int):
+@limiter.limit("30/minute")
+async def get_signals_for_reflection(request: Request, reflection_id: int):
     """Get all signals for a specific reflection (aggregated)."""
     signals = await execute_query(
         """
@@ -86,7 +92,9 @@ async def get_signals_for_reflection(reflection_id: int):
 
 
 @router.get("/me")
+@limiter.limit("30/minute")
 async def get_my_signals(
+    request: Request,
     limit: int = 50,
     authorization: Optional[str] = Header(None)
 ):
@@ -109,7 +117,9 @@ async def get_my_signals(
 
 
 @router.delete("/{signal_id}")
+@limiter.limit("10/minute")
 async def delete_signal(
+    request: Request,
     signal_id: int,
     authorization: Optional[str] = Header(None)
 ):
@@ -128,7 +138,9 @@ async def delete_signal(
 
 
 @router.post("/batch")
+@limiter.limit("20/minute")
 async def create_batch_signals(
+    request: Request,
     signals: list[ReflectionSignalCreate],
     authorization: Optional[str] = Header(None)
 ):

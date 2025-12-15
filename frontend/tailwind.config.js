@@ -3,6 +3,7 @@ module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/layouts/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -12,8 +13,19 @@ module.exports = {
         'lexend-deca': ['Lexend Deca', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         garamond: ['EB Garamond', 'Georgia', 'serif'],
         inter: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)'],
+        sans: ['var(--font-sans)'],
       },
       colors: {
+        // New design system colors from globals.css
+        background: 'var(--color-base-default)',
+        foreground: 'var(--color-text-primary)',
+        border: 'var(--color-border-subtle)',
+        'accent-gold': 'var(--color-accent-gold)',
+        'accent-violet': 'var(--color-accent-violet)',
+        'accent-cyan': 'var(--color-accent-cyan)',
+        
+        // Legacy colors (for backward compatibility)
         mirror: {
           void: '#000000',
           obsidian: '#0b0b0d',

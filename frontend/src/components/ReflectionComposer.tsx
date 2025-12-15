@@ -40,7 +40,7 @@ export default function ReflectionComposer({ onSubmit, submitting = false }: Ref
       <div>
         <textarea
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setBody(e.target.value)}
           placeholder="What are you reflecting on?"
           className="w-full h-40 px-4 py-3 bg-gray-900 border border-gold/20 rounded-lg
                    text-white placeholder-gray-500 focus:outline-none focus:border-gold/50
@@ -99,7 +99,7 @@ export default function ReflectionComposer({ onSubmit, submitting = false }: Ref
                 name="visibility"
                 value={v}
                 checked={visibility === v}
-                onChange={(e) => setVisibility(e.target.value as typeof visibility)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setVisibility(e.target.value as typeof visibility)}
                 className="text-gold focus:ring-gold"
               />
               <span className="text-sm capitalize">{v}</span>
@@ -120,3 +120,4 @@ export default function ReflectionComposer({ onSubmit, submitting = false }: Ref
     </form>
   );
 }
+

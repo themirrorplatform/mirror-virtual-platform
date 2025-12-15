@@ -11,9 +11,13 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from app.db import init_db, close_db
-from app.routers import reflections, mirrorbacks, feed, profiles, signals, notifications, search, threads, identity
+from app.routers import reflections, mirrorbacks, feed, profiles, signals, notifications, search, threads, identity, governance, finder
 
 # Configure logging
 logger = logging.getLogger("mirror-core-api")
@@ -137,6 +141,8 @@ api_v1.include_router(notifications.router, prefix="/notifications", tags=["Noti
 api_v1.include_router(search.router, prefix="/search", tags=["Search"])
 api_v1.include_router(threads.router, prefix="/threads", tags=["Threads"])
 api_v1.include_router(identity.router, prefix="/identity", tags=["Identity"])
+api_v1.include_router(governance.router, prefix="/governance", tags=["Governance"])
+api_v1.include_router(finder.router, prefix="/finder", tags=["Mirror Finder"])
 
 app.include_router(api_v1)
 

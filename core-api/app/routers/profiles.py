@@ -1,7 +1,9 @@
 """
 Profiles Router - Identity management
 """
-from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Depends
+from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional
 import os
 import uuid
@@ -11,6 +13,7 @@ from app.db import execute_query, execute_one, execute_command
 from app.auth import require_auth, get_user_from_token
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 # Initialize Supabase client for storage
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -29,7 +32,8 @@ def get_user_id_from_auth(authorization: Optional[str] = Header(None)) -> str:
 
 
 @router.get("/me", response_model=Profile)
-async def get_current_profile(authorization: Optional[str] = Header(None)):
+@limiter.limit("60/minute")
+async def get_current_profile(request: Request, authorization: Optional[str] = Header(None)):
     """Get the authenticated user's profile."""
     user_id = get_user_id_from_auth(authorization)
 
@@ -45,7 +49,8 @@ async def get_current_profile(authorization: Optional[str] = Header(None)):
 
 
 @router.get("/{username}", response_model=Profile)
-async def get_profile_by_username(username: str):
+@limiter.limit("30/minute")
+async def get_profile_by_username(request: Request, username: str):
     """Get a profile by username."""
     profile = await execute_one(
         "SELECT * FROM profiles WHERE username = $1",
@@ -59,7 +64,9 @@ async def get_profile_by_username(username: str):
 
 
 @router.post("/", response_model=Profile)
+@limiter.limit("10/minute")
 async def create_profile(
+    request: Request,
     profile_data: ProfileCreate,
     authorization: Optional[str] = Header(None)
 ):
@@ -90,7 +97,9 @@ async def create_profile(
 
 
 @router.patch("/me", response_model=Profile)
+@limiter.limit("20/minute")
 async def update_profile(
+    request: Request,
     profile_data: ProfileUpdate,
     authorization: Optional[str] = Header(None)
 ):
@@ -139,7 +148,8 @@ async def update_profile(
 
 
 @router.get("/{username}/followers")
-async def get_followers(username: str):
+@limiter.limit("30/minute")
+async def get_followers(request: Request, username: str):
     """Get a user's followers."""
     followers = await execute_query(
         """
@@ -157,7 +167,8 @@ async def get_followers(username: str):
 
 
 @router.get("/{username}/following")
-async def get_following(username: str):
+@limiter.limit("30/minute")
+async def get_following(request: Request, username: str):
     """Get who a user is following."""
     following = await execute_query(
         """
@@ -175,7 +186,8 @@ async def get_following(username: str):
 
 
 @router.post("/{username}/follow")
-async def follow_user(username: str, authorization: Optional[str] = Header(None)):
+@limiter.limit("10/minute")
+async def follow_user(request: Request, username: str, authorization: Optional[str] = Header(None)):
     """Follow a user."""
     user_id = get_user_id_from_auth(authorization)
 
@@ -208,7 +220,8 @@ async def follow_user(username: str, authorization: Optional[str] = Header(None)
 
 
 @router.delete("/{username}/follow")
-async def unfollow_user(username: str, authorization: Optional[str] = Header(None)):
+@limiter.limit("10/minute")
+async def unfollow_user(request: Request, username: str, authorization: Optional[str] = Header(None)):
     """Unfollow a user."""
     user_id = get_user_id_from_auth(authorization)
 
@@ -231,7 +244,9 @@ async def unfollow_user(username: str, authorization: Optional[str] = Header(Non
 
 
 @router.post("/upload-avatar")
+@limiter.limit("5/minute")
 async def upload_avatar(
+    request: Request,
     file: UploadFile = File(...),
     user_id: str = Depends(require_auth)
 ):

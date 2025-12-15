@@ -17,7 +17,8 @@ export function IdentityView() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-[48px]">
           {/* Main Graph View */}
           <div className="bg-[rgba(24,24,32,0.4)] border border-[rgba(48,48,58,0.3)] rounded-[24px] p-[40px] min-h-[600px]">
-            <IdentityGraph />
+            {/* IdentityGraph component imported from IdentityGraph.tsx */}
+            <IdentityGraphPlaceholder />
           </div>
 
           {/* Sidebar Stats */}

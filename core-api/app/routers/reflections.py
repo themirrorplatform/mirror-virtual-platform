@@ -2,6 +2,8 @@
 Reflections Router - Core content creation and retrieval
 """
 from fastapi import APIRouter, HTTPException, Header, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional, List
 from pydantic import BaseModel
 from app.models import Reflection, ReflectionCreate
@@ -9,6 +11,7 @@ from app.db import execute_query, execute_one, execute_command
 from app.auth import require_auth, get_user_from_token
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class ReflectionUpdate(BaseModel):
@@ -20,12 +23,13 @@ class ReflectionUpdate(BaseModel):
 
 
 @router.post("/", response_model=Reflection)
+@limiter.limit("20/minute")
 async def create_reflection(
     request: Request,
     reflection_data: ReflectionCreate,
     user_id: str = Depends(require_auth)
 ):
-    """Create a new reflection. Rate limited to 30/minute."""
+    """Create a new reflection. Rate limited to 20/minute."""
     # Rate limit applied via decorator in main.py mount
     
     # Get or create primary identity for user
@@ -59,7 +63,9 @@ async def create_reflection(
 
 
 @router.get("/{reflection_id}", response_model=Reflection)
+@limiter.limit("60/minute")
 async def get_reflection(
+    request: Request,
     reflection_id: int,
     authorization: Optional[str] = Header(None)
 ):
@@ -82,7 +88,9 @@ async def get_reflection(
 
 
 @router.get("/user/{username}")
+@limiter.limit("30/minute")
 async def get_user_reflections(
+    request: Request,
     username: str,
     limit: int = 20,
     offset: int = 0,
@@ -118,7 +126,9 @@ async def get_user_reflections(
 
 
 @router.get("/lens/{lens_key}")
+@limiter.limit("30/minute")
 async def get_reflections_by_lens(
+    request: Request,
     lens_key: str,
     limit: int = 20,
     offset: int = 0
@@ -141,7 +151,9 @@ async def get_reflections_by_lens(
 
 
 @router.patch("/{reflection_id}", response_model=Reflection)
+@limiter.limit("20/minute")
 async def update_reflection(
+    request: Request,
     reflection_id: int,
     update_data: ReflectionUpdate,
     user_id: str = Depends(require_auth)
@@ -194,7 +206,9 @@ async def update_reflection(
 
 
 @router.delete("/{reflection_id}")
+@limiter.limit("5/minute")
 async def delete_reflection(
+    request: Request,
     reflection_id: int,
     user_id: str = Depends(require_auth)
 ):

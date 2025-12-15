@@ -1,0 +1,118 @@
+/* Shadow System - Natural depth without overwhelming */
+
+/* Base shadows - subtle ambient depth */
+.shadow-ambient-sm {
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-ambient-md {
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 4px 8px -2px rgba(0, 0, 0, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-ambient-lg {
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 8px 16px -4px rgba(0, 0, 0, 0.2),
+    0 4px 8px -2px rgba(0, 0, 0, 0.12);
+}
+
+.shadow-ambient-xl {
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 16px 32px -8px rgba(0, 0, 0, 0.25),
+    0 8px 16px -4px rgba(0, 0, 0, 0.15);
+}
+
+/* Gold glow shadows - sovereign emphasis */
+.shadow-gold-sm {
+  box-shadow: 
+    0 0 0 1px rgba(203, 163, 93, 0.1),
+    0 2px 4px -1px rgba(203, 163, 93, 0.15),
+    0 4px 8px -2px rgba(203, 163, 93, 0.1);
+}
+
+.shadow-gold-md {
+  box-shadow: 
+    0 0 0 1px rgba(203, 163, 93, 0.15),
+    0 4px 8px -2px rgba(203, 163, 93, 0.2),
+    0 8px 16px -4px rgba(203, 163, 93, 0.15);
+}
+
+.shadow-gold-lg {
+  box-shadow: 
+    0 0 0 1px rgba(203, 163, 93, 0.2),
+    0 8px 16px -4px rgba(203, 163, 93, 0.25),
+    0 16px 32px -8px rgba(203, 163, 93, 0.2);
+}
+
+/* Colored accent shadows */
+.shadow-purple-md {
+  box-shadow: 
+    0 0 0 1px rgba(174, 85, 255, 0.1),
+    0 4px 8px -2px rgba(174, 85, 255, 0.2),
+    0 8px 16px -4px rgba(174, 85, 255, 0.15);
+}
+
+.shadow-blue-md {
+  box-shadow: 
+    0 0 0 1px rgba(58, 139, 255, 0.1),
+    0 4px 8px -2px rgba(58, 139, 255, 0.2),
+    0 8px 16px -4px rgba(58, 139, 255, 0.15);
+}
+
+.shadow-red-md {
+  box-shadow: 
+    0 0 0 1px rgba(255, 59, 48, 0.1),
+    0 4px 8px -2px rgba(255, 59, 48, 0.2),
+    0 8px 16px -4px rgba(255, 59, 48, 0.15);
+}
+
+/* Inset shadows - depth */
+.shadow-inset-sm {
+  box-shadow: 
+    inset 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.shadow-inset-md {
+  box-shadow: 
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Hover states - enhanced depth */
+.shadow-hover-lift {
+  transition: box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.shadow-hover-lift:hover {
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 12px 24px -6px rgba(0, 0, 0, 0.25),
+    0 6px 12px -3px rgba(0, 0, 0, 0.15);
+}
+
+.shadow-gold-hover-lift {
+  transition: box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.shadow-gold-hover-lift:hover {
+  box-shadow: 
+    0 0 0 1px rgba(203, 163, 93, 0.2),
+    0 12px 24px -6px rgba(203, 163, 93, 0.3),
+    0 6px 12px -3px rgba(203, 163, 93, 0.2);
+}
+
+/* Focus rings - accessible */
+.focus-ring-gold {
+  outline: 2px solid rgba(203, 163, 93, 0.5);
+  outline-offset: 2px;
+}
+
+.focus-ring-default {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}

@@ -243,3 +243,10 @@ def reset_settings():
     """Reset settings (useful for testing)"""
     global _settings
     _settings = None
+
+
+# Alias for backward compatibility
+EngineSettings = MirrorSettings
+
+# Export both names for compatibility
+__all__ = ['MirrorSettings', 'EngineSettings', 'get_settings', 'reset_settings']

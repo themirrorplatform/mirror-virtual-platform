@@ -1,63 +1,92 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
-import ReflectionComposer from '@/components/ReflectionComposer';
+﻿import { useState } from 'react';
+import { MirrorField } from '@/components/MirrorField';
 import { reflections, mirrorbacks } from '@/lib/api';
+import { useMirrorStateContext } from '@/contexts/MirrorStateContext';
+import { MultimodalControls } from '@/components/MultimodalControls';
+import { RecordingCard, Recording } from '@/components/RecordingCard';
+import { AnimatePresence } from 'framer-motion';
 
 export default function Reflect() {
-  const router = useRouter();
+  const { state, actions } = useMirrorStateContext();
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [recordings, setRecordings] = useState<Recording[]>([]);
 
-  const handleSubmit = async (data: {
-    body: string;
-    lens_key?: string;
-    visibility: 'public' | 'private' | 'unlisted';
-  }) => {
+  const handleSubmit = async (content: string) => {
     try {
-      setSubmitting(true);
-      setError(null);
-      
       // Step 1: Create reflection
-      const reflectionResponse = await reflections.create(data);
+      const reflectionResponse = await reflections.create({
+        body: content,
+        visibility: 'private',
+      });
       const reflection = reflectionResponse.data;
       
       // Step 2: Auto-generate mirrorback (AI response)
       try {
         await mirrorbacks.create(reflection.id);
       } catch (mirrorbackErr: any) {
-        // Don't fail the whole flow if mirrorback fails
         console.error('Mirrorback generation failed:', mirrorbackErr);
-        // User can still see their reflection, mirrorback may generate async
       }
 
-      // Redirect to home feed
-      router.push('/');
+      // Constitutional: Generate receipt
+      actions.addReceipt({
+        id: `reflection-${Date.now()}`,
+        type: 'reflection_created',
+        data: { reflectionId: reflection.id },
+        timestamp: Date.now(),
+      });
+
+      setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create reflection');
-    } finally {
-      setSubmitting(false);
+      console.error('Submission failed:', err);
+      setError(err.message || 'Failed to create reflection');
     }
   };
 
-  return (
-    <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-gold">Reflect</h1>
-          <p className="text-gray-400">
-            What's on your mind? No judgment. Just reflection.
-          </p>
-        </header>
+  const handleRecordingComplete = (recording: Recording) => {
+    setRecordings(prev => [...prev, recording]);
+  };
 
-        {error && (
-          <div className="bg-red-900/20 border border-red-500 text-red-300 px-4 py-3 rounded mb-4">
-            {error}
+  const handleDeleteRecording = (id: string) => {
+    setRecordings(prev => prev.filter(r => r.id !== id));
+  };
+
+  return (
+    <>
+      <div className="relative min-h-screen">
+        <MirrorField 
+          onSubmit={handleSubmit} 
+          layer={state.layer}
+          crisisMode={state.crisisMode}
+        />
+        
+        {/* Floating multimodal controls */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-10">
+          <MultimodalControls 
+            onRecordingComplete={handleRecordingComplete}
+          />
+        </div>
+
+        {/* Recordings panel (bottom-right) */}
+        {recordings.length > 0 && (
+          <div className="fixed bottom-8 right-8 w-80 max-h-96 overflow-y-auto space-y-3 z-10">
+            <AnimatePresence>
+              {recordings.map(recording => (
+                <RecordingCard
+                  key={recording.id}
+                  recording={recording}
+                  onDelete={handleDeleteRecording}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
-        <ReflectionComposer onSubmit={handleSubmit} submitting={submitting} />
+        {error && (
+          <div className="fixed top-8 left-1/2 -translate-x-1/2 bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg z-20">
+            {error}
+          </div>
+        )}
       </div>
-    </Layout>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { FeedItem } from '@/lib/api';
-import ReflectionCard from './ReflectionCard';
+import { ReflectionCard } from './ReflectionCard';
 
 interface FeedListProps {
   items: FeedItem[];

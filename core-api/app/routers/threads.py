@@ -2,7 +2,9 @@
 Threads Router - Conversation thread management
 Groups reflections into thematic conversations
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
@@ -10,6 +12,7 @@ from app.db import execute_query, execute_one, execute_command
 from app.auth import require_auth
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class ThreadCreate(BaseModel):
@@ -36,7 +39,9 @@ class Thread(BaseModel):
 
 
 @router.post("/", response_model=Thread)
+@limiter.limit("10/minute")
 async def create_thread(
+    request: Request,
     thread_data: ThreadCreate,
     user_id: str = Depends(require_auth)
 ):
@@ -62,7 +67,9 @@ async def create_thread(
 
 
 @router.get("/", response_model=List[Thread])
+@limiter.limit("30/minute")
 async def list_threads(
+    request: Request,
     user_id: str = Depends(require_auth),
     limit: int = 50,
     offset: int = 0
@@ -92,7 +99,9 @@ async def list_threads(
 
 
 @router.get("/{thread_id}", response_model=Thread)
+@limiter.limit("30/minute")
 async def get_thread(
+    request: Request,
     thread_id: str,
     user_id: str = Depends(require_auth)
 ):
@@ -122,7 +131,9 @@ async def get_thread(
 
 
 @router.get("/{thread_id}/reflections")
+@limiter.limit("30/minute")
 async def get_thread_reflections(
+    request: Request,
     thread_id: str,
     user_id: str = Depends(require_auth),
     limit: int = 50,
@@ -159,7 +170,9 @@ async def get_thread_reflections(
 
 
 @router.patch("/{thread_id}", response_model=Thread)
+@limiter.limit("20/minute")
 async def update_thread(
+    request: Request,
     thread_id: str,
     thread_data: ThreadUpdate,
     user_id: str = Depends(require_auth)
@@ -211,7 +224,9 @@ async def update_thread(
 
 
 @router.delete("/{thread_id}")
+@limiter.limit("5/minute")
 async def delete_thread(
+    request: Request,
     thread_id: str,
     user_id: str = Depends(require_auth)
 ):

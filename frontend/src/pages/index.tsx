@@ -1,13 +1,30 @@
-import { useState, useEffect } from 'react';
-import Layout from '@/components/Layout';
+﻿import { useState, useEffect } from 'react';
 import FeedList from '@/components/FeedList';
 import { feed, FeedItem } from '@/lib/api';
+import { DraggableInstrument } from '@/components/DraggableInstrument';
+import { Sparkles, Globe, Vote, FileText, Shield } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { useMirrorStateContext } from '@/contexts/MirrorStateContext';
+import { GovernanceInstrument } from '@/components/instruments/GovernanceInstrument';
+import { LicenseStackInstrument } from '@/components/instruments/LicenseStackInstrument';
+import { SpeechContractInstrument } from '@/components/instruments/SpeechContractInstrument';
+import { RefusalInstrument } from '@/components/instruments/RefusalInstrument';
+
+type CommonsInstrument = 
+  | 'governance'
+  | 'licenses'
+  | 'speech'
+  | 'refusals'
+  | null;
 
 export default function Home() {
+  const { state, actions } = useMirrorStateContext();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState<number | undefined>();
+  const [showDemo, setShowDemo] = useState(false);
+  const [activeInstrument, setActiveInstrument] = useState<CommonsInstrument>(null);
 
   useEffect(() => {
     loadFeed();
@@ -26,30 +43,182 @@ export default function Home() {
     }
   };
 
+  const handleInstrumentComplete = (instrumentType: string, data?: any) => {
+    setActiveInstrument(null);
+    actions.addReceipt({
+      id: `${instrumentType}-${Date.now()}`,
+      type: instrumentType,
+      data,
+      timestamp: Date.now(),
+    });
+  };
+
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-gold">The Mirror</h1>
-          <p className="text-gray-400">
-            A social platform built on reflection, not engagement.
-          </p>
-        </header>
-
-        {error && (
-          <div className="bg-red-900/20 border border-red-500 text-red-300 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
+    <>
+      {/* Constitutional Instruments */}
+      <AnimatePresence>
+        {activeInstrument === 'governance' && (
+          <GovernanceInstrument
+            onComplete={(proposal) => handleInstrumentComplete('Governance', proposal)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
         )}
-
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">
-            Loading reflections...
-          </div>
-        ) : (
-          <FeedList items={feedItems} />
+        {activeInstrument === 'licenses' && (
+          <LicenseStackInstrument
+            onComplete={(licenses) => handleInstrumentComplete('Licenses', licenses)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
         )}
+        {activeInstrument === 'speech' && (
+          <SpeechContractInstrument
+            onComplete={(contract) => handleInstrumentComplete('Speech Contract', contract)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+        {activeInstrument === 'refusals' && (
+          <RefusalInstrument
+            onComplete={(refusal) => handleInstrumentComplete('Refusal', refusal)}
+            onDismiss={() => setActiveInstrument(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="h-full overflow-auto custom-scrollbar">
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          <header className="mb-8">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h1 className="text-4xl font-serif text-[var(--color-accent-gold)] mb-2">World Realm</h1>
+                <p className="text-[var(--color-text-secondary)]">
+                  The Commons - shared reflections, governance, and collective wisdom
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-[rgba(138,99,210,0.1)] border border-[rgba(138,99,210,0.3)] rounded-lg">
+                <Globe className="w-4 h-4 text-[#8a63d2]" />
+                <span className="text-sm text-[#8a63d2]">Commons</span>
+              </div>
+            </div>
+
+            {/* Commons Controls */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <CommonsButton
+                icon={<Vote className="w-4 h-4" />}
+                label="Governance"
+                description="Proposals & voting"
+                onClick={() => setActiveInstrument('governance')}
+              />
+              <CommonsButton
+                icon={<FileText className="w-4 h-4" />}
+                label="License Stack"
+                description="Data routing"
+                onClick={() => setActiveInstrument('licenses')}
+              />
+              <CommonsButton
+                icon={<Sparkles className="w-4 h-4" />}
+                label="AI Contracts"
+                description="Behavior disclosure"
+                onClick={() => setActiveInstrument('speech')}
+              />
+              <CommonsButton
+                icon={<Shield className="w-4 h-4" />}
+                label="Boundaries"
+                description="View refusals"
+                onClick={() => setActiveInstrument('refusals')}
+              />
+            </div>
+
+            {/* Demo Instrument (Builder Layer only) */}
+            {state.layer === 'builder' && (
+              <button
+                onClick={() => setShowDemo(true)}
+                className="px-4 py-2 rounded-lg bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/30 transition-all flex items-center gap-2 text-sm"
+              >
+                <Sparkles size={16} />
+                Demo Instrument (Builder Mode)
+              </button>
+            )}
+          </header>
+
+          {error && (
+            <div className="bg-[var(--color-error)]/10 border border-[var(--color-error)] text-[var(--color-error)] px-4 py-3 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center py-12 text-[var(--color-text-muted)]">
+              Loading reflections...
+            </div>
+          ) : (
+            <FeedList items={feedItems} />
+          )}
+        </div>
       </div>
-    </Layout>
+
+      {/* Draggable Instrument Demo */}
+      <AnimatePresence>
+        {showDemo && (
+          <DraggableInstrument
+            id="demo-instrument"
+            title="Example Instrument"
+            icon={<Sparkles size={20} />}
+            onClose={() => setShowDemo(false)}
+            defaultPosition={{ x: 200, y: 100 }}
+          >
+            <div className="space-y-4">
+              <h3 className="text-xl font-serif text-[var(--color-accent-gold)]">
+                Draggable Window
+              </h3>
+              <p className="text-[var(--color-text-secondary)]">
+                This is a floating, draggable instrument. You can:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-[var(--color-text-secondary)]">
+                <li>Drag it around by the header</li>
+                <li>Maximize/minimize using the buttons</li>
+                <li>Close it with the X button</li>
+                <li>It stays above other content</li>
+              </ul>
+              <div className="mt-6 p-4 bg-[var(--color-surface-card)] rounded-lg border border-[var(--color-border-subtle)]">
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  This demonstrates the windowing system from the Figma design. 
+                  The Command Palette (K) can summon different instruments like this.
+                </p>
+              </div>
+            </div>
+          </DraggableInstrument>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+interface CommonsButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  onClick: () => void;
+}
+
+function CommonsButton({
+  icon,
+  label,
+  description,
+  onClick,
+}: CommonsButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-[var(--color-surface-card)] border border-[var(--color-border-subtle)] hover:border-[rgba(138,99,210,0.4)] rounded-xl p-4 text-left transition-all hover:bg-[var(--color-base-subtle)] group"
+    >
+      <div className="text-[rgba(138,99,210,0.7)] group-hover:text-[#8a63d2] mb-2 transition-colors">
+        {icon}
+      </div>
+      <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-1">
+        {label}
+      </h4>
+      <p className="text-xs text-[var(--color-text-muted)]">
+        {description}
+      </p>
+    </button>
   );
 }

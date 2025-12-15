@@ -1,13 +1,16 @@
 """
 Search Router - Search reflections and users
 """
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import List, Optional
 from pydantic import BaseModel
 from app.db import execute_query
 from app.auth import get_user_from_token
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class SearchResult(BaseModel):
@@ -40,7 +43,9 @@ class ProfileSearchResult(BaseModel):
 
 
 @router.get("/reflections", response_model=List[ReflectionSearchResult])
+@limiter.limit("20/minute")
 async def search_reflections(
+    request: Request,
     q: str = Query(..., min_length=2, description="Search query"),
     lens_key: Optional[str] = None,
     limit: int = 20,
@@ -92,7 +97,9 @@ async def search_reflections(
 
 
 @router.get("/profiles", response_model=List[ProfileSearchResult])
+@limiter.limit("20/minute")
 async def search_profiles(
+    request: Request,
     q: str = Query(..., min_length=2, description="Search query"),
     limit: int = 20,
     offset: int = 0
@@ -124,7 +131,9 @@ async def search_profiles(
 
 
 @router.get("/")
+@limiter.limit("20/minute")
 async def search_all(
+    request: Request,
     q: str = Query(..., min_length=2, description="Search query"),
     limit: int = 10
 ):

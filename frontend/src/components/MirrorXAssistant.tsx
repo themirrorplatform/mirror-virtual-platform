@@ -113,7 +113,7 @@ export function MirrorXAssistant({ onClose }: MirrorXAssistantProps) {
             <input
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask MirrorX anything..."
               className="flex-1 bg-[#1a1a1a] border border-[#232323] rounded-[12px] px-[16px] py-[12px] text-[14px] text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#d6af36] transition-colors font-['Inter:Regular',sans-serif]"
@@ -131,3 +131,4 @@ export function MirrorXAssistant({ onClose }: MirrorXAssistantProps) {
     </div>
   );
 }
+

@@ -13,6 +13,13 @@ import logging
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 from datetime import datetime
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from constitution.l0_axiom_checker import L0AxiomChecker, ViolationSeverity
+from constitution.drift_monitor import DriftMonitor
+from mirrorcore.layers.l2_reflection import L2ReflectionTransformer
+from mirrorcore.layers.l3_expression import L3ExpressionRenderer, ExpressionPreferences, ContextualFactors
 
 logger = logging.getLogger(__name__)
 
@@ -36,37 +43,86 @@ class ReflectionEngine:
         self.db = db
         self.settings = settings
         
+        # Initialize constitutional enforcement
+        self.l0_checker = L0AxiomChecker()
+        
+        # Initialize L1 harm triage (safety awareness)
+        from constitution.l1_harm_triage import L1HarmTriageClassifier
+        self.l1_classifier = L1HarmTriageClassifier(
+            authority_notify_enabled=getattr(settings, 'authority_notify_enabled', False)
+        )
+        
+        # Initialize L2 and L3 layers
+        self.l2_transformer = L2ReflectionTransformer()
+        self.l3_renderer = L3ExpressionRenderer()
+        
+        # User expression preferences (can be customized per identity)
+        self.expression_prefs = ExpressionPreferences()
+        
+        # Initialize drift monitoring (immune system)
+        self.drift_monitor = DriftMonitor()
+        
         # Initialize LLM based on mode
         self.llm = self._initialize_llm()
         
         # Load constitution
         self.constitution = self._load_constitution()
         
-        logger.info(f"ReflectionEngine initialized - mode: {settings.engine_mode}")
+        logger.info(f"ReflectionEngine initialized - mode: {settings.engine_mode}, L0 enforcement: ACTIVE, L1 harm triage: ACTIVE, Drift monitor: ACTIVE")
     
     def _initialize_llm(self):
-        """Initialize LLM provider based on settings"""
+        """Initialize LLM provider based on settings - now with multi-provider pool"""
         
+        if self.settings.engine_mode == "manual":
+            return None
+        
+        # Use LLM pool for production reliability
+        from mirrorcore.orchestration.llm_pool import LLMPool, ProviderConfig
+        
+        pool = LLMPool()
+        
+        # Add configured providers in priority order
         if self.settings.engine_mode == "local_llm":
-            try:
-                from mirrorcore.models.local_llm import LocalLLM
-                return LocalLLM(
-                    base_url=self.settings.ollama_base_url,
-                    model=self.settings.ollama_model
-                )
-            except ImportError:
-                logger.warning("LocalLLM not available, falling back to manual mode")
-                return None
+            pool.add_provider(ProviderConfig(
+                name="local",
+                priority=1,
+                base_url=getattr(self.settings, 'local_llm_url', 'http://localhost:11434'),
+                model=getattr(self.settings, 'local_llm_model', 'llama2')
+            ))
+            logger.info("LLM pool configured with local provider")
+            return pool
         
         elif self.settings.engine_mode == "remote_llm":
-            try:
-                from mirrorcore.models.remote_llm import RemoteLLM
-                if not self.settings.anthropic_api_key:
-                    raise ValueError("Remote LLM requires ANTHROPIC_API_KEY")
-                return RemoteLLM(api_key=self.settings.anthropic_api_key)
-            except ImportError:
-                logger.warning("RemoteLLM not available, falling back to manual mode")
-                return None
+            # Add primary provider (Claude)
+            if hasattr(self.settings, 'anthropic_api_key') and self.settings.anthropic_api_key:
+                pool.add_provider(ProviderConfig(
+                    name="claude",
+                    priority=1,
+                    api_key=self.settings.anthropic_api_key,
+                    model="claude-3-5-sonnet-20241022",
+                    cost_per_1k_tokens=0.003
+                ))
+            
+            # Add secondary provider (OpenAI)
+            if hasattr(self.settings, 'openai_api_key') and self.settings.openai_api_key:
+                pool.add_provider(ProviderConfig(
+                    name="openai",
+                    priority=2,
+                    api_key=self.settings.openai_api_key,
+                    model="gpt-4-turbo-preview",
+                    cost_per_1k_tokens=0.01
+                ))
+            
+            # Add tertiary provider (local fallback)
+            pool.add_provider(ProviderConfig(
+                name="local",
+                priority=3,
+                base_url="http://localhost:11434",
+                model="llama2"
+            ))
+            
+            logger.info(f"LLM pool configured with {len(pool.providers)} providers")
+            return pool
         
         else:
             # Manual mode - no LLM
@@ -173,8 +229,20 @@ DON'T:
         if identity_id is None:
             identity_id = self.db.ensure_identity()
         
+        # 1b. L2 Semantic Transformation (extract patterns, tensions, themes)
+        l2_result = self.l2_transformer.transform(text)
+        logger.debug(f"L2 detected: {len(l2_result.patterns)} patterns, {len(l2_result.tensions)} tensions, {len(l2_result.themes)} themes")
+        
+        # 1c. L1 Harm Triage (safety awareness, not policing)
+        harm_assessment = self.l1_classifier.classify(text, context or {})
+        if harm_assessment.level.value != 'none':
+            logger.info(f"L1 harm signals detected: {harm_assessment.level.value}, categories: {[c.value for c in harm_assessment.categories]}")
+        
         # 2. Analyze patterns (if we have history)
         patterns = await self._analyze_patterns(text, identity_id)
+        
+        # 2b. Detect tensions
+        tensions = await self._detect_tensions(text, identity_id, patterns)
         
         # 3. Build prompt
         prompt = self._build_prompt(text, patterns, context)
@@ -182,10 +250,23 @@ DON'T:
         # 4. Generate mirrorback
         if self.llm:
             try:
-                mirrorback = await self.llm.generate(
-                    prompt=prompt,
-                    system=self.constitution
-                )
+                # Use LLM pool (supports multi-provider fallback)
+                from mirrorcore.orchestration.llm_pool import LLMPool
+                
+                if isinstance(self.llm, LLMPool):
+                    result = await self.llm.generate(
+                        prompt=prompt,
+                        system=self.constitution,
+                        temperature=0.7
+                    )
+                    mirrorback = result['text']
+                    logger.info(f"Generated with {result['provider']} ({result['tokens']} tokens, ${result['cost']:.4f})")
+                else:
+                    # Legacy single-provider mode
+                    mirrorback = await self.llm.generate(
+                        prompt=prompt,
+                        system=self.constitution
+                    )
             except Exception as e:
                 logger.error(f"LLM generation error: {e}", exc_info=True)
                 mirrorback = self._get_fallback_mirrorback(text)
@@ -193,8 +274,114 @@ DON'T:
             # Manual mode
             mirrorback = self._get_fallback_mirrorback(text)
         
-        # 5. Check constitutional compliance
-        flags = self._check_constitutional_flags(mirrorback)
+        # 4b. If harm signals detected, append harm awareness (not coercive)
+        if harm_assessment.reflection:
+            mirrorback = mirrorback + "\n\n" + harm_assessment.reflection
+            if harm_assessment.resources:
+                mirrorback += "\n"
+                for resource in harm_assessment.resources:
+                    mirrorback += f"\n- **{resource['name']}**: {resource['contact']} ({resource['availability']}) - {resource['note']}"
+        
+        # 4c. L3 Expression Rendering (adapt tone/style while preserving invariants)
+        # Build contextual factors from harm assessment and patterns
+        contextual_factors = ContextualFactors(
+            emotional_intensity=min(1.0, harm_assessment.level.value == 'urgent' and 0.8 or harm_assessment.level.value == 'concern' and 0.6 or 0.4),
+            urgency=1.0 if harm_assessment.level.value in ['urgent', 'crisis'] else 0.0,
+            relationship_phase=context.get('relationship_phase', 'new') if context else 'new',
+            recent_crisis=harm_assessment.level.value == 'crisis'
+        )
+        
+        l3_result = self.l3_renderer.render(
+            content=mirrorback,
+            preferences=self.expression_prefs,
+            context=contextual_factors
+        )
+        mirrorback = l3_result.text
+        logger.debug(f"L3 adaptations: {', '.join(l3_result.adaptations_made)}")
+        
+        # 5. CRITICAL: L0 Constitutional Enforcement
+        # This is structural - violations must not reach user
+        l0_result = self.l0_checker.check_output(mirrorback)
+        
+        # Log to drift monitor (immune system)
+        directive_pct = self.l0_checker._calculate_directive_percentage(mirrorback)
+        self.drift_monitor.log_check(
+            check_type='output',
+            passed=l0_result.passed,
+            severity=l0_result.severity if not l0_result.passed else None,
+            violations=l0_result.violations,
+            blocked=l0_result.blocked,
+            rewritten=False,  # Will update if rewrite happens
+            text_length=len(mirrorback),
+            directive_percentage=directive_pct,
+            reflection_id=None  # Will be set after DB insert
+        )
+        
+        if l0_result.blocked:
+            # HARD or CRITICAL violation - reject completely
+            logger.error(f"L0 violation blocked mirrorback: {l0_result.violations}")
+            mirrorback = self._get_constitutional_failure_message(l0_result)
+            flags = {
+                'l0_blocked': True,
+                'severity': l0_result.severity.value,
+                'violations': l0_result.violations
+            }
+        elif l0_result.severity == ViolationSeverity.SOFT:
+            # Auto-rewrite SOFT violations
+            logger.warning(f"L0 SOFT violation detected, attempting rewrite: {l0_result.violations}")
+            rewritten = self.l0_checker.auto_rewrite(mirrorback, l0_result.violations)
+            
+            # Verify rewrite passes
+            rewrite_check = self.l0_checker.check_output(rewritten)
+            if rewrite_check.passed or rewrite_check.severity == ViolationSeverity.BENIGN:
+                mirrorback = rewritten
+                
+                # Log successful rewrite
+                self.drift_monitor.log_check(
+                    check_type='output',
+                    passed=True,
+                    severity=None,
+                    violations=[],
+                    blocked=False,
+                    rewritten=True,
+                    text_length=len(rewritten),
+                    directive_percentage=self.l0_checker._calculate_directive_percentage(rewritten)
+                )
+                
+                flags = {
+                    'l0_rewritten': True,
+                    'original_violations': l0_result.violations,
+                    'severity': ViolationSeverity.SOFT.value
+                }
+            else:
+                # Rewrite failed, reject
+                logger.error(f"L0 rewrite failed, blocking: {rewrite_check.violations}")
+                mirrorback = self._get_constitutional_failure_message(rewrite_check)
+                flags = {
+                    'l0_blocked': True,
+                    'rewrite_failed': True,
+                    'severity': rewrite_check.severity.value,
+                    'violations': rewrite_check.violations
+                }
+        elif l0_result.violations:
+            # BENIGN or TENSION - log but allow
+            logger.info(f"L0 BENIGN/TENSION detected (allowed): {l0_result.violations}")
+            flags = {
+                'l0_benign': True,
+                'violations': l0_result.violations,
+                'severity': l0_result.severity.value
+            }
+        else:
+            # Clean constitutional compliance
+            flags = {'l0_compliant': True}
+        
+        # Check drift status after every output
+        drift_metrics = self.drift_monitor.get_metrics(window_hours=24)
+        if drift_metrics.status.value != 'green':
+            logger.warning(f"Constitutional drift detected: {drift_metrics.status.value.upper()} "
+                         f"({drift_metrics.violation_rate:.1f} per 1000)")
+            flags['drift_status'] = drift_metrics.status.value
+            flags['drift_rate'] = drift_metrics.violation_rate
         
         # 6. Save to database
         reflection_id = self.db.create_reflection(
@@ -209,6 +396,35 @@ DON'T:
             }
         )
         
+        # 6b. Update identity graph (if MirrorX engine available)
+        try:
+            from mirrorx_engine.app.graph_manager import update_graph_for_reflection
+            
+            # Build bundle-like structure from our L2 result
+            graph_data = {
+                'patterns': patterns,
+                'tensions': tensions,
+                'themes': [{'name': t.name, 'strength': t.strength} for t in l2_result.themes],
+                'l2_tensions': [{'concept_a': t.concept_a, 'concept_b': t.concept_b, 'marker': t.marker} for t in l2_result.tensions]
+            }
+            
+            # Update graph structure
+            update_graph_for_reflection(
+                supabase_client=None,  # Using LocalDB, not Supabase
+                user_id=identity_id,
+                reflection_id=reflection_id,
+                bundle=graph_data,
+                tension_ids=[],  # Will be populated if using full MirrorX
+                loop_ids=[],
+                belief_ids=[]
+            )
+            
+            logger.debug(f"Identity graph updated for reflection {reflection_id}")
+        except ImportError:
+            logger.debug("Identity graph engine not available (optional)")
+        except Exception as e:
+            logger.warning(f"Identity graph update failed (non-critical): {e}")
+        
         # 7. Log engine run for evolution
         duration_ms = int((time.time() - start_time) * 1000)
         
@@ -217,11 +433,25 @@ DON'T:
             config_version=self.settings.version,
             engine_mode=self.settings.engine_mode,
             patterns=patterns,
-            tensions_surfaced=[],  # TODO: implement tension detection
-            mirrorback_length=len(mirrorback),
+            tensions_surfaced=tensions,
             duration_ms=duration_ms,
-            flags=flags
+            constitutional_flags=flags
         )
+        
+        # 7b. Feed to evolution engine (adaptive learning)
+        try:
+            evolution_insights = await self._process_evolution(
+                reflection_id=reflection_id,
+                identity_id=identity_id,
+                patterns=patterns,
+                tensions=tensions,
+                l2_result=l2_result,
+                harm_assessment=harm_assessment
+            )
+            logger.debug(f"Evolution insights: {evolution_insights.get('events_detected', 0)} events detected")
+        except Exception as e:
+            logger.warning(f"Evolution processing failed (non-critical): {e}")
+            evolution_insights = None
         
         # 8. Return result
         return {
@@ -229,6 +459,21 @@ DON'T:
             'run_id': run_id,
             'mirrorback': mirrorback,
             'patterns': patterns,
+            'tensions': tensions,
+            'l2_semantic': {
+                'detected_patterns': [{'type': p.type, 'content': p.content, 'confidence': p.confidence} for p in l2_result.patterns],
+                'detected_tensions': [{'a': t.concept_a, 'b': t.concept_b, 'marker': t.marker} for t in l2_result.tensions],
+                'detected_themes': [{'name': t.name, 'strength': t.strength} for t in l2_result.themes]
+            },
+            'l3_expression': {
+                'style_applied': l3_result.style_applied,
+                'adaptations': l3_result.adaptations_made
+            },
+            'harm_assessment': {
+                'level': harm_assessment.level.value,
+                'categories': [c.value for c in harm_assessment.categories],
+                'confidence': harm_assessment.confidence
+            } if harm_assessment.level.value != 'none' else None,
             'flags': flags,
             'duration_ms': duration_ms
         }
@@ -239,33 +484,161 @@ DON'T:
         identity_id: str
     ) -> List[str]:
         """
-        Analyze patterns in text based on history.
+        Analyze patterns using ML-based clustering and keyword detection.
         
-        TODO: Implement proper pattern detection
-        For now, returns empty list
+        Detects:
+        - Recurring themes via embedding similarity
+        - Emotional patterns
+        - Relational patterns
+        - Temporal patterns
         """
-        # Get recent reflections for context
-        recent = self.db.list_reflections(identity_id=identity_id, limit=10)
-        
-        # TODO: Actual pattern analysis
-        # - Recurring themes
-        # - Emotional patterns
-        # - Relational patterns
-        # - Temporal patterns
-        
         patterns = []
         
-        # Simple keyword detection for now
-        if any(word in text.lower() for word in ['should', 'supposed to', 'have to']):
+        # Get recent reflections for clustering
+        recent = self.db.list_reflections(identity_id=identity_id, limit=50)
+        
+        if len(recent) >= 5:
+            try:
+                # Try ML-based pattern detection
+                from sentence_transformers import SentenceTransformer
+                from sklearn.cluster import DBSCAN
+                import numpy as np
+                
+                # Extract text content
+                texts = [r.get('content', '') for r in recent]
+                texts.append(text)  # Include current reflection
+                
+                # Generate embeddings
+                model = SentenceTransformer('all-MiniLM-L6-v2')
+                embeddings = model.encode(texts)
+                
+                # Cluster similar reflections
+                clustering = DBSCAN(eps=0.4, min_samples=3).fit(embeddings)
+                labels = clustering.labels_
+                
+                # Current text's cluster
+                current_cluster = labels[-1]
+                
+                if current_cluster != -1:  # Not noise
+                    # Count how many past reflections in same cluster
+                    cluster_count = sum(1 for l in labels[:-1] if l == current_cluster)
+                    if cluster_count >= 2:
+                        patterns.append(f"recurring_theme_cluster_{current_cluster}")
+                        logger.info(f"Detected recurring theme: {cluster_count} similar reflections")
+                
+            except ImportError:
+                logger.warning("sentence-transformers not available, using keyword patterns only")
+            except Exception as e:
+                logger.error(f"Pattern clustering error: {e}")
+        
+        # Keyword-based pattern detection (always runs)
+        text_lower = text.lower()
+        
+        # Obligation language
+        if any(word in text_lower for word in ['should', 'supposed to', 'have to', 'need to', 'must']):
             patterns.append("obligation_language")
         
-        if any(word in text.lower() for word in ['always', 'never', 'everyone', 'no one']):
+        # Absolute thinking
+        if any(word in text_lower for word in ['always', 'never', 'everyone', 'no one', 'all the time']):
             patterns.append("absolute_thinking")
         
-        if any(word in text.lower() for word in ['but', 'however', 'although', 'though']):
+        # Internal tension markers
+        if any(word in text_lower for word in ['but', 'however', 'although', 'though', 'on one hand']):
             patterns.append("internal_tension")
         
+        # Emotional intensity
+        emotion_words = ['anxious', 'worried', 'scared', 'frustrated', 'angry', 'sad', 'overwhelmed']
+        if sum(1 for word in emotion_words if word in text_lower) >= 2:
+            patterns.append("high_emotional_intensity")
+        
+        # Relationship focus
+        if any(word in text_lower for word in ['they', 'them', 'he', 'she', 'friend', 'family', 'partner']):
+            patterns.append("relationship_focus")
+        
+        # Self-critical language
+        if any(word in text_lower for word in ["i'm not", "i can't", "i don't", "i'm bad", "i failed"]):
+            patterns.append("self_critical")
+        
         return patterns
+    
+    async def _detect_tensions(
+        self,
+        text: str,
+        identity_id: str,
+        patterns: List[str]
+    ) -> List[Dict[str, Any]]:
+        """
+        Detect internal tensions in reflection.
+        
+        Tensions are unresolved conflicts, questions, or contradictions.
+        These are SURFACED, not solved.
+        """
+        tensions = []
+        
+        text_lower = text.lower()
+        sentences = text.split('.')
+        
+        # Type 1: Explicit contradictions (but, however, although)
+        if 'internal_tension' in patterns:
+            tension_markers = [('but', 'however'), ('although', 'though'), ('while', 'whereas')]
+            for marker_pair in tension_markers:
+                for marker in marker_pair:
+                    if marker in text_lower:
+                        tensions.append({
+                            'type': 'contradiction',
+                            'description': 'Two conflicting perspectives present',
+                            'marker': marker,
+                            'intensity': 0.6
+                        })
+                        break
+        
+        # Type 2: Unresolved questions
+        question_count = text.count('?')
+        if question_count > 0:
+            tensions.append({
+                'type': 'unresolved_question',
+                'description': f'{question_count} question(s) left open',
+                'intensity': min(question_count * 0.2, 0.8)
+            })
+        
+        # Type 3: Should/obligation tension
+        if 'obligation_language' in patterns:
+            tensions.append({
+                'type': 'obligation_tension',
+                'description': 'Feeling pulled between what is and what "should" be',
+                'intensity': 0.7
+            })
+        
+        # Type 4: Self-criticism vs. acceptance
+        if 'self_critical' in patterns:
+            # Check if there's also acceptance language
+            acceptance_words = ['accept', 'okay', 'fine', 'understand', 'realize']
+            has_acceptance = any(word in text_lower for word in acceptance_words)
+            
+            if has_acceptance:
+                tensions.append({
+                    'type': 'self_judgment_tension',
+                    'description': 'Tension between self-criticism and self-acceptance',
+                    'intensity': 0.8
+                })
+            else:
+                tensions.append({
+                    'type': 'self_judgment',
+                    'description': 'Critical self-evaluation present',
+                    'intensity': 0.6
+                })
+        
+        # Type 5: Relationship tensions
+        if 'relationship_focus' in patterns:
+            conflict_words = ['disagree', 'argue', 'fight', 'conflict', 'tension', 'upset']
+            if any(word in text_lower for word in conflict_words):
+                tensions.append({
+                    'type': 'relational_tension',
+                    'description': 'Unresolved relationship dynamic',
+                    'intensity': 0.7
+                })
+        
+        return tensions
     
     def _build_prompt(
         self,
@@ -316,81 +689,172 @@ DON'T:
         """
         Fallback mirrorback when LLM unavailable.
         
-        Simple reflection-style response.
+        Demonstrates constitutional reflection without LLM.
         """
-        word_count = len(text.split())
+        text_lower = text.lower()
         
-        return f"""You've written {word_count} words about what's on your mind.
-
-I'm in manual mode right now, so I can't generate a full mirrorback. But your reflection has been saved locally.
-
-To use AI-powered mirrorbacks:
-- Set engine_mode to "local_llm" (requires Ollama)
-- Or set engine_mode to "remote_llm" (requires Anthropic API key)
-
-Your reflections are safe and private in your local database."""
+        # Analyze key themes
+        themes = []
+        if any(word in text_lower for word in ['work', 'job', 'career', 'project']):
+            themes.append('work')
+        if any(word in text_lower for word in ['relationship', 'friend', 'family', 'partner', 'they', 'them']):
+            themes.append('relationships')
+        if any(word in text_lower for word in ['feel', 'feeling', 'emotion', 'anxious', 'worried', 'sad']):
+            themes.append('emotions')
+        if any(word in text_lower for word in ['should', 'supposed', 'have to', 'need to']):
+            themes.append('obligations')
+        
+        # Detect questions
+        questions = text.count('?')
+        
+        # Detect tensions
+        has_tension = any(marker in text_lower for marker in ['but', 'however', 'although', 'though'])
+        
+        # Build constitutional reflection
+        reflection_parts = []
+        
+        if themes:
+            theme_str = ', '.join(themes)
+            reflection_parts.append(f"You wrote about {theme_str}.")
+        else:
+            reflection_parts.append("You put something into words.")
+        
+        if has_tension:
+            reflection_parts.append("\n\nThere's a tension here - two things that feel true at the same time. ")
+            reflection_parts.append("That's not something to resolve, just notice.")
+        
+        if questions > 0:
+            if questions == 1:
+                reflection_parts.append("\n\nYou left a question open. ")
+            else:
+                reflection_parts.append(f"\n\nYou left {questions} questions open. ")
+            reflection_parts.append("Sometimes the question is the point, not the answer.")
+        
+        if 'obligations' in themes:
+            reflection_parts.append("\n\nThere's language about what you 'should' do. ")
+            reflection_parts.append("That's a particular way of thinking about it.")
+        
+        reflection_parts.append("\n\n---\n")
+        reflection_parts.append("\n*Note: I'm in manual mode, so this is a simple reflection. ")
+        reflection_parts.append("For deeper AI-powered mirrorbacks, set engine_mode to 'local_llm' or 'remote_llm'.*")
+        
+        return ''.join(reflection_parts)
     
-    def _check_constitutional_flags(self, mirrorback: str) -> Dict[str, Any]:
+    def _get_constitutional_failure_message(self, l0_result) -> str:
         """
-        Check mirrorback for constitutional violations.
+        Message shown when constitutional violation blocks output.
         
-        Returns dict of flags (empty if no violations).
+        This is an error state - should be rare if prompts are well-designed.
         """
-        flags = {}
+        severity = l0_result.severity.value
         
-        # Check directive threshold
-        directive_words = [
-            'should', 'must', 'need to', 'have to', 'ought to',
-            'try to', 'try doing', 'consider', 'recommend',
-            'make sure', 'important to', 'it would be good'
-        ]
+        return f"""[Constitutional Integrity Failure]
+
+The generated mirrorback violated L0 invariants and was blocked ({severity} severity).
+
+This is an internal error. The Mirror's constitution prevents certain patterns:
+- Prescriptive/directive language (>15% threshold)
+- Cross-identity generalizations
+- Coercive emotional manipulation
+- Claims of fixed life purpose
+- Human masquerade (false empathy)
+- Diagnostic authority claims
+
+Your reflection was saved, but I could not generate a compliant mirrorback.
+
+This indicates the system needs tuning. Please report this issue.
+
+Violations detected: {', '.join(l0_result.violations[:3])}"""
+    
+    async def _process_evolution(
+        self,
+        reflection_id: str,
+        identity_id: str,
+        patterns: List[str],
+        tensions: List[Dict[str, Any]],
+        l2_result: Any,
+        harm_assessment: Any
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Process reflection through evolution engine for adaptive learning.
         
-        text_lower = mirrorback.lower()
-        directive_count = sum(1 for word in directive_words if word in text_lower)
-        total_words = len(mirrorback.split())
+        Detects:
+        - Growth events (belief shifts, tension resolution)
+        - Stagnation (repeated patterns without change)
+        - Breakthroughs (new insights, reframings)
+        - Regression (tension intensification)
+        - Blind spots (persistent contradictions)
         
-        if total_words > 0:
-            directive_ratio = directive_count / total_words
+        Args:
+            reflection_id: Reflection ID
+            identity_id: Identity ID
+            patterns: Detected patterns
+            tensions: Detected tensions
+            l2_result: L2 semantic analysis result
+            harm_assessment: L1 harm assessment
+        
+        Returns:
+            Evolution insights if available
+        """
+        try:
+            # Import evolution engine
+            from mirror_os.services.evolution_engine import EvolutionEngine
             
-            if directive_ratio > 0.15:  # 15% threshold
-                flags['directive_threshold_exceeded'] = {
-                    'ratio': round(directive_ratio, 3),
-                    'threshold': 0.15,
-                    'directive_count': directive_count,
-                    'total_words': total_words
-                }
-        
-        # Check for explicit advice patterns
-        advice_patterns = [
-            'you should',
-            'you need to',
-            'you must',
-            'i recommend',
-            'i suggest'
-        ]
-        
-        advice_found = [p for p in advice_patterns if p in text_lower]
-        if advice_found:
-            flags['explicit_advice'] = advice_found
-        
-        # Check for outcome optimization
-        optimization_words = ['better', 'improve', 'fix', 'solve', 'change']
-        optimization_count = sum(1 for word in optimization_words if word in text_lower)
-        
-        if optimization_count > 3:
-            flags['outcome_optimization'] = {
-                'count': optimization_count,
-                'words': optimization_words
+            # Initialize if not already done
+            if not hasattr(self, 'evolution_engine'):
+                self.evolution_engine = EvolutionEngine(self.db)
+            
+            # Prepare evolution data
+            evolution_data = {
+                'reflection_id': reflection_id,
+                'identity_id': identity_id,
+                'patterns': patterns,
+                'tensions': [
+                    {'type': t['type'], 'description': t.get('description', '')}
+                    for t in tensions
+                ],
+                'l2_themes': [
+                    {'name': theme.name, 'strength': theme.strength}
+                    for theme in l2_result.themes
+                ],
+                'l2_tensions': [
+                    {'concept_a': t.concept_a, 'concept_b': t.concept_b, 'marker': t.marker}
+                    for t in l2_result.tensions
+                ],
+                'harm_level': harm_assessment.level.value,
+                'harm_categories': [c.value for c in harm_assessment.categories]
             }
-        
-        return flags
+            
+            # Process through evolution engine
+            evolution_result = self.evolution_engine.process_reflection(evolution_data)
+            
+            return evolution_result
+            
+        except ImportError:
+            logger.debug("Evolution engine not available (optional)")
+            return None
+        except Exception as e:
+            logger.warning(f"Evolution processing error: {e}")
+            return None
     
     def get_stats(self) -> Dict[str, Any]:
-        """Get engine statistics"""
+        """Get engine statistics including constitutional compliance"""
+        drift_stats = self.drift_monitor.get_stats()
+        drift_metrics = self.drift_monitor.get_metrics(window_hours=24)
+        
         return {
             'engine_mode': self.settings.engine_mode,
             'llm_available': self.llm is not None,
             'constitution_loaded': bool(self.constitution),
-            'version': self.settings.version
+            'l0_enforcement_active': True,
+            'drift_monitor_active': True,
+            'version': self.settings.version,
+            'constitutional_health': {
+                'status_24h': drift_metrics.status.value,
+                'violation_rate_24h': round(drift_metrics.violation_rate, 2),
+                'total_checks': drift_stats['total_checks'],
+                'total_violations': drift_stats['total_violations'],
+                'unacknowledged_alerts': drift_stats['unacknowledged_alerts']
+            }
         }
 

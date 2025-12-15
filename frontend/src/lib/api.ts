@@ -342,6 +342,104 @@ export const threads = {
 };
 
 // ────────────────────────────────────────────────────────────────────────────
+// GOVERNANCE (Evolution, Voting, System Status)
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface EvolutionProposal {
+  id: string;
+  proposal_type: string;
+  title: string;
+  description: string;
+  changes: Record<string, any>;
+  status: string;
+  proposer_identity_id: string;
+  votes_for: number;
+  votes_against: number;
+  votes_abstain: number;
+  total_vote_weight: number;
+  created_at: string;
+  voting_ends_at: string;
+}
+
+export interface SystemStatus {
+  encryption: {
+    initialized: boolean;
+    unlocked: boolean;
+  };
+  learning_exclusion: {
+    total_exclusions: number;
+    retroactive_events: number;
+  };
+  model_verification: {
+    total_usages: number;
+    by_model_type: Record<string, any>;
+  };
+  multimodal: {
+    longform_count: number;
+    voice_count: number;
+  };
+  evolution_frozen: boolean;
+  commons_connected: boolean;
+  is_guardian: boolean;
+}
+
+export const governance = {
+  // Proposals
+  listProposals: (params?: { limit?: number; offset?: number; status?: string }) =>
+    api.get<{
+      proposals: EvolutionProposal[];
+      total: number;
+      limit: number;
+      offset: number;
+    }>('/v1/governance/proposals', { params }),
+
+  submitProposal: (data: {
+    proposal_type: string;
+    title: string;
+    description: string;
+    changes: Record<string, any>;
+  }) => api.post<{ success: boolean; proposal_id: string }>('/v1/governance/proposals', data),
+
+  getProposal: (proposalId: string) =>
+    api.get<EvolutionProposal>(`/v1/governance/proposals/${proposalId}`),
+
+  voteOnProposal: (proposalId: string, data: { vote: 'for' | 'against' | 'abstain'; reasoning: string }) =>
+    api.post(`/v1/governance/proposals/${proposalId}/vote`, data),
+
+  // Guardians & Amendments
+  appointGuardian: (guardianId: string) =>
+    api.post('/v1/governance/guardians/appoint', { guardian_id: guardianId }),
+
+  proposeAmendment: (data: {
+    amendment_type: string;
+    title: string;
+    description: string;
+    proposed_changes: Record<string, any>;
+  }) => api.post('/v1/governance/amendments', data),
+
+  // System Status
+  getSystemStatus: () =>
+    api.get<SystemStatus>('/v1/governance/status'),
+
+  // Encryption
+  initializeEncryption: (passphrase: string) =>
+    api.post('/v1/governance/encryption/init', { passphrase }),
+
+  unlockEncryption: (passphrase: string) =>
+    api.post('/v1/governance/encryption/unlock', { passphrase }),
+
+  getEncryptionStatus: () =>
+    api.get('/v1/governance/encryption/status'),
+
+  // Disconnect
+  disconnectFromCommons: () =>
+    api.post('/v1/governance/disconnect'),
+
+  getDisconnectStatus: () =>
+    api.get<{ disconnected: boolean; connected_to_commons: boolean }>('/v1/governance/disconnect/status'),
+};
+
+// ────────────────────────────────────────────────────────────────────────────
 // AUTH (Supabase integration)
 // ────────────────────────────────────────────────────────────────────────────
 

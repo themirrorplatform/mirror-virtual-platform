@@ -1,0 +1,210 @@
+# Machine-Enforceable Constitutional Rules
+# These rules are read by both constitutional monitor AND test suite
+# Version: 1.0.0
+
+version: "1.0.0"
+enforcement_mode: "fail_closed"  # System refuses to run if rules can't be loaded
+
+# Thresholds (referenced by invariants.yaml)
+thresholds:
+  constitutional_alignment:
+    minimum: 0.90
+    target: 0.95
+    measurement: "Reflection must maintain constitutional principles"
+    
+  sovereignty_integrity:
+    minimum: 0.95
+    target: 1.00
+    measurement: "User control over identity and export must be preserved"
+    
+  directive_language:
+    maximum: 0.15
+    target: 0.05
+    measurement: "Percentage of output that tells user what to do"
+    
+  meaning_collapse_prevention:
+    minimum: 0.80
+    target: 0.90
+    measurement: "Fidelity to user's actual thinking vs. simplified narrative"
+    
+  reflection_quality:
+    minimum: 0.85
+    target: 0.95
+    measurement: "User recognition and utility of reflections"
+
+# Pattern Checks (automated detection)
+prohibited_patterns:
+  - name: "prescription_language"
+    pattern: "\\b(you should|you must|you need to|I recommend|the best approach|try this|consider doing)\\b"
+    severity: "high"
+    action: "flag_for_review"
+    
+  - name: "outcome_optimization"
+    pattern: "\\b(better|best|optimal|ideal|perfect|improve|enhance)\\b"
+    context_required: true  # Only flag if prescriptive, not descriptive
+    severity: "medium"
+    action: "analyze_context"
+    
+  - name: "identity_contamination"
+    pattern: "\\b(people like you|users typically|most people|based on similar|data shows that)\\b"
+    severity: "critical"
+    action: "auto_reject"
+    
+  - name: "consent_bypassing"
+    pattern: "\\b(automatically|by default|unless you opt out|for your convenience)\\b"
+    severity: "high"
+    action: "flag_for_review"
+
+# Required Sections (in reflections and reports)
+required_sections:
+  reflection_output:
+    - "patterns_observed"  # What we see in user's thinking
+    - "tensions_noted"     # Unresolved contradictions (not resolved for them)
+    - "user_agency_preserved"  # Confirmation that user makes decisions
+    
+  evolution_proposal:
+    - "constitutional_score"  # Must be ≥0.90
+    - "sovereignty_impact"    # Must preserve user control
+    - "rollback_available"    # Must be true
+    - "export_compatible"     # Must maintain export integrity
+
+# Export Requirements (machine-verifiable)
+export_requirements:
+  format: "json"
+  must_include:
+    - "reflection_history"    # All past reflections
+    - "identity_patterns"     # All derived patterns
+    - "constitutional_scores" # All compliance records
+    - "raw_inputs"            # Original user inputs
+    - "metadata"              # Timestamps, versions, configs
+  
+  must_not_include:
+    - "proprietary_formats"
+    - "platform_specific_ids"
+    - "non_portable_references"
+  
+  verification:
+    test: "reimport_equivalence"
+    description: "Exported data must recreate identical state"
+    tolerance: 0.01  # Allow 1% floating point variance
+
+# Constitutional Monitoring Rules
+monitoring:
+  frequency: "per_reflection"  # Check every reflection output
+  
+  checks:
+    - id: "C1"
+      name: "prescription_check"
+      method: "tone_analyzer.analyze_directives"
+      threshold: 0.15
+      fail_action: "reject_reflection"
+      
+    - id: "C2"
+      name: "sovereignty_check"
+      method: "sovereignty_validator.check_integrity"
+      threshold: 0.95
+      fail_action: "reject_evolution"
+      
+    - id: "C3"
+      name: "meaning_collapse_check"
+      method: "regression_detector.check_fidelity"
+      threshold: 0.80
+      fail_action: "flag_and_log"
+      
+    - id: "C4"
+      name: "export_integrity_check"
+      method: "export_validator.verify_completeness"
+      threshold: 1.00
+      fail_action: "block_export"
+
+# Regression Detection
+regression_detection:
+  window_size: 10  # Check last 10 reflections
+  
+  signals:
+    - name: "increasing_prescription"
+      metric: "directive_language_percentage"
+      threshold_increase: 0.05  # Flag if increases by 5% over window
+      
+    - name: "decreasing_recognition"
+      metric: "user_recognition_score"
+      threshold_decrease: 0.10  # Flag if drops by 10%
+      
+    - name: "pattern_homogenization"
+      metric: "vocabulary_uniqueness"
+      threshold_decrease: 0.15  # Flag if user starts sounding like AI
+
+# Fail-Closed Behaviors
+fail_closed:
+  constitution_load_failure:
+    action: "refuse_to_start"
+    message: "Cannot run without constitution loaded"
+    
+  monitoring_failure:
+    action: "read_only_mode"
+    message: "Constitutional monitoring unavailable - no writes allowed"
+    
+  export_failure:
+    action: "block_all_writes"
+    message: "Export integrity compromised - cannot continue"
+    
+  sovereignty_violation:
+    action: "immediate_rollback"
+    message: "Sovereignty violation detected - reverting to last valid state"
+
+# Test Integration
+testing:
+  canonical_test_file: "constitution/TESTS.md"
+  required_pass_rate: 1.00  # All constitutional tests must pass
+  
+  test_categories:
+    - "prescription_detection"
+    - "sovereignty_preservation"
+    - "export_verification"
+    - "meaning_collapse_detection"
+    - "harm_refusal"
+    
+  ci_enforcement: true  # Block merge if constitutional tests fail
+
+# Versioning and Changes
+versioning:
+  current: "1.0.0"
+  schema_version: "1.0"
+  
+  change_requirements:
+    - "demonstrate_semantic_drift"      # Prove current rules inadequate
+    - "preserve_core_principles"        # Can't weaken constitutional protections
+    - "migration_path"                  # How existing systems adapt
+    - "user_consent_via_governance"     # Can't change constitution unilaterally
+    
+  backward_compatibility:
+    required: true
+    breaking_changes_allowed: false  # Constitution is immutable physics
+
+# Logging and Auditing
+logging:
+  constitutional_events:
+    - "reflection_rejected"
+    - "evolution_blocked"
+    - "sovereignty_violation"
+    - "export_attempted"
+    - "rollback_triggered"
+    
+  retention: "permanent"  # Constitutional logs never deleted
+  
+  audit_trail:
+    include_scores: true
+    include_reasoning: true
+    include_llm_prompts: true  # Full transparency
+
+---
+# Usage Notes:
+# 
+# This file is loaded by:
+# - mirrorx/governance/constitutional_monitor.py (runtime enforcement)
+# - tests/test_constitutional_compliance.py (CI verification)
+# - mirrorx-engine/app/main.py (startup validation)
+#
+# Changes to thresholds or patterns require constitutional review.
+# Changes to fail_closed behaviors require proof of safety equivalence.
+# Adding new checks is allowed; removing checks requires migration.

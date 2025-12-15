@@ -1,0 +1,329 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { MirrorField } from '@/components/MirrorField';
+import { reflections, mirrorbacks } from '@/lib/api';
+import { useUIMode } from '@/contexts/UIModeContext';
+import { useMirrorStateContext } from '@/contexts/MirrorStateContext';
+import { MultimodalControls, InputMode } from '@/components/MultimodalControls';
+import { RecordingCard, Recording } from '@/components/RecordingCard';
+import { AnimatePresence } from 'framer-motion';
+import { EntryInstrument } from '@/components/instruments/EntryInstrument';
+import { CrisisScreenInstrument } from '@/components/instruments/CrisisScreenInstrument';
+import { TimeBasedReflectionsInstrument } from '@/components/instruments/TimeBasedReflectionsInstrument';
+import { Clock, Shield, Calendar } from 'lucide-react';
+
+export default function Reflect() {
+  const router = useRouter();
+  const { isSimpleMode } = useUIMode();
+  const { state, actions } = useMirrorStateContext();
+  const [error, setError] = useState<string | null>(null);
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [showEntryInstrument, setShowEntryInstrument] = useState(false);
+  const [showTimeBasedInstrument, setShowTimeBasedInstrument] = useState(false);
+
+  // Check if user needs to see Entry Instrument
+  useEffect(() => {
+    if (!state.hasSeenEntry) {
+      setShowEntryInstrument(true);
+    }
+  }, [state.hasSeenEntry]);
+
+  const handleSubmit = async (content: string) => {
+    try {
+      // Step 1: Create reflection
+      const reflectionResponse = await reflections.create({
+        body: content,
+        visibility: 'private', // Default to private
+      });
+      const reflection = reflectionResponse.data;
+      
+      // Step 2: Auto-generate mirrorback (AI response)
+      try {
+        await mirrorbacks.create(reflection.id);
+      } catch (mirrorbackErr: any) {
+        console.error('Mirrorback generation failed:', mirrorbackErr);
+      }
+
+      // Constitutional: Generate receipt for reflection creation
+      actions.addReceipt({
+        id: `reflection-${Date.now()}`,
+        type: 'layer_switch',
+        timestamp: new Date().toISOString(),
+        title: 'Reflection Created',
+        description: `Created in ${state.layer} layer with ${state.modality} modality`,
+        layer: state.layer,
+        data: {
+          reflectionId: reflection.id,
+          modality: state.modality,
+          hasAIResponse: true
+        }
+      });
+
+      // Redirect to home feed
+      router.push('/');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to create reflection');
+      throw err; // Re-throw so MirrorField knows it failed
+    }
+  };
+
+  const handleEntryComplete = (config: { layer: Layer; acknowledgedLicenses: string[] }) => {
+    actions.switchLayer(config.layer);
+    config.acknowledgedLicenses.forEach(license => actions.acknowledgeLicense(license));
+    actions.completeEntry();
+    setShowEntryInstrument(false);
+    actions.addReceipt({
+      id: `entry-${Date.now()}`,
+      type: 'license',
+      timestamp: new Date().toISOString(),
+      title: 'Entry Complete',
+      description: `Entered ${config.layer} layer with ${config.acknowledgedLicenses.length} licenses acknowledged`,
+      layer: config.layer,
+      data: config
+    });
+  };
+
+  const instruments = (
+    <>
+      {/* Entry Instrument - First-time boundary */}
+      <AnimatePresence>
+        {showEntryInstrument && (
+          <EntryInstrument 
+            onComplete={handleEntryComplete}
+            onDismiss={() => setShowEntryInstrument(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Crisis Screen - Active during crisis mode */}
+      <AnimatePresence>
+        {state.crisisMode && (
+          <CrisisScreenInstrument 
+            onComplete={() => {
+              actions.toggleCrisisMode(false);
+              actions.addReceipt({
+                id: `crisis-exit-${Date.now()}`,
+                type: 'layer_switch',
+                timestamp: new Date().toISOString(),
+                title: 'Crisis Mode Exited',
+                description: 'Returned to reflection',
+                layer: state.layer,
+                data: { exitTime: new Date().toISOString() }
+              });
+            }}
+            onDismiss={() => actions.toggleCrisisMode(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Time-Based Reflections */}
+      <AnimatePresence>
+        {showTimeBasedInstrument && (
+          <TimeBasedReflectionsInstrument 
+            onComplete={(schedule) => {
+              setShowTimeBasedInstrument(false);
+              actions.addReceipt({
+                id: `schedule-${Date.now()}`,
+                type: 'layer_switch',
+                timestamp: new Date().toISOString(),
+                title: 'Reflection Schedule Set',
+                description: `Scheduled ${schedule.frequency} reminders`,
+                layer: state.layer,
+                data: schedule
+              });
+            }}
+            onDismiss={() => setShowTimeBasedInstrument(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+
+  // Instrument Quick Actions (Simple Mode only)
+  const instrumentActions = isSimpleMode && (
+    <div className="flex gap-2 justify-center">
+      <button
+        onClick={() => setShowTimeBasedInstrument(true)}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-base-subtle)] rounded-lg transition-colors"
+        title="Schedule Reflections"
+      >
+        <Calendar className="w-4 h-4" />
+        <span>Schedule</span>
+      </button>
+      {state.layer !== 'sovereign' && (
+        <button
+          onClick={() => {
+            actions.switchLayer('sovereign');
+            actions.addReceipt({
+              id: `layer-switch-${Date.now()}`,
+              type: 'layer_switch',
+              timestamp: new Date().toISOString(),
+              title: 'Switched to Sovereign',
+              description: 'Maximum privacy enabled',
+              layer: 'sovereign',
+              data: {}
+            });
+          }}
+          className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/10 rounded-lg transition-colors"
+          title="Switch to Sovereign Layer"
+        >
+          <Shield className="w-4 h-4" />
+          <span>Private Mode</span>
+        </button>
+      )}
+    </div>
+  );
+
+  // In Simple Mode, show traditional layout with header
+  if (isSimpleMode) {
+    return (
+      <>
+        {instruments}
+        <div className="h-screen flex flex-col bg-[var(--color-base-default)]">
+          <header className="border-b border-[var(--color-border-subtle)] px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-serif text-[var(--color-accent-gold)]">Mirror Realm</h1>
+                <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                  What's on your mind? No judgment. Just reflection.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+                <div className="flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  <span className="capitalize">{state.layer}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span className="capitalize">{state.modality}</span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {error && (
+            <div className="mx-6 mt-4 bg-[var(--color-error)]/10 border border-[var(--color-error)] text-[var(--color-error)] px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <div className="flex-1 flex items-center justify-center overflow-auto">
+            <div className="w-full max-w-2xl px-6 py-8 space-y-6">
+              <MirrorField 
+                onSubmit={handleSubmit} 
+                layer={state.layer}
+                crisisMode={state.crisisMode}
+              />
+              
+              {/* Multimodal Controls */}
+              <div className="flex justify-center">
+                <MultimodalControls 
+                  onRecordingComplete={handleRecordingComplete}
+                />
+              </div>
+
+              {/* Instrument Actions */}
+              {instrumentActions}
+
+              {/* Recordings List */}
+              {recordings.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
+                    Recordings ({recordings.length})
+                  </h3>
+                  <AnimatePresence>
+                    {recordings.map(recording => (
+                      <RecordingCard
+                        key={recording.id}
+                        recording={recording}
+                        onDelete={handleDeleteRecording}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // In Power Mode, show minimal MirrorField with multimodal
+  return (
+    <>
+      {instruments}
+      <div className="relative">
+        <MirrorField 
+          onSubmit={handleSubmit} 
+          layer={state.layer}
+          crisisMode={state.crisisMode}
+        />
+        
+        {/* Floating multimodal controls */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-10">
+          <MultimodalControls 
+            onRecordingComplete={handleRecordingComplete}
+          />
+        </div>
+
+        {/* Recordings panel (bottom-right) */}
+        {recordings.length > 0 && (
+          <div className="fixed bottom-8 right-8 w-80 max-h-96 overflow-y-auto space-y-3 z-10">
+            <AnimatePresence>
+              {recordings.map(recording => (
+                <RecordingCard
+                  key={recording.id}
+                  recording={recording}
+                  onDelete={handleDeleteRecording}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </         {recordings.map(recording => (
+                    <RecordingCard
+                      key={recording.id}
+                      recording={recording}
+                      onDelete={handleDeleteRecording}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // In Power Mode, show minimal MirrorField with multimodal
+  return (
+    <div className="relative">
+      <MirrorField onSubmit={handleSubmit} layer="sovereign" />
+      
+      {/* Floating multimodal controls */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-10">
+        <MultimodalControls 
+          onRecordingComplete={handleRecordingComplete}
+        />
+      </div>
+
+      {/* Recordings panel (bottom-right) */}
+      {recordings.length > 0 && (
+        <div className="fixed bottom-8 right-8 w-80 max-h-96 overflow-y-auto space-y-3 z-10">
+          <AnimatePresence>
+            {recordings.map(recording => (
+              <RecordingCard
+                key={recording.id}
+                recording={recording}
+                onDelete={handleDeleteRecording}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+}

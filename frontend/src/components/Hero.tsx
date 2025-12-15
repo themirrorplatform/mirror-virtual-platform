@@ -1,13 +1,11 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import VideoBackground from './VideoBackground';
-import imgTempleReflection from "figma:asset/c98b00ecf50d3e11fcabdea89fdec89b82201a80.png";
-import imgTheMirror from "figma:asset/423df436ef7f34d0eab0991e8cec015203a2a8a2.png";
 
 export function Hero() {
   return (
     <VideoBackground
       src="/videos/hero-video.mp4"
-      poster={imgTempleReflection}
+      poster=""
       className="relative h-[600px] overflow-hidden"
     >
       {/* Navigation Arrows */}
@@ -27,7 +25,7 @@ export function Hero() {
       {/* Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
         <img 
-          src={imgTheMirror} 
+          src="" 
           alt="The Mirror" 
           className="w-[128px] h-[128px] mb-[32px] opacity-60"
         />
@@ -46,3 +44,4 @@ export function Hero() {
     </VideoBackground>
   );
 }
+

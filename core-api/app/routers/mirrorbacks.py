@@ -1,7 +1,9 @@
 """
 Mirrorbacks Router - AI-powered reflective responses
 """
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from typing import Optional
 import httpx
 import os
@@ -11,12 +13,15 @@ from app.db import execute_query, execute_one, execute_command
 from app.routers.profiles import get_user_id_from_auth
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 MIRRORX_ENGINE_URL = os.getenv("MIRRORX_ENGINE_URL", "http://localhost:8100")
 
 
 @router.post("/", response_model=Mirrorback)
+@limiter.limit("10/minute")
 async def create_mirrorback(
+    request: Request,
     mirrorback_data: MirrorbackCreate,
     authorization: Optional[str] = Header(None)
 ):
@@ -93,7 +98,9 @@ async def create_mirrorback(
 
 
 @router.get("/reflection/{reflection_id}")
+@limiter.limit("30/minute")
 async def get_mirrorbacks_for_reflection(
+    request: Request,
     reflection_id: int,
     authorization: Optional[str] = Header(None)
 ):
@@ -133,7 +140,8 @@ async def get_mirrorbacks_for_reflection(
 
 
 @router.get("/{mirrorback_id}", response_model=Mirrorback)
-async def get_mirrorback(mirrorback_id: int):
+@limiter.limit("30/minute")
+async def get_mirrorback(request: Request, mirrorback_id: int):
     """Get a specific mirrorback by ID."""
     mirrorback = await execute_one(
         "SELECT * FROM mirrorbacks WHERE id = $1",
@@ -147,7 +155,9 @@ async def get_mirrorback(mirrorback_id: int):
 
 
 @router.delete("/{mirrorback_id}")
+@limiter.limit("5/minute")
 async def delete_mirrorback(
+    request: Request,
     mirrorback_id: int,
     authorization: Optional[str] = Header(None)
 ):
