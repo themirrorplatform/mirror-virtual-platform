@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirror-recognition"
+version = "1.0.0"
+description = "Mirror Constitutional Conformance Testing Framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Mirror Foundation"}
+]
+keywords = ["mirror", "constitutional-ai", "conformance", "testing"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Testing",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "pyyaml>=6.0",
+    "pytest>=7.0",
+    "hypothesis>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0",
+    "mypy>=1.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+mirror-test = "mirror_recognition.conformance.runner:main"
+
+[tool.setuptools]
+packages = ["mirror_recognition", "mirror_recognition.conformance"]
