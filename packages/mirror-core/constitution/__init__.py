@@ -12,6 +12,7 @@ Architecture:
 """
 
 from .axioms.base import Axiom, AxiomChecker
+from .layer import ConstitutionalLayer
 from .axioms.core import CertaintyAxiom, SovereigntyAxiom, ManipulationAxiom, DiagnosisAxiom
 from .axioms.mirror_specific import (
     PostActionAxiom,
@@ -25,6 +26,7 @@ from .axioms.system import OptimizationAxiom, CoercionAxiom, CaptureAxiom
 __all__ = [
     "Axiom",
     "AxiomChecker",
+    "ConstitutionalLayer",
     # Core
     "CertaintyAxiom",
     "SovereigntyAxiom",
