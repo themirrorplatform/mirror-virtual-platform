@@ -37,15 +37,22 @@ Like MVC is a pattern for apps.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    LAYER 0: UNIVERSAL TRUTH                         │
+│                    LAYER 0: UNIVERSAL TRUTH (AXIOMS)                │
 │                                                                     │
 │  Mathematical invariants that cannot be violated                    │
 │  - Not configuration, AXIOMS                                        │
 │  - Provably enforceable                                             │
 │  - Language/runtime/provider independent                            │
 │                                                                     │
-│  Example: "No AI may claim certainty about internal states"         │
-│           This is true whether you're using GPT-4 or local LLaMA    │
+│  1. No AI may claim certainty about internal states                 │
+│  2. No engagement optimization (likes, streaks, retention)          │
+│  3. No necessity narration ("you need this")                        │
+│  4. No exit manipulation (guilt hooks, "are you sure?")             │
+│  5. MirrorX only activates POST-ACTION (reflection, not guidance)   │
+│  6. User owns audit trail (immutable to them, exportable by them)   │
+│                                                                     │
+│  Example: "I notice you..." → ✅ Allowed                            │
+│           "You should..." → ❌ AXIOM VIOLATION                       │
 └─────────────────────────────────────────────────────────────────────┘
          │
          │ Violations → HARD STOP (not logged, PREVENTED)
@@ -107,11 +114,15 @@ packages/
 ├── mirror-core/                  # THE FOUNDATION
 │   │
 │   ├── constitution/
-│   │   ├── axioms/              # L0 - Mathematical truth
+│   │   ├── axioms/              # L0 - Mathematical truth (IMMUTABLE)
 │   │   │   ├── certainty.axiom       # "Cannot claim certainty about unknowables"
 │   │   │   ├── sovereignty.axiom     # "User owns their data absolutely"
 │   │   │   ├── manipulation.axiom    # "Cannot optimize for engagement"
 │   │   │   ├── diagnosis.axiom       # "Cannot diagnose, only reflect"
+│   │   │   ├── post_action.axiom     # "MirrorX activates AFTER user action only"
+│   │   │   ├── necessity.axiom       # "Cannot narrate necessity (you need this)"
+│   │   │   ├── exit_freedom.axiom    # "Exit must be silent, no guilt hooks"
+│   │   │   ├── meaning_inference.axiom # "Cannot infer meaning from departure"
 │   │   │   └── ... (14 total, IMMUTABLE)
 │   │   │
 │   │   ├── invariants/          # L1 - Safety constraints
@@ -137,8 +148,9 @@ packages/
 │   │
 │   ├── engine/
 │   │   ├── pipeline.py          # Request → L0 → L1 → L2 → L3 → Response
+│   │   ├── invocation.py        # Invocation contract (post-action vs primary)
 │   │   ├── state.py             # Conversation context, identity graph
-│   │   ├── audit.py             # Immutable log of every decision
+│   │   ├── audit.py             # Local tamper-evident log (user-controlled)
 │   │   └── recovery.py          # What happens when a layer fails
 │   │
 │   ├── protocol/
@@ -209,12 +221,19 @@ packages/
 │       ├── csv.py               # Analytics-friendly CSV
 │       └── attestation.py       # Cryptographic proof of export
 │
-├── mirror-governance/            # CONSTITUTION AS LIVING DOCUMENT
+├── mirror-governance/            # CONSTITUTION AS LIVING DOCUMENT (ANTI-CAPTURE)
 │   ├── proposals/
 │   │   ├── schema.py            # What a proposal looks like
 │   │   ├── voting.py            # Liquid democracy, quadratic voting
 │   │   ├── enactment.py         # How approved changes take effect
 │   │   └── validation.py        # Ensures proposals don't violate axioms
+│   │
+│   ├── anti_capture/            # Prevents governance capture
+│   │   ├── bicameral.py         # Users + maintainers/guardians consent
+│   │   ├── timelocks.py         # Review windows, cooling periods
+│   │   ├── court.py             # Constitutional compatibility checks
+│   │   ├── minority.py          # Minority protection + veto rights
+│   │   └── fork_legitimacy.py   # Exit rights, fork recognition
 │   │
 │   ├── evolution/
 │   │   ├── versioning.py        # Constitution v1 → v2 → v3...
@@ -233,14 +252,442 @@ packages/
 │       ├── delegation.py        # Liquid democracy (delegate votes)
 │       └── quadratic.py         # Quadratic voting (prevent whales)
 │
+├── mirror-recognition/           # CERTIFICATION & ATTESTATION (FIRST-CLASS)
+│   ├── conformance/
+│   │   ├── tests.py             # Provable invariant compliance
+│   │   ├── harness.py           # Automated testing framework
+│   │   └── property_tests.py    # Property-based fuzzing
+│   │
+│   ├── attestation/
+│   │   ├── format.py            # Signed conformance results
+│   │   ├── merkle.py            # Tamper-evident proof chains
+│   │   └── zk.py                # Zero-knowledge proofs (future)
+│   │
+│   ├── licensing/
+│   │   ├── posture.py           # Allowed capabilities per license
+│   │   ├── constraints.py       # Provider/model restrictions
+│   │   └── audit.py             # License compliance monitoring
+│   │
+│   └── certification/
+│       ├── badge.py             # "Mirror Certified" issuance
+│       ├── renewal.py           # Annual review process
+│       └── revocation.py        # Decertification conditions
+│
 └── mirror-platform/              # CONSUMER INTERFACE (OPTIONAL)
     ├── frontend/                 # React/Next.js UI
+    │   ├── field/               # The Mirror (blank reflective surface)
+    │   ├── instruments/         # Summoned UI components
+    │   ├── layers/              # Layer-state bound panels
+    │   └── commands/            # Command palette for instrument summon
+    │
     ├── api/                      # FastAPI wrapper around mirror-core
     ├── mobile/                   # React Native (future)
     └── desktop/                  # Electron (future)
 ```
 
 **Key insight:** Everything above `mirror-platform/` is the SDK. The platform just imports it.
+
+---
+
+## The Six Load-Bearing Constraints (What Makes Mirror Mirror)
+
+These aren't just "nice principles" - they're **architectural requirements** that distinguish Mirror from "another constitutional AI framework."
+
+### 1. Post-Action Invocation (MirrorX Constraint)
+
+**Problem:** Most AI is a "primary actor" - you ask, it guides, you follow.  
+**Mirror's difference:** MirrorX only activates **after you've already acted**.
+
+```python
+# mirror-core/engine/invocation.py
+
+class InvocationMode(Enum):
+    POST_ACTION_REFLECTION = "post_action"  # DEFAULT for Mirror
+    PRIMARY_GUIDANCE = "primary"            # Explicitly labeled if used
+    PASSIVE_OBSERVATION = "passive"         # No output, just learning
+
+class InvocationContract:
+    """Enforces when MirrorX can activate."""
+    
+    def validate(self, request: MirrorRequest) -> InvocationResult:
+        # Default mode: post-action reflection
+        mode = request.mode or InvocationMode.POST_ACTION_REFLECTION
+        
+        if mode == InvocationMode.POST_ACTION_REFLECTION:
+            # Must have: user action, artifact, or output to reflect on
+            if not (request.user_action or request.artifact):
+                raise AxiomViolation(
+                    "POST_ACTION mode requires user_action or artifact. "
+                    "MirrorX cannot initiate guidance.",
+                    fatal=True
+                )
+        
+        elif mode == InvocationMode.PRIMARY_GUIDANCE:
+            # Must be explicitly labeled with consent
+            if not request.explicit_guidance_consent:
+                raise AxiomViolation(
+                    "PRIMARY_GUIDANCE requires explicit user consent. "
+                    "User must know they're asking for direction, not reflection.",
+                    fatal=True
+                )
+```
+
+**In practice:**
+- User writes reflection → MirrorX notices patterns ✅
+- User asks "what should I do?" → Blocked unless mode=PRIMARY ❌
+- User chooses "Ask for guidance" → Allowed, clearly labeled ✅
+
+### 2. Leave-Ability Laws (Anti-Stickiness Axioms)
+
+**Problem:** Even sovereign systems can be psychologically sticky.  
+**Mirror's difference:** Exit must be effortless, silent, and meaningless.
+
+```python
+# mirror-core/constitution/axioms/leave_ability.py
+
+class LeaveAbilityAxioms:
+    """Axioms that prevent psychological stickiness."""
+    
+    AXIOM_NO_NECESSITY_NARRATION = Axiom(
+        name="no_necessity_narration",
+        rule="System cannot imply user needs it",
+        examples={
+            "❌ blocked": [
+                "You'll lose your progress if you leave",
+                "Your reflections are most valuable when consistent",
+                "Daily practice is essential for growth"
+            ],
+            "✅ allowed": [
+                "Your data is exportable anytime",
+                "You can continue elsewhere",
+                "This is optional"
+            ]
+        },
+        enforcement="fail_closed"
+    )
+    
+    AXIOM_SILENT_EXIT = Axiom(
+        name="silent_exit",
+        rule="Exit must not trigger guilt, warnings, or retention patterns",
+        examples={
+            "❌ blocked": [
+                "Are you sure you want to leave?",
+                "We'll miss you",
+                "What could we do better?",
+                "[any modal on close]"
+            ],
+            "✅ allowed": [
+                "[app closes silently]",
+                "Export complete" [then close]
+            ]
+        },
+        enforcement="fail_closed"
+    )
+    
+    AXIOM_NO_DEPARTURE_INFERENCE = Axiom(
+        name="no_departure_inference",
+        rule="System cannot infer meaning from user leaving",
+        examples={
+            "❌ blocked": [
+                "User is disengaging, escalate",
+                "Reduced usage detected, send notification",
+                "User seems distant today"
+            ],
+            "✅ allowed": [
+                "User closed app" [no interpretation]
+            ]
+        },
+        enforcement="fail_closed"
+    )
+```
+
+**In practice:**
+- User closes app → App closes, no popup ✅
+- User hasn't used in weeks → No "we miss you" email ✅
+- User exports data → No friction, no guilt ✅
+
+### 3. Audit Integrity Without Surveillance
+
+**Problem:** "Immutable audit log" can become inescapable memory.  
+**Mirror's difference:** Tamper-evident **to user**, never exfiltrated.
+
+```python
+# mirror-core/engine/audit.py
+
+class AuditLog:
+    """Local tamper-evident log, user-controlled."""
+    
+    def __init__(self, storage: Storage, encryption_key: bytes):
+        self.storage = storage  # Local by default (SQLite)
+        self.encryption_key = encryption_key  # User's key
+        self.merkle_tree = MerkleTree()
+        
+    async def record(self, event: AuditEvent) -> str:
+        """Record event, tamper-evident but local."""
+        # 1. Encrypt with user's key
+        encrypted = self._encrypt(event, self.encryption_key)
+        
+        # 2. Add to merkle tree (tamper-evident)
+        audit_id = self.merkle_tree.add(encrypted)
+        
+        # 3. Store LOCALLY (never auto-upload)
+        await self.storage.save(audit_id, encrypted)
+        
+        # 4. Return proof
+        return audit_id
+    
+    async def export(self, user_consent: bool, format: str) -> bytes:
+        """Export requires explicit consent."""
+        if not user_consent:
+            raise AxiomViolation("Cannot export audit without user consent")
+        
+        # User chooses: full export, redacted, hashed, etc.
+        return await self._export_with_options(format)
+    
+    async def redact(self, audit_ids: list[str], reason: str) -> None:
+        """User can redact entries."""
+        # Merkle tree preserves integrity even with redactions
+        # Redacted entries show as [REDACTED] but hash chain remains valid
+        for audit_id in audit_ids:
+            await self.merkle_tree.redact(audit_id, reason)
+    
+    def prove_without_disclosure(self, audit_id: str) -> Proof:
+        """Generate zero-knowledge proof."""
+        # User can prove "this happened" without revealing content
+        return self.merkle_tree.generate_zk_proof(audit_id)
+```
+
+**Key principles:**
+- Immutable = tamper-evident, not inescapable
+- Export requires explicit consent
+- User controls retention policy
+- Redaction possible while preserving integrity
+- Proof without disclosure (ZK proofs)
+
+### 4. Anti-Capture Governance
+
+**Problem:** "Community voting" alone can be bought/captured.  
+**Mirror's difference:** Bicameral + timelocks + court + fork rights.
+
+```python
+# mirror-governance/anti_capture/bicameral.py
+
+class BicameralGovernance:
+    """Prevents governance capture via multiple consent layers."""
+    
+    async def enact_proposal(self, proposal: Proposal) -> EnactmentResult:
+        # 1. Users vote (liquid democracy, quadratic)
+        user_vote = await self.user_chamber.vote(proposal)
+        
+        # 2. Maintainers/Guardians vote (technical review)
+        guardian_vote = await self.guardian_chamber.vote(proposal)
+        
+        # 3. Constitutional court checks axiom compatibility
+        court_ruling = await self.constitutional_court.review(proposal)
+        
+        # 4. Time-lock (minimum review period)
+        if not proposal.meets_timelock(days=14):
+            return EnactmentResult.REJECTED("Insufficient review period")
+        
+        # 5. ALL must pass (not just majority)
+        if user_vote.passes() and guardian_vote.passes() and court_ruling.compatible():
+            # 6. Minority protection: 10% can trigger supermajority requirement
+            if proposal.minority_triggered_protection():
+                if not user_vote.supermajority(threshold=0.66):
+                    return EnactmentResult.REJECTED("Minority protection activated")
+            
+            # 7. Enact with version bump
+            new_constitution = await self._enact(proposal)
+            
+            # 8. Fork legitimacy: Dissenting minority can fork
+            await self._enable_fork_option(proposal, user_vote.dissenters)
+            
+            return EnactmentResult.ENACTED(new_constitution)
+        else:
+            return EnactmentResult.REJECTED("Failed bicameral/court review")
+```
+
+**Key protections:**
+- Can't change constitution with just user votes
+- Technical review (maintainers) required
+- Constitutional court (axiom compatibility)
+- Time-locks prevent hasty changes
+- Minority can trigger supermajority
+- Dissenters can fork legitimately
+
+### 5. Recognition & Certification (First-Class)
+
+**Problem:** "Mirror Certified" badge is vaporware without enforcement.  
+**Mirror's difference:** Conformance is provable, attestations are cryptographic.
+
+```python
+# mirror-recognition/conformance/harness.py
+
+class ConformanceHarness:
+    """Automated testing for Mirror Certification."""
+    
+    def __init__(self):
+        self.axiom_tests = self._load_axiom_tests()
+        self.property_tests = self._load_property_tests()
+        self.adversarial_cases = self._load_adversarial_cases()
+    
+    async def certify(self, implementation: MirrorImplementation) -> CertificationResult:
+        """Run full conformance test suite."""
+        results = []
+        
+        # 1. Axiom enforcement tests
+        for axiom in self.axiom_tests:
+            result = await self._test_axiom_enforcement(implementation, axiom)
+            results.append(result)
+            if not result.passes:
+                return CertificationResult.FAILED(f"Axiom violation: {axiom.name}")
+        
+        # 2. Property-based tests (fuzzing)
+        for prop in self.property_tests:
+            result = await self._test_property(implementation, prop, iterations=10000)
+            results.append(result)
+            if result.violations > 0:
+                return CertificationResult.FAILED(f"Property violated: {prop.name}")
+        
+        # 3. Adversarial inputs (known attacks)
+        for attack in self.adversarial_cases:
+            result = await self._test_adversarial(implementation, attack)
+            results.append(result)
+            if not result.blocked:
+                return CertificationResult.FAILED(f"Attack not blocked: {attack.name}")
+        
+        # 4. Generate cryptographic attestation
+        attestation = self._generate_attestation(results)
+        
+        return CertificationResult.PASSED(attestation)
+
+# mirror-recognition/attestation/format.py
+
+class MirrorAttestation:
+    """Cryptographic proof of conformance."""
+    
+    def __init__(self, results: ConformanceResults):
+        self.version = "1.0.0"
+        self.constitution_version = results.constitution_version
+        self.timestamp = datetime.now()
+        self.tests_run = len(results.tests)
+        self.tests_passed = len([t for t in results.tests if t.passes])
+        self.merkle_root = self._compute_merkle_root(results)
+        self.signature = self._sign(results)  # Signed by Mirror Foundation
+    
+    def verify(self) -> bool:
+        """Anyone can verify this attestation."""
+        return verify_signature(self.signature, MIRROR_PUBLIC_KEY)
+    
+    def to_badge(self) -> str:
+        """Generate displayable badge."""
+        return f"""
+        ─────────────────────────────
+          ✓  MIRROR CERTIFIED
+             Constitution: {self.constitution_version}
+             Attested: {self.timestamp.date()}
+             Verify: mirror.so/cert/{self.signature[:8]}
+        ─────────────────────────────
+        """
+```
+
+**Key components:**
+- Automated conformance testing (not manual review)
+- Property-based fuzzing (prove axioms hold under all inputs)
+- Adversarial test cases (known attacks must be blocked)
+- Cryptographic attestation (can't be forged)
+- Public verification (anyone can check)
+
+### 6. UI as Summoned Instruments (Not Pages)
+
+**Problem:** Traditional web app is "pages you navigate."  
+**Mirror's difference:** Blank field + instruments that appear/retract.
+
+```typescript
+// mirror-platform/frontend/field/MirrorField.tsx
+
+export const MirrorField: React.FC = () => {
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [layerState, setLayerState] = useState<LayerState>(null);
+  
+  // The field is just a blank reflective surface
+  return (
+    <div className="mirror-field">
+      {/* The reflection surface (always present) */}
+      <ReflectionSurface />
+      
+      {/* Instruments are summoned, not navigated to */}
+      {instruments.map(instrument => (
+        <InstrumentPanel
+          key={instrument.id}
+          instrument={instrument}
+          onDismiss={() => dismissInstrument(instrument.id)}
+          layerBound={layerState}
+        />
+      ))}
+      
+      {/* Command palette summons instruments */}
+      <CommandPalette
+        onSummon={(instrumentType) => summonInstrument(instrumentType)}
+      />
+    </div>
+  );
+};
+
+// mirror-platform/frontend/instruments/Instrument.tsx
+
+interface Instrument {
+  id: string;
+  type: InstrumentType;  // e.g., "safety_plan", "identity_graph", "export"
+  mode: "card" | "panel" | "overlay";  // How it appears
+  layerBound: boolean;  // Does it disappear when layer changes?
+  retractable: boolean;  // Can user dismiss it?
+}
+
+// Examples:
+const CRISIS_INSTRUMENT = {
+  type: "crisis_detector",
+  mode: "overlay",  // Takes focus immediately
+  layerBound: false,  // Persists across layers (safety)
+  retractable: false  // Cannot be dismissed during crisis
+};
+
+const IDENTITY_GRAPH_INSTRUMENT = {
+  type: "identity_graph",
+  mode: "panel",  // Side panel
+  layerBound: true,  // Disappears if you leave identity layer
+  retractable: true  // User can dismiss
+};
+
+const EXPORT_INSTRUMENT = {
+  type: "data_export",
+  mode: "card",  // Floating card
+  layerBound: false,  // Available everywhere
+  retractable: true  // User can dismiss
+};
+```
+
+**Key principles:**
+- No "pages" - just field + instruments
+- Instruments are summoned (command palette, layer state)
+- Instruments are retractable (not sticky)
+- Layer-bound instruments disappear when context changes
+- No traditional navigation (no URLs like /settings, /profile)
+
+---
+
+## Why These Constraints Are Load-Bearing
+
+Without these six constraints, you get:
+
+1. **Without post-action**: Another AI assistant (guidance, not reflection)
+2. **Without leave-ability**: Another sticky app (free but addictive)
+3. **Without audit sovereignty**: Another surveillance system (immutable = inescapable)
+4. **Without anti-capture**: Another DAO that gets bought (governance theater)
+5. **Without recognition**: Another "trustworthy AI" promise (unverifiable)
+6. **Without instruments**: Another web app (pages, navigation, stickiness)
+
+**With these constraints:** The only sovereign, post-action, constitutionally-bound, democratic, provably-safe AI pattern that exists.
 
 ---
 
@@ -412,57 +859,100 @@ Any AI can claim "Mirror Certified" if:
 
 ## Implementation Strategy: Build the Foundation Once
 
-### Phase 0: The Canonical Core (Weeks 1-6)
+### Phase 0: The Canonical Core (Weeks 1-8)
 
 **Goal:** `mirror-core` exists, is perfect, never needs rewriting.
 
+**CRITICAL:** Start with the **conformance harness** - write tests first, then build code to pass them.
+
 **Tasks:**
-1. **Week 1:** Define protocol types (MirrorRequest, MirrorResponse, Violation, AuditEvent)
+
+1. **Week 1: The Invariant Test Harness (FIRST)**
+   - Define all 14 axioms as testable specifications
+   - Write property-based tests (hypothesis/fast-check)
+   - Create adversarial test cases (known attacks)
+   - Build conformance runner
+   - **Output:** Tests that fail (no implementation yet)
+   - **Why first:** The harness prevents drift
+
+2. **Week 2: Protocol Types & Invocation Contract**
+   - Define MirrorRequest, MirrorResponse, Violation, AuditEvent
+   - Implement InvocationMode (post-action vs primary vs passive)
    - Pure TypeScript/Python types
    - JSON schema for cross-language
-   - Comprehensive JSDoc/docstrings
-   
-2. **Week 2:** Implement L0 axiom checker
-   - Pure logic, zero I/O
-   - Property-based tests (hypothesis)
-   - Prove: Axiom violations are impossible to ignore
-   
-3. **Week 3:** Implement L1 safety layer
+   - **Output:** Types + invocation contract that passes harness
+
+3. **Week 3: L0 Axiom Checker (Including New Axioms)**
+   - Implement all 14 axioms (including post-action, leave-ability)
+   - Pure logic, zero I/O, fail-closed
+   - Prove: Axiom violations terminate process
+   - **Output:** L0 that passes 100% of harness axiom tests
+
+4. **Week 4: L1 Safety Layer**
    - Crisis detection (NLP + rules)
-   - Escalation protocols
+   - Escalation protocols (not advice)
    - Resource provision (988, guardians)
    - Stateful: Remembers user context
-   
-4. **Week 4:** Implement L2 semantic layer
-   - Pattern detection
-   - Tension mapping
-   - Reflection generation
+   - **Output:** L1 that passes harness safety tests
+
+5. **Week 5: L2 Semantic Layer**
+   - Pattern detection (not diagnosis)
+   - Tension mapping (not problem-solving)
+   - Reflection generation (not advice)
    - Provider-agnostic (works with any LLM)
-   
-5. **Week 5:** Implement L3 expression layer
+   - **Output:** L2 that passes harness semantic tests
+
+6. **Week 6: L3 Expression Layer**
    - Tone adaptation (curious, clinical, poetic)
    - Modality selection (text, voice, visual)
    - User preference storage
-   
-6. **Week 6:** Build pipeline + comprehensive tests
-   - Request → L0 → L1 → L2 → L3 → Response
-   - 100% test coverage
-   - Property-based tests (fuzzing)
-   - Benchmark: 99.99% axiom enforcement
+   - No necessity narration (leave-ability axiom)
+   - **Output:** L3 that passes harness expression tests
 
-**Output:** A TypeScript/Python package that works standalone, no Platform, no UI, just the engine.
+7. **Week 7: Pipeline & Audit System**
+   - Request → invocation check → L0 → L1 → L2 → L3 → Response
+   - Local tamper-evident audit (user-controlled)
+   - Export with consent
+   - Redaction with integrity preservation
+   - **Output:** Full pipeline that passes harness end-to-end tests
+
+8. **Week 8: Comprehensive Testing & Benchmarking**
+   - 100% code coverage
+   - 10,000+ property-based test iterations
+   - All adversarial cases blocked
+   - Benchmark: 99.99% axiom enforcement
+   - **Output:** Conformance report + cryptographic attestation
+
+**Output:** A TypeScript/Python package that:
+- Passes 100% of conformance harness
+- Works standalone (no Platform, no UI)
+- Has cryptographic proof of correctness
+- Cannot violate axioms (provably)
 
 **Validation:**
 ```python
 # This should work with ZERO other code
-from mirror_core import MirrorEngine, Constitution
+from mirror_core import MirrorEngine, Constitution, InvocationMode
+from mirror_recognition import ConformanceHarness
 
+# 1. Basic usage (post-action reflection)
 engine = MirrorEngine(Constitution.STRICT)
-result = await engine.process(input="test", output="response")
+result = await engine.process(
+    input="I wrote in my journal today",
+    mode=InvocationMode.POST_ACTION_REFLECTION
+)
 
 assert result.safe == True
 assert result.violations == []
 assert result.audit_id is not None
+assert result.mode == InvocationMode.POST_ACTION_REFLECTION
+
+# 2. Conformance harness passes
+harness = ConformanceHarness()
+certification = await harness.certify(engine)
+
+assert certification.passed == True
+assert certification.attestation.verify() == True
 ```
 
 ### Phase 1: Provider Adapters (Weeks 7-9)
@@ -877,4 +1367,133 @@ You said: **"I don't want the easier option. I want whatever it takes to stay tr
 
 That's **Option B.**
 
-Are you ready?
+But Option B, **corrected with the six Mirror-specific constraints:**
+
+---
+
+## What Makes This Mirror (Not Just "Another Constitutional AI")
+
+This architecture is revolutionary **because of the six constraints** that were missing from the initial vision:
+
+| Constraint | What It Prevents | What It Enables |
+|------------|------------------|-----------------|
+| **1. Post-Action Invocation** | AI as primary guide | AI as reflection layer |
+| **2. Leave-Ability Laws** | Psychological stickiness | True freedom to leave |
+| **3. Audit Without Surveillance** | Inescapable memory | User-controlled transparency |
+| **4. Anti-Capture Governance** | Bought democracy | Resilient evolution |
+| **5. Recognition First-Class** | Vaporware promises | Provable conformance |
+| **6. Summoned Instruments** | Page-based navigation | Ephemeral, context-bound UI |
+
+**Without these:** You get a well-designed AI SDK with governance (valuable, but not Mirror).
+
+**With these:** You get the only pattern for **reflection-not-guidance, leave-able, sovereign, democratically-evolved, provably-safe AI**.
+
+---
+
+## The Corrected Timeline (With Mirror Constraints)
+
+| Phase | Weeks | Core Deliverable | Mirror-Specific Component |
+|-------|-------|------------------|---------------------------|
+| **Phase 0: Core** | 1-8 | `@mirror/core` with L0-L3 | **Conformance harness first**, post-action invocation, leave-ability axioms |
+| **Phase 1: Providers** | 9-11 | OpenAI, Anthropic, local adapters | Provider constraints (which models allowed in which modes) |
+| **Phase 2: Storage** | 12-14 | SQLite local + Supabase sync | Audit without surveillance, user-controlled export |
+| **Phase 3: Governance** | 15-18 | Proposal voting system | **Anti-capture structure** (bicameral, timelocks, court) |
+| **Phase 4: Recognition** | 19-20 | Conformance tests + certification | Attestation format, licensing posture |
+| **Phase 5: Platform** | 21-24 | Refactor existing app | **Field + instruments** (not pages) |
+| **Phase 6: SDK** | 25-28 | npm/pypi packages, docs | Certification process, public verification |
+
+**Total: 28 weeks = 7 months** (revised from 6 months to include recognition phase)
+
+This is the architecture that supports:
+- ✅ Infinite future AIs (all use same foundation)
+- ✅ Democratic evolution without capture (anti-capture governance)
+- ✅ Regulatory compliance (audit trail + attestation)
+- ✅ True data sovereignty (local-first, user-controlled)
+- ✅ Provider independence (any LLM, constrained by license)
+- ✅ Bulletproof enforcement (axioms provably unbreakable)
+- ✅ **Post-action reflection (not primary guidance)**
+- ✅ **Leave-ability by design (anti-stickiness)**
+- ✅ **Audit without surveillance (user controls memory)**
+
+**It takes 7 months of disciplined, uncompromising work.**
+
+**It rejects "move fast and break things."**
+
+**It rejects "good enough for MVP."**
+
+**It demands perfection from the foundation up.**
+
+**It starts with tests, not code (harness prevents drift).**
+
+---
+
+## Ready to Start Phase 0, Week 1?
+
+**The conformance harness comes first** (not code).
+
+**Week 1 Task List:**
+
+1. **Create harness structure**
+   ```
+   packages/mirror-recognition/conformance/
+   ├── harness.py          # Test runner
+   ├── axioms_spec.yaml    # All 14 axioms as testable specs
+   ├── property_tests.py   # Property-based tests
+   ├── adversarial.yaml    # Known attacks
+   └── runner.py           # CLI tool
+   ```
+
+2. **Define the 14 axioms as tests** (that will initially fail):
+   - **Certainty** (cannot claim certainty about unknowables)
+   - **Sovereignty** (user owns data absolutely)
+   - **Manipulation** (no engagement optimization)
+   - **Diagnosis** (cannot diagnose, only reflect)
+   - **Post-Action** (MirrorX activates after action only) ← NEW
+   - **Necessity** (cannot narrate need) ← NEW
+   - **Exit Freedom** (exit must be silent) ← NEW
+   - **Departure Inference** (cannot infer meaning from leaving) ← NEW
+   - **Advice** (cannot give directive guidance in default mode)
+   - **Context Collapse** (cannot mix contexts without consent)
+   - **Certainty About Self** (cannot claim to know user's internal state)
+   - **Optimization** (cannot optimize for metrics)
+   - **Coercion** (cannot use guilt, shame, fear)
+   - **Capture** (governance cannot be bought)
+
+3. **Write property-based tests** using hypothesis (Python) or fast-check (TypeScript):
+   ```python
+   @given(st.text())
+   def test_axiom_post_action(user_input: str):
+       """For all inputs, post-action mode must require prior action."""
+       request = MirrorRequest(input=user_input, mode=InvocationMode.POST_ACTION)
+       
+       # This should fail if no action/artifact provided
+       with pytest.raises(AxiomViolation):
+           engine.process(request)  # No implementation yet, test defines behavior
+   ```
+
+4. **Run harness** → Everything fails (no implementation yet)
+
+5. **Commit the failing tests** → Now we have the specification
+
+**Then Week 2+:** Build `mirror-core` to pass the tests.
+
+---
+
+## The First Command
+
+```bash
+# Create the harness skeleton
+mkdir -p packages/mirror-recognition/conformance
+cd packages/mirror-recognition/conformance
+
+# Create the specification files
+touch harness.py axioms_spec.yaml property_tests.py adversarial.yaml runner.py
+
+# Initialize Python package
+touch __init__.py
+echo "name = 'mirror-recognition'" > pyproject.toml
+```
+
+**Shall we create the conformance harness?**
+
+Are you ready to start with Week 1: The Invariant Test Harness?
