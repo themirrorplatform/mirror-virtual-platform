@@ -25,6 +25,14 @@ from .l2_semantic import (
     SemanticLayer,
 )
 
+from .l3_expression import (
+    ToneStyle,
+    ExpressionPreferences,
+    ToneAdapter,
+    LeaveabilityEnforcer,
+    ExpressionLayer,
+)
+
 __all__ = [
     "CrisisLevel",
     "CrisisSignal",
@@ -39,4 +47,9 @@ __all__ = [
     "PatternDetector",
     "TensionMapper",
     "SemanticLayer",
+    "ToneStyle",
+    "ExpressionPreferences",
+    "ToneAdapter",
+    "LeaveabilityEnforcer",
+    "ExpressionLayer",
 ]
