@@ -14,10 +14,29 @@ from .l1_safety import (
     SafetyLayer,
 )
 
+from .l2_semantic import (
+    PatternType,
+    Pattern,
+    Tension,
+    TensionType,
+    SemanticContext,
+    PatternDetector,
+    TensionMapper,
+    SemanticLayer,
+)
+
 __all__ = [
     "CrisisLevel",
     "CrisisSignal",
     "SafetyCheck",
     "EscalationProtocol",
     "SafetyLayer",
+    "PatternType",
+    "Pattern",
+    "Tension",
+    "TensionType",
+    "SemanticContext",
+    "PatternDetector",
+    "TensionMapper",
+    "SemanticLayer",
 ]
