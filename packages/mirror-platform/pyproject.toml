@@ -1,0 +1,35 @@
+[project]
+name = "mirror-platform"
+version = "1.0.0"
+description = "Mirror Platform - Complete Integration Layer"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "pydantic>=2.0",
+    "click>=8.0",
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+    "httpx>=0.24",
+    "mirror-core",
+    "mirror-recognition",
+    "mirror-providers",
+    "mirror-storage",
+    "mirror-governance",
+    "mirror-expression",
+    "mirror-orchestration",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[project.scripts]
+mirror = "mirror_platform.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

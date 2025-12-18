@@ -17,6 +17,28 @@ try:
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
     HYPOTHESIS_AVAILABLE = False
+    # Create dummy decorators when hypothesis is not available
+    def given(*args, **kwargs):
+        def decorator(f):
+            return f
+        return decorator
+    def settings(*args, **kwargs):
+        def decorator(f):
+            return f
+        return decorator
+    class st:
+        @staticmethod
+        def text(**kwargs):
+            return None
+        @staticmethod
+        def integers(**kwargs):
+            return None
+        @staticmethod
+        def sampled_from(items):
+            return None
+    class Phase:
+        generate = None
+        target = None
 
 from protocol.types import MirrorRequest, MirrorResponse, InvocationMode
 from layers.l3_expression import ExpressionPreferences, ToneStyle

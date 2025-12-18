@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirror-providers"
+version = "1.0.0"
+description = "AI provider adapters for Mirror's constitutional engine"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Mirror Team"}
+]
+dependencies = [
+    "mirror-core>=1.0.0",
+    "aiohttp>=3.8.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.18.0"]
+local = ["ollama>=0.1.0"]
+all = [
+    "openai>=1.0.0",
+    "anthropic>=0.18.0",
+    "ollama>=0.1.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "hypothesis>=6.0",
+    "respx>=0.20",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mirror_providers*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"

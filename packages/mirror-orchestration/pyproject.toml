@@ -1,0 +1,27 @@
+[project]
+name = "mirror-orchestration"
+version = "1.0.0"
+description = "Mirror Orchestration - Session Management and Reflection Pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "pydantic>=2.0",
+    "mirror-core",
+    "mirror-recognition",
+    "mirror-providers",
+    "mirror-storage",
+    "mirror-governance",
+    "mirror-expression",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
