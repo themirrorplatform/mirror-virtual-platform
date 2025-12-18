@@ -111,12 +111,18 @@ class PipelineContext:
         user_id: str,
         session_id: str,
         user_input: str,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
+        provider_bridge: Any = None,
+        conversation_history: List[Dict] = None,
     ):
         self.user_id = user_id
         self.session_id = session_id
         self.user_input = user_input
         self.metadata = metadata or {}
+
+        # Provider for LLM calls
+        self.provider_bridge = provider_bridge
+        self.conversation_history = conversation_history or []
 
         # Accumulated data
         self.patterns: List[Dict] = []
@@ -370,9 +376,48 @@ async def default_analysis_handler(context: PipelineContext) -> StageResult:
 
 
 async def default_expression_handler(context: PipelineContext) -> StageResult:
-    """Default handler for expression stage."""
-    # Placeholder - would integrate with mirror-expression
-    # Generate a simple reflection
+    """Default handler for expression stage - uses LLM for real reflections."""
+    # Check if provider bridge is available
+    if context.provider_bridge is not None:
+        try:
+            from .provider_bridge import GenerationRequest
+
+            # Build pattern/tension context strings
+            patterns_context = [p.get("name", str(p)) for p in context.patterns[:5]]
+            tensions_context = [t.get("description", str(t)) for t in context.tensions[:3]]
+
+            # Create generation request
+            request = GenerationRequest(
+                user_input=context.user_input,
+                conversation_history=context.conversation_history,
+                patterns_context=patterns_context,
+                tensions_context=tensions_context,
+                session_duration_minutes=context.session_duration_minutes,
+            )
+
+            # Generate reflection using LLM
+            result = await context.provider_bridge.generate(request)
+
+            if result.success:
+                context.expressed_text = result.reflection_text
+                return StageResult(
+                    stage=PipelineStage.EXPRESSION,
+                    status=PipelineStatus.COMPLETED,
+                    data={
+                        "tokens_used": result.tokens_used,
+                        "latency_ms": result.latency_ms,
+                        "provider_used": True,
+                    },
+                )
+            else:
+                # Fall through to fallback
+                pass
+
+        except Exception as e:
+            # Log error but continue with fallback
+            pass
+
+    # Fallback: simple reflection without LLM
     context.expressed_text = (
         "I notice something in what you've shared. "
         "Would you like to explore this further?"
@@ -381,6 +426,7 @@ async def default_expression_handler(context: PipelineContext) -> StageResult:
     return StageResult(
         stage=PipelineStage.EXPRESSION,
         status=PipelineStatus.COMPLETED,
+        data={"provider_used": False},
     )
 
 
@@ -428,3 +474,55 @@ def create_default_pipeline() -> ReflectionPipeline:
     pipeline.register_stage(PipelineStage.OUTPUT, default_output_handler)
 
     return pipeline
+
+
+async def create_integrated_pipeline(
+    provider_type: str = "ollama",
+    model: str = None,
+    api_key: str = None,
+) -> tuple:
+    """
+    Create a pipeline with real LLM integration.
+
+    Returns:
+        Tuple of (pipeline, provider_bridge)
+
+    Usage:
+        pipeline, bridge = await create_integrated_pipeline("ollama")
+
+        context = PipelineContext(
+            user_id="user_001",
+            session_id="session_001",
+            user_input="I've been thinking about work...",
+            provider_bridge=bridge,
+        )
+
+        result = await pipeline.execute(context)
+        print(result.reflection_text)  # Real LLM response
+    """
+    from .provider_bridge import ProviderBridge, ProviderConfig, ProviderType
+
+    # Map string to enum
+    provider_map = {
+        "ollama": ProviderType.OLLAMA,
+        "anthropic": ProviderType.ANTHROPIC,
+        "openai": ProviderType.OPENAI,
+    }
+
+    provider_enum = provider_map.get(provider_type.lower(), ProviderType.OLLAMA)
+
+    # Create provider config
+    config = ProviderConfig(
+        provider_type=provider_enum,
+        model=model,
+        api_key=api_key,
+    )
+
+    # Initialize provider bridge
+    bridge = ProviderBridge(config)
+    await bridge.initialize()
+
+    # Create pipeline
+    pipeline = create_default_pipeline()
+
+    return pipeline, bridge

@@ -33,10 +33,24 @@ from .runtime import (
 
 
 @dataclass
+class ProviderSettings:
+    """Settings for AI provider."""
+    provider_type: str = "ollama"  # ollama, anthropic, openai
+    model: Optional[str] = None  # None = use default for provider
+    api_key: Optional[str] = None
+    api_base: Optional[str] = None
+    temperature: float = 0.7
+    max_tokens: int = 500
+
+
+@dataclass
 class MirrorConfig:
     """Configuration for MirrorX."""
     # Session settings
     session_config: SessionConfig = field(default_factory=SessionConfig)
+
+    # Provider settings
+    provider: ProviderSettings = field(default_factory=ProviderSettings)
 
     # Runtime settings
     strict_mode: bool = True  # Halt on any violation
@@ -46,6 +60,7 @@ class MirrorConfig:
     enable_patterns: bool = True
     enable_tensions: bool = True
     enable_leave_ability: bool = True
+    enable_llm: bool = True  # Use real LLM vs fallback
 
     # Transparency
     show_axiom_references: bool = False  # Show which axioms apply to responses
@@ -53,11 +68,13 @@ class MirrorConfig:
     def to_dict(self) -> dict:
         return {
             "session_config": self.session_config.to_dict(),
+            "provider_type": self.provider.provider_type,
             "strict_mode": self.strict_mode,
             "log_violations": self.log_violations,
             "enable_patterns": self.enable_patterns,
             "enable_tensions": self.enable_tensions,
             "enable_leave_ability": self.enable_leave_ability,
+            "enable_llm": self.enable_llm,
             "show_axiom_references": self.show_axiom_references,
         }
 
@@ -159,10 +176,55 @@ class MirrorX:
         self.runtime = ConstitutionalRuntime()
         self.guard = RuntimeGuard(self.runtime)
 
+        # Provider bridge (initialized lazily)
+        self._provider_bridge = None
+        self._provider_initialized = False
+
+        # Conversation history per session
+        self._conversation_history: Dict[str, List[Dict]] = {}
+
         # Statistics
         self._total_reflections = 0
         self._total_sessions = 0
         self._constitutional_halts = 0
+
+    async def _ensure_provider(self) -> None:
+        """Lazily initialize the provider bridge."""
+        if self._provider_initialized or not self.config.enable_llm:
+            return
+
+        try:
+            from .provider_bridge import ProviderBridge, ProviderConfig, ProviderType
+
+            # Map string to enum
+            provider_map = {
+                "ollama": ProviderType.OLLAMA,
+                "anthropic": ProviderType.ANTHROPIC,
+                "openai": ProviderType.OPENAI,
+            }
+
+            provider_enum = provider_map.get(
+                self.config.provider.provider_type.lower(),
+                ProviderType.OLLAMA
+            )
+
+            config = ProviderConfig(
+                provider_type=provider_enum,
+                model=self.config.provider.model,
+                api_key=self.config.provider.api_key,
+                api_base=self.config.provider.api_base,
+                temperature=self.config.provider.temperature,
+                max_tokens=self.config.provider.max_tokens,
+            )
+
+            self._provider_bridge = ProviderBridge(config)
+            await self._provider_bridge.initialize()
+            self._provider_initialized = True
+
+        except Exception as e:
+            # Provider init failed - will use fallback
+            self._provider_bridge = None
+            self._provider_initialized = True  # Don't retry
 
     # Session Management
 
@@ -280,6 +342,19 @@ class MirrorX:
         # Record activity
         self.session_manager.record_activity(session_id, "message_received")
 
+        # Ensure provider is initialized (lazy)
+        await self._ensure_provider()
+
+        # Get/create conversation history for this session
+        if session_id not in self._conversation_history:
+            self._conversation_history[session_id] = []
+
+        # Add user message to history
+        self._conversation_history[session_id].append({
+            "role": "user",
+            "content": user_input,
+        })
+
         # Build runtime context for checks
         runtime_context = {
             "user_initiated": True,
@@ -291,7 +366,7 @@ class MirrorX:
         try:
             # Pre-action constitutional check
             async with self.guard.check(runtime_context):
-                # Build pipeline context
+                # Build pipeline context with provider bridge
                 pipeline_context = PipelineContext(
                     user_id=session.user_id,
                     session_id=session_id,
@@ -299,6 +374,8 @@ class MirrorX:
                     metadata={
                         "continued_patterns": session.continued_patterns,
                     },
+                    provider_bridge=self._provider_bridge,
+                    conversation_history=self._conversation_history.get(session_id, []),
                 )
 
                 # Add session metrics for leave-ability
@@ -346,6 +423,13 @@ class MirrorX:
 
         self.session_manager.record_activity(session_id, "reflection")
         self._total_reflections += 1
+
+        # Store assistant response in conversation history
+        if pipeline_result.reflection_text:
+            self._conversation_history[session_id].append({
+                "role": "assistant",
+                "content": pipeline_result.reflection_text,
+            })
 
         # Build response
         response = ReflectionResponse(

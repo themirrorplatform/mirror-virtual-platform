@@ -54,7 +54,17 @@ from .runtime import (
     RuntimeCheck,
 )
 
-from .mirror import MirrorX, MirrorConfig
+from .mirror import MirrorX, MirrorConfig, ProviderSettings
+
+from .provider_bridge import (
+    ProviderBridge,
+    ProviderConfig,
+    ProviderType,
+    MIRROR_SYSTEM_PROMPT,
+    generate_reflection,
+)
+
+from .pipeline import create_integrated_pipeline
 
 __version__ = "1.0.0"
 __all__ = [
@@ -67,10 +77,18 @@ __all__ = [
     "ReflectionPipeline",
     "PipelineStage",
     "PipelineResult",
+    "create_integrated_pipeline",
     # Runtime
     "ConstitutionalRuntime",
     "RuntimeViolation",
     "RuntimeCheck",
+    # Provider
+    "ProviderBridge",
+    "ProviderConfig",
+    "ProviderType",
+    "ProviderSettings",
+    "MIRROR_SYSTEM_PROMPT",
+    "generate_reflection",
     # Main
     "MirrorX",
     "MirrorConfig",
