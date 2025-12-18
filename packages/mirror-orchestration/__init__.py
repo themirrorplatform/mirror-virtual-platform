@@ -66,6 +66,20 @@ from .storage_bridge import (
     StorageAuditEvent,
 )
 
+from .pattern_detector import (
+    PatternDetector,
+    DetectedPattern,
+    detect_patterns,
+    get_user_patterns,
+)
+
+from .tension_detector import (
+    TensionDetector,
+    DetectedTension,
+    detect_tensions,
+    get_user_tensions,
+)
+
 __version__ = "1.0.0"
 __all__ = [
     # Session
@@ -89,6 +103,16 @@ __all__ = [
     "StoragePattern",
     "StorageTension",
     "StorageAuditEvent",
+    # Pattern Detection
+    "PatternDetector",
+    "DetectedPattern",
+    "detect_patterns",
+    "get_user_patterns",
+    # Tension Detection
+    "TensionDetector",
+    "DetectedTension",
+    "detect_tensions",
+    "get_user_tensions",
     # Main
     "MirrorX",
     "MirrorConfig",
