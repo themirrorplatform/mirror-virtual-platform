@@ -46,31 +46,31 @@ async def test_storage_integration():
     print("\n" + "="*70)
     print("Storage Integration Test")
     print("="*70)
-    
     with tempfile.TemporaryDirectory() as tmpdir:
-        db_path = Path(tmpdir) / "test.db"
-        print(f"\nTest DB: {db_path}")
-        
-        # Test 1: Initialize storage bridge
+        db_dir = Path(tmpdir) / "db"
+        db_dir.mkdir(parents=True, exist_ok=True)
+        print(f"\nTest DB dir: {db_dir}")
+
+        # Step 1: Initialize storage bridge
         print("\n[1] Initialize Storage Bridge...")
         try:
             config = StorageConfig(
                 storage_type=StorageType.SQLITE,
-                db_path=str(db_path),
+                db_path=str(db_dir),
                 encryption_enabled=False,
             )
-            
+
             bridge = StorageBridge(config)
             await bridge.initialize()
             print("✓ Storage bridge initialized")
-            
+
         except Exception as e:
             print(f"✗ Failed: {e}")
             import traceback
             traceback.print_exc()
             return False
-        
-        # Test 2: Save a reflection
+
+        # Step 2: Save a reflection
         print("\n[2] Save Reflection...")
         try:
             reflection = await bridge.save_reflection(
@@ -84,38 +84,47 @@ async def test_storage_integration():
             print(f"✓ Reflection saved: {reflection.id}")
             print(f"  Input: {reflection.user_input[:50]}...")
             print(f"  Response: {reflection.ai_response[:50]}...")
-            
+
         except Exception as e:
             print(f"✗ Failed: {e}")
             import traceback
             traceback.print_exc()
             return False
-        
-        # Test 3: Verify in SQLite
+
+        # Step 3: Verify in SQLite
         print("\n[3] Verify SQLite Storage...")
         try:
-            conn = sqlite3.connect(db_path)
+            db_file = db_dir / "mirror.db"
+            if not db_file.exists():
+                print(f"✗ Database file not found: {db_file}")
+                return False
+
+            print(f"✓ Database file created: {db_file}")
+            size_kb = db_file.stat().st_size / 1024
+            print(f"  Size: {size_kb:.1f} KB")
+
+            conn = sqlite3.connect(db_file)
             cursor = conn.cursor()
-            
+
             cursor.execute("SELECT COUNT(*) FROM reflections")
             count = cursor.fetchone()[0]
             print(f"✓ Reflections in DB: {count}")
-            
+
             cursor.execute("SELECT content, response FROM reflections LIMIT 1")
             row = cursor.fetchone()
             if row:
                 print(f"  Stored input: {row[0][:50]}...")
                 print(f"  Stored response: {row[1][:50]}...")
-            
+
             conn.close()
             
         except Exception as e:
             print(f"✗ Failed: {e}")
-            import traceback
+            conn = sqlite3.connect(db_file)
             traceback.print_exc()
             return False
         
-        # Test 4: Pipeline with storage
+        # Step 4: Pipeline with storage
         print("\n[4] Pipeline with Storage...")
         try:
             pipeline = create_default_pipeline()
@@ -131,7 +140,7 @@ async def test_storage_integration():
             print(f"✓ Pipeline executed: {result.status.value}")
             
             # Check if reflection was saved
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(db_dir / "mirror.db")
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM reflections")
             count = cursor.fetchone()[0]

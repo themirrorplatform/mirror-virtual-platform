@@ -19,6 +19,9 @@ from datetime import datetime
 from enum import Enum
 import uuid
 import hashlib
+import importlib.util
+import sys
+from pathlib import Path
 
 
 class StorageType(Enum):
@@ -116,7 +119,16 @@ class StorageBridge:
     async def initialize(self) -> None:
         """Initialize the storage backend"""
         if self.config.storage_type == StorageType.SQLITE:
-            from mirror_storage.local.sqlite import SQLiteStorage
+            # Try regular import first
+            try:
+                from mirror_storage.local.sqlite import SQLiteStorage
+            except ImportError:
+                # Fallback: load from source path when package isn't installed
+                SQLiteStorage = self._load_local_storage_impl(
+                    module_name="mirror_storage.local.sqlite",
+                    relative_path=Path(__file__).resolve().parents[1] / "mirror-storage" / "local" / "sqlite.py",
+                    class_name="SQLiteStorage",
+                )
             
             storage_config = type('Config', (), {
                 'user_id': 'default',
@@ -146,7 +158,15 @@ class StorageBridge:
             await self._storage.initialize()
             
         elif self.config.storage_type == StorageType.MEMORY:
-            from mirror_storage.local.memory import MemoryStorage
+            # Try regular import first
+            try:
+                from mirror_storage.local.memory import MemoryStorage
+            except ImportError:
+                MemoryStorage = self._load_local_storage_impl(
+                    module_name="mirror_storage.local.memory",
+                    relative_path=Path(__file__).resolve().parents[1] / "mirror-storage" / "local" / "memory.py",
+                    class_name="MemoryStorage",
+                )
             
             storage_config = type('Config', (), {
                 'user_id': 'default',
@@ -182,8 +202,8 @@ class StorageBridge:
         
         if self._storage:
             # Convert to mirror_storage format
-            from mirror_storage.base import Reflection
-            
+            Reflection = self._resolve_storage_symbol("Reflection")
+
             storage_reflection = Reflection(
                 id=reflection.id,
                 user_id=user_id,
@@ -240,8 +260,8 @@ class StorageBridge:
         )
         
         if self._storage:
-            from mirror_storage.base import Pattern
-            
+            Pattern = self._resolve_storage_symbol("Pattern")
+
             storage_pattern = Pattern(
                 id=pattern.id,
                 user_id=user_id,
@@ -280,8 +300,8 @@ class StorageBridge:
         )
         
         if self._storage:
-            from mirror_storage.base import Tension
-            
+            Tension = self._resolve_storage_symbol("Tension")
+
             storage_tension = Tension(
                 id=tension.id,
                 user_id=user_id,
@@ -437,7 +457,7 @@ class StorageBridge:
         if not self._storage:
             return ""
         
-        from mirror_storage.base import AuditEvent
+        AuditEvent = self._resolve_storage_symbol("AuditEvent")
         
         # Get previous hash for this user
         previous_hash = self._last_event_hash.get(user_id)
@@ -477,3 +497,46 @@ class StorageBridge:
             return True
         
         return await self._storage.verify_audit_chain(user_id)
+
+    def _load_local_storage_impl(self, module_name: str, relative_path: Path, class_name: str):
+        """
+        Load a storage implementation class directly from source file when
+        the package is not installed. Returns the class object.
+        """
+        # Ensure synthetic parent package exists for relative imports
+        pkg_name = "mirror_storage"
+        pkg_path = Path(__file__).resolve().parents[1] / "mirror-storage"
+        if pkg_name not in sys.modules:
+            init_file = pkg_path / "__init__.py"
+            spec_pkg = importlib.util.spec_from_file_location(pkg_name, str(init_file))
+            pkg_module = importlib.util.module_from_spec(spec_pkg)
+            # Mark as package
+            pkg_module.__path__ = [str(pkg_path)]  # type: ignore[attr-defined]
+            sys.modules[pkg_name] = pkg_module
+            if spec_pkg.loader:
+                spec_pkg.loader.exec_module(pkg_module)  # type: ignore
+
+        spec = importlib.util.spec_from_file_location(module_name, str(relative_path))
+        module = importlib.util.module_from_spec(spec)
+        # Set proper package context
+        parent_pkg = module_name.rsplit('.', 1)[0]
+        module.__package__ = parent_pkg
+        spec.loader.exec_module(module)  # type: ignore
+        cls = getattr(module, class_name)
+        return cls
+
+    def _resolve_storage_symbol(self, symbol_name: str):
+        """
+        Resolve symbols from mirror_storage.base with a fallback to source
+        files when the package is not installed.
+        """
+        try:
+            from mirror_storage import base as storage_base
+            return getattr(storage_base, symbol_name)
+        except ImportError:
+            # Fallback: load base.py directly
+            base_path = Path(__file__).resolve().parents[1] / "mirror-storage" / "base.py"
+            spec = importlib.util.spec_from_file_location("mirror_storage.base", str(base_path))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)  # type: ignore
+            return getattr(module, symbol_name)
