@@ -85,6 +85,7 @@ class MirrorInstance:
 
         # Import here to avoid circular imports
         from mirror_orchestration import MirrorX, MirrorConfig
+        from mirror_orchestration import StorageConfig as OrchestrStorageConfig, StorageType as OrchestrStorageType
         from mirror_orchestration.session import SessionConfig
 
         # Build MirrorX config from platform config
@@ -100,6 +101,25 @@ class MirrorInstance:
             show_axiom_references=self.config.show_axiom_references,
             enable_leave_ability=self.config.expression.enable_leaveability,
         )
+
+        # Map platform storage config to orchestration storage config
+        storage_cfg = self.config.storage
+        storage_type_map = {
+            "sqlite": OrchestrStorageType.SQLITE,
+            "memory": OrchestrStorageType.MEMORY,
+            "supabase": OrchestrStorageType.SUPABASE,
+        }
+
+        orchestr_storage = OrchestrStorageConfig(
+            storage_type=storage_type_map.get(storage_cfg.type, OrchestrStorageType.SQLITE),
+            db_path=storage_cfg.path,
+            encryption_enabled=storage_cfg.encryption_enabled,
+            supabase_url=None,
+            supabase_key=None,
+        )
+
+        mirror_config.storage_config = orchestr_storage
+        mirror_config.enable_storage = True
 
         self._mirror = MirrorX(mirror_config)
         self._started = True
@@ -226,6 +246,74 @@ class MirrorInstance:
         if not self.is_running:
             return {}
         return self._mirror.get_axioms()
+
+    # Storage retrieval helpers
+    async def list_reflections(self, user_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """List reflections for a user from storage."""
+        if not self.is_running:
+            return []
+        bridge = getattr(self._mirror, "storage_bridge", None)
+        if not bridge:
+            return []
+        items = await bridge.get_reflections(user_id=user_id, limit=limit)
+        return [
+            {
+                "id": r.id,
+                "user_id": r.user_id,
+                "session_id": r.session_id,
+                "user_input": r.user_input,
+                "ai_response": r.ai_response,
+                "patterns": r.patterns_detected,
+                "tensions": r.tensions_detected,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in items
+        ]
+
+    async def list_patterns(self, user_id: str) -> List[Dict[str, Any]]:
+        """List detected patterns for a user."""
+        if not self.is_running:
+            return []
+        bridge = getattr(self._mirror, "storage_bridge", None)
+        if not bridge:
+            return []
+        items = await bridge.get_patterns(user_id)
+        return [
+            {
+                "id": p.id,
+                "user_id": p.user_id,
+                "type": p.pattern_type,
+                "name": p.name,
+                "occurrences": p.occurrences,
+                "confidence": p.confidence,
+                "first_detected": p.first_detected.isoformat(),
+                "last_detected": p.last_detected.isoformat(),
+                "examples": p.examples,
+            }
+            for p in items
+        ]
+
+    async def list_tensions(self, user_id: str) -> List[Dict[str, Any]]:
+        """List detected tensions for a user."""
+        if not self.is_running:
+            return []
+        bridge = getattr(self._mirror, "storage_bridge", None)
+        if not bridge:
+            return []
+        items = await bridge.get_tensions(user_id)
+        return [
+            {
+                "id": t.id,
+                "user_id": t.user_id,
+                "type": t.tension_type,
+                "description": t.description,
+                "side_a": t.side_a,
+                "side_b": t.side_b,
+                "severity": t.severity,
+                "detected_at": t.detected_at.isoformat(),
+            }
+            for t in items
+        ]
 
 
 class Mirror:

@@ -76,6 +76,38 @@ if FASTAPI_AVAILABLE:
         error: Optional[str] = None
         duration_ms: float = 0.0
 
+    class ReflectionItem(BaseModel):
+        """Stored reflection item."""
+        id: str
+        user_id: str
+        session_id: str
+        user_input: str
+        ai_response: str
+        patterns: list = []
+        tensions: list = []
+        created_at: str
+
+    class PatternItem(BaseModel):
+        id: str
+        user_id: str
+        type: str
+        name: str
+        occurrences: int
+        confidence: float
+        first_detected: str
+        last_detected: str
+        examples: list = []
+
+    class TensionItem(BaseModel):
+        id: str
+        user_id: str
+        type: str
+        description: str
+        side_a: str
+        side_b: str
+        severity: float
+        detected_at: str
+
     class HealthResponse(BaseModel):
         """Health check response."""
         status: str
@@ -258,6 +290,43 @@ def create_app(config: MirrorPlatformConfig = None) -> "FastAPI":
             error=result.error,
             duration_ms=result.duration_ms,
         )
+
+    # Storage retrieval endpoints
+    @app.get(
+        "/users/{user_id}/reflections",
+        response_model=List[ReflectionItem],
+        tags=["Storage"],
+        summary="List stored reflections for a user"
+    )
+    async def list_reflections(user_id: str, limit: int = 50):
+        if not instance.is_running:
+            raise HTTPException(status_code=503, detail="Mirror is not running")
+        items = await instance.list_reflections(user_id, limit)
+        return [ReflectionItem(**i) for i in items]
+
+    @app.get(
+        "/users/{user_id}/patterns",
+        response_model=List[PatternItem],
+        tags=["Storage"],
+        summary="List detected patterns for a user"
+    )
+    async def list_patterns(user_id: str):
+        if not instance.is_running:
+            raise HTTPException(status_code=503, detail="Mirror is not running")
+        items = await instance.list_patterns(user_id)
+        return [PatternItem(**i) for i in items]
+
+    @app.get(
+        "/users/{user_id}/tensions",
+        response_model=List[TensionItem],
+        tags=["Storage"],
+        summary="List detected tensions for a user"
+    )
+    async def list_tensions(user_id: str):
+        if not instance.is_running:
+            raise HTTPException(status_code=503, detail="Mirror is not running")
+        items = await instance.list_tensions(user_id)
+        return [TensionItem(**i) for i in items]
 
     return app
 
