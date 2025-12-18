@@ -56,6 +56,16 @@ from .runtime import (
 
 from .mirror import MirrorX, MirrorConfig
 
+from .storage_bridge import (
+    StorageBridge,
+    StorageConfig,
+    StorageType,
+    StorageReflection,
+    StoragePattern,
+    StorageTension,
+    StorageAuditEvent,
+)
+
 __version__ = "1.0.0"
 __all__ = [
     # Session
@@ -71,6 +81,14 @@ __all__ = [
     "ConstitutionalRuntime",
     "RuntimeViolation",
     "RuntimeCheck",
+    # Storage
+    "StorageBridge",
+    "StorageConfig",
+    "StorageType",
+    "StorageReflection",
+    "StoragePattern",
+    "StorageTension",
+    "StorageAuditEvent",
     # Main
     "MirrorX",
     "MirrorConfig",

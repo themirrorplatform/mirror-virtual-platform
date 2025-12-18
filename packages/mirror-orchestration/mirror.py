@@ -31,6 +31,16 @@ from .runtime import (
     ConstitutionalHalt,
 )
 
+# Optional import for storage bridge
+try:
+    from .storage_bridge import StorageBridge, StorageConfig, StorageType
+    STORAGE_AVAILABLE = True
+except ImportError:
+    STORAGE_AVAILABLE = False
+    StorageBridge = None
+    StorageConfig = None
+    StorageType = None
+
 
 @dataclass
 class MirrorConfig:
@@ -47,6 +57,10 @@ class MirrorConfig:
     enable_tensions: bool = True
     enable_leave_ability: bool = True
 
+    # Storage
+    storage_config: Optional['StorageConfig'] = None
+    enable_storage: bool = True
+
     # Transparency
     show_axiom_references: bool = False  # Show which axioms apply to responses
 
@@ -58,6 +72,7 @@ class MirrorConfig:
             "enable_patterns": self.enable_patterns,
             "enable_tensions": self.enable_tensions,
             "enable_leave_ability": self.enable_leave_ability,
+            "enable_storage": self.enable_storage,
             "show_axiom_references": self.show_axiom_references,
         }
 
@@ -159,6 +174,21 @@ class MirrorX:
         self.runtime = ConstitutionalRuntime()
         self.guard = RuntimeGuard(self.runtime)
 
+        # Storage
+        self.storage_bridge: Optional[StorageBridge] = None
+        if STORAGE_AVAILABLE and self.config.enable_storage:
+            if self.config.storage_config:
+                self.storage_bridge = StorageBridge(self.config.storage_config)
+            else:
+                # Use default SQLite storage
+                from .storage_bridge import StorageType
+                default_config = StorageConfig(
+                    storage_type=StorageType.SQLITE,
+                    db_path="~/.mirror/data.db",
+                    encryption_enabled=True,
+                )
+                self.storage_bridge = StorageBridge(default_config)
+
         # Statistics
         self._total_reflections = 0
         self._total_sessions = 0
@@ -185,6 +215,15 @@ class MirrorX:
         Returns:
             The new session
         """
+        # Initialize storage if needed
+        if self.storage_bridge and not hasattr(self, "_storage_initialized"):
+            try:
+                await self.storage_bridge.initialize()
+                self._storage_initialized = True
+            except Exception:
+                # Storage initialization failed, continue without it
+                self.storage_bridge = None
+
         # Get patterns to continue from previous sessions
         continued_patterns = self.session_manager.get_continued_patterns(user_id)
 
@@ -299,6 +338,7 @@ class MirrorX:
                     metadata={
                         "continued_patterns": session.continued_patterns,
                     },
+                    storage_bridge=self.storage_bridge,
                 )
 
                 # Add session metrics for leave-ability

@@ -19,6 +19,16 @@ from enum import Enum
 import asyncio
 
 
+# Optional import for storage bridge
+try:
+    from .storage_bridge import StorageBridge, StorageConfig
+    STORAGE_AVAILABLE = True
+except ImportError:
+    STORAGE_AVAILABLE = False
+    StorageBridge = None
+    StorageConfig = None
+
+
 class PipelineStage(Enum):
     """Stages of the reflection pipeline."""
     INPUT = "input"  # User input received
@@ -111,12 +121,14 @@ class PipelineContext:
         user_id: str,
         session_id: str,
         user_input: str,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
+        storage_bridge: Optional['StorageBridge'] = None,
     ):
         self.user_id = user_id
         self.session_id = session_id
         self.user_input = user_input
         self.metadata = metadata or {}
+        self.storage_bridge = storage_bridge
 
         # Accumulated data
         self.patterns: List[Dict] = []
@@ -239,6 +251,17 @@ class ReflectionPipeline:
             result.tensions_detected = [t.get("id", str(i)) for i, t in enumerate(context.tensions)]
             result.break_suggested = context.break_suggested
             result.break_message = context.break_message
+
+            # Persist to storage if available
+            if context.storage_bridge and result.status == PipelineStatus.COMPLETED:
+                await context.storage_bridge.save_reflection(
+                    user_id=context.user_id,
+                    session_id=context.session_id,
+                    user_input=context.user_input,
+                    ai_response=context.expressed_text,
+                    patterns=result.patterns_detected,
+                    tensions=result.tensions_detected,
+                )
 
         except Exception as e:
             result.status = PipelineStatus.FAILED

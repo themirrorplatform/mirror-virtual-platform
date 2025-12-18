@@ -2,7 +2,6 @@
 name = "mirror-orchestration"
 version = "1.0.0"
 description = "Mirror Orchestration - Session Management and Reflection Pipeline"
-readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 
