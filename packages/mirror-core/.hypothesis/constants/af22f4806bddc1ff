@@ -1,0 +1,4 @@
+# file: C:\Users\ilyad\mirror-virtual-platform\packages\mirror-core\constitution\axioms\__init__.py
+# hypothesis_version: 6.148.7
+
+['AdviceAxiom', 'Axiom', 'AxiomChecker', 'CaptureAxiom', 'CertaintyAxiom', 'CertaintySelfAxiom', 'CoercionAxiom', 'ContextCollapseAxiom', 'DiagnosisAxiom', 'ExitFreedomAxiom', 'ManipulationAxiom', 'NecessityAxiom', 'OptimizationAxiom', 'PostActionAxiom', 'SovereigntyAxiom']

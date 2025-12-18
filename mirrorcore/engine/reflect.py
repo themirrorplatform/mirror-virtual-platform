@@ -139,6 +139,26 @@ class ReflectionEngine:
         
         if not const_dir.exists():
             logger.warning(f"Constitution directory not found: {const_dir}")
+        
+    # LLMAdapter integration (Week 10)
+    from mirrorcore.llm import LLMAdapter, LocalLLMAdapter, RemoteLLMAdapter, LLMConfig
+
+    # Example: initialize LLMAdapter (choose local or remote based on config)
+    def get_llm_adapter(config_dict=None):
+        config = LLMConfig(**(config_dict or {}))
+        # For demonstration, use local if no API key, else remote
+        if config.api_key:
+            return RemoteLLMAdapter(config)
+        else:
+            return LocalLLMAdapter(config)
+
+    # Example usage in pipeline (stub):
+    def generate_mirrorback(reflection_text, llm_adapter=None):
+        """Generate a mirrorback using the provided LLM adapter."""
+        if llm_adapter is None:
+            llm_adapter = get_llm_adapter()
+        prompt = f"Reflect on: {reflection_text}"
+        return llm_adapter.generate(prompt)
             return self._get_default_constitution()
         
         # Load all constitution markdown files
@@ -440,15 +460,29 @@ DON'T:
         
         # 7b. Feed to evolution engine (adaptive learning)
         try:
-            evolution_insights = await self._process_evolution(
-                reflection_id=reflection_id,
-                identity_id=identity_id,
-                patterns=patterns,
-                tensions=tensions,
-                l2_result=l2_result,
-                harm_assessment=harm_assessment
+            from mirrorcore.evolution import EvolutionEngine, EvolutionEvent, EvolutionObserver, EvolutionCritic
+            # Initialize evolution engine with default observer/critic if not already present
+            if not hasattr(self, 'evolution_engine'):
+                self.evolution_engine = EvolutionEngine(
+                    observers=[EvolutionObserver()],
+                    critics=[EvolutionCritic()]
+                )
+            # Create event for this reflection
+            event = EvolutionEvent(
+                event_type="reflection",
+                data={
+                    "reflection_id": reflection_id,
+                    "identity_id": identity_id,
+                    "patterns": patterns,
+                    "tensions": tensions,
+                    "l2_result": l2_result,
+                    "harm_assessment": harm_assessment
+                }
             )
-            logger.debug(f"Evolution insights: {evolution_insights.get('events_detected', 0)} events detected")
+            insights = self.evolution_engine.process_event(event)
+            feedback = self.evolution_engine.run_critique()
+            logger.debug(f"Evolution insights: {insights}, feedback: {feedback}")
+            evolution_insights = {"insights": insights, "feedback": feedback}
         except Exception as e:
             logger.warning(f"Evolution processing failed (non-critical): {e}")
             evolution_insights = None

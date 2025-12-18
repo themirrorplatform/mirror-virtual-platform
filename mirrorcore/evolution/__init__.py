@@ -7,6 +7,5 @@ constitutional compliance, and user feedback to drive
 continuous improvement.
 """
 
-from .observer import EvolutionObserver
-
-__all__ = ['EvolutionObserver']
+from .engine import EvolutionEngine, EvolutionObserver, EvolutionCritic, EvolutionEvent
+__all__ = ['EvolutionEngine', 'EvolutionObserver', 'EvolutionCritic', 'EvolutionEvent']

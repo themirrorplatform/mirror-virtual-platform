@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.db import init_db, close_db
-from app.routers import reflections, mirrorbacks, feed, profiles, signals, notifications, search, threads, identity, governance, finder
+from app.routers import reflections, mirrorbacks, feed, profiles, signals, notifications, search, threads, identity, governance, finder, crisis, commons
 
 # Configure logging
 logger = logging.getLogger("mirror-core-api")
@@ -143,6 +143,8 @@ api_v1.include_router(threads.router, prefix="/threads", tags=["Threads"])
 api_v1.include_router(identity.router, prefix="/identity", tags=["Identity"])
 api_v1.include_router(governance.router, prefix="/governance", tags=["Governance"])
 api_v1.include_router(finder.router, prefix="/finder", tags=["Mirror Finder"])
+api_v1.include_router(crisis.router, prefix="/crisis", tags=["Crisis & Safety"])
+api_v1.include_router(commons.router, prefix="/commons", tags=["Commons"])
 
 app.include_router(api_v1)
 

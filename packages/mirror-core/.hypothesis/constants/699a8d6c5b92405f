@@ -1,0 +1,4 @@
+# file: C:\Users\ilyad\mirror-virtual-platform\packages\mirror-core\engine\audit.py
+# hypothesis_version: 6.148.7
+
+['AuditEvent', 'a', 'anonymous', 'audit.log', 'axiom_check', 'crisis_detected', 'csv', 'data', 'error_occurred', 'event_hash', 'event_type', 'event_types', 'expression_shaped', 'first_event', 'id', 'integrity', 'json', 'last_event', 'pipeline_stage', 'previous_hash', 'r', 'request_received', 'response_generated', 'safety_check', 'semantic_analysis', 'timestamp', 'total_events', 'user_id', 'violation_detected']

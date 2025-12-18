@@ -8,7 +8,9 @@ import {
   MessageCircle, 
   Settings, 
   Shield, 
-  BarChart 
+  BarChart,
+  AlertCircle,
+  Globe
 } from 'lucide-react';
 
 /**
@@ -26,7 +28,9 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/reflect', label: 'Reflect', icon: MessageCircle },
   { href: '/identity', label: 'Identity', icon: User },
+  { href: '/world', label: 'Commons', icon: Globe },
   { href: '/governance', label: 'Governance', icon: Shield },
+  { href: '/crisis', label: 'Crisis', icon: AlertCircle },
   { href: '/analytics', label: 'Analytics', icon: BarChart },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

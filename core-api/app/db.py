@@ -82,3 +82,13 @@ async def execute_command(query: str, *args):
     """Execute a command (INSERT, UPDATE, DELETE) and return status."""
     async with get_db_connection() as conn:
         return await conn.execute(query, *args)
+
+
+async def get_connection():
+    """
+    Get a database connection from the pool.
+    Note: Caller is responsible for releasing the connection.
+    Prefer using get_db_connection() context manager instead.
+    """
+    pool = get_pool()
+    return await pool.acquire()

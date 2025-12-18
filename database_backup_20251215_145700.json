@@ -1,0 +1,92 @@
+{
+  "profiles": [
+    {
+      "id": "adcedf6b-c3f1-4ab9-bd79-d066821f12f4",
+      "display_name": "jtijerina04@gmail.com",
+      "role": "Witness",
+      "avatar_url": null,
+      "banner_url": null,
+      "bio": null,
+      "created_at": "2025-11-18 12:21:17.418991+00:00",
+      "onboarding_completed": false,
+      "interests": [],
+      "reflection_style": [],
+      "goals": [],
+      "experience_level": "beginner",
+      "onboarding_data": "{}",
+      "username": null
+    },
+    {
+      "id": "2fca9de2-e460-4bd2-b755-a28373d84b93",
+      "display_name": "Mirror Founder",
+      "role": "Guide",
+      "avatar_url": null,
+      "banner_url": null,
+      "bio": null,
+      "created_at": "2025-11-14 20:47:57.457941+00:00",
+      "onboarding_completed": true,
+      "interests": [
+        "Wealth",
+        "Mind"
+      ],
+      "reflection_style": [
+        "reading"
+      ],
+      "goals": [
+        "clarity"
+      ],
+      "experience_level": "beginner",
+      "onboarding_data": "{\"goals\": [\"clarity\"], \"style\": [\"reading\"], \"interests\": [\"Wealth\", \"Mind\"], \"experience\": \"beginner\"}",
+      "username": null
+    },
+    {
+      "id": "28e7acf3-3405-488e-a1ef-3cba333ead3b",
+      "display_name": "ilyadbauer@gmail.com",
+      "role": "Witness",
+      "avatar_url": null,
+      "banner_url": null,
+      "bio": null,
+      "created_at": "2025-11-20 08:54:39.449045+00:00",
+      "onboarding_completed": false,
+      "interests": [],
+      "reflection_style": [],
+      "goals": [],
+      "experience_level": "beginner",
+      "onboarding_data": "{}",
+      "username": null
+    },
+    {
+      "id": "88f261f9-44b3-4b1d-999f-e7bc2cf93ce7",
+      "display_name": "themirrorplatform@gmail.com",
+      "role": "Witness",
+      "avatar_url": null,
+      "banner_url": null,
+      "bio": null,
+      "created_at": "2025-12-05 10:48:27.314444+00:00",
+      "onboarding_completed": false,
+      "interests": [],
+      "reflection_style": [],
+      "goals": [],
+      "experience_level": "beginner",
+      "onboarding_data": "{}",
+      "username": null
+    }
+  ],
+  "reflections": [
+    {
+      "id": 7,
+      "author": "2fca9de2-e460-4bd2-b755-a28373d84b93",
+      "title": "Hello Fellow Thinkers, Reflectors, Humans",
+      "content": "Welcome to The Mirror Platform's Discussion Hub. We are working tirelessly to create an environment for clarity, reflection, and evolution. This is a platform that places user experience above all else. Please understand that this is currently only a prototype and all functionality and systems will continued to be upgraded daily. \n\nWe have published it at this time so that all can be involved in the build. All input is welcomed and closely monitored for any and all thoughts on how to make this environment better for you. \n\nPlease enjoy this completely new, and unique environment. This one is truly for the world so I hope it will be noticed that every care is put into maintaining the environment meets every single persons concerns. Your concerns is The Mirror Platform's utmost priority. ",
+      "tags": [
+        "The Mirror Platform"
+      ],
+      "quote": null,
+      "video_url": null,
+      "created_at": "2025-11-18 03:22:16.905861+00:00",
+      "updated_at": "2025-11-18 03:22:16.905861+00:00",
+      "author_id": null,
+      "thread_id": null
+    }
+  ]
+}

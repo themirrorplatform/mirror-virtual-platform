@@ -1,0 +1,4 @@
+# file: C:\Users\ilyad\mirror-virtual-platform\mirrorcore\__init__.py
+# hypothesis_version: 6.148.7
+
+['1.0.0', 'MirrorSettings', '__version__', 'get_settings']

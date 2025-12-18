@@ -1,0 +1,4 @@
+# file: C:\Users\ilyad\mirror-virtual-platform\packages\mirror-core\engine\pipeline.py
+# hypothesis_version: 6.148.7
+
+[0.0, 1000, 'axiom_check', 'axiom_check_failed', 'axiom_check_response', 'complete', 'components', 'constitutional_layer', 'crisis_detected', 'crisis_signals', 'detail_level', 'error', 'escalation', 'execution_time_ms', 'expression_layer', 'expression_shaping', 'final_length', 'healthy', 'ok', 'passed', 'patterns', 'response_generated', 'response_generation', 'safety_check', 'safety_check_blocked', 'safety_check_passed', 'safety_layer', 'semantic_analysis', 'semantic_layer', 'semantic_patterns', 'semantic_tensions', 'signals', 'stage', 'stages_completed', 'status', 'success', 'tensions', 'themes', 'timestamp', 'tone', 'type', 'valid', 'violations']

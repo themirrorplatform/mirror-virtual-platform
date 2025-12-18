@@ -1,10 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, ProposalCard } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Globe, Users, Vote, FileText } from 'lucide-react';
+import { Globe, Users, Vote, FileText, Plus, Shield, Award, BookOpen, GitBranch, GitMerge } from 'lucide-react';
+import { commons, forks, type Publication, type Attestation, type Witness, type Fork } from '@/lib/api';
 
 export function CommonsScreen() {
-  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'proposals' | 'governance'>('dashboard');
+  const [selectedTab, setSelectedTab] = useState<'dashboard' | 'publications' | 'proposals' | 'witnesses' | 'forks' | 'governance'>('dashboard');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    publications: 0,
+    attestations: 0,
+    witnesses: 0,
+  });
+
+  useEffect(() => {
+    loadCommonsData();
+  }, []);
+
+  const loadCommonsData = async () => {
+    try {
+      const [pubStats, attStats, witStats] = await Promise.all([
+        commons.getAllPublicationsStats(),
+        commons.getAllAttestationsStats(),
+        commons.getAllWitnessesStats(),
+      ]);
+      
+      setStats({
+        publications: pubStats.data.total_publications,
+        attestations: attStats.data.total_attestations,
+        witnesses: witStats.data.total_witnesses,
+      });
+    } catch (error) {
+      console.error('Failed to load commons data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-8">
@@ -16,7 +47,7 @@ export function CommonsScreen() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-[var(--color-border-subtle)]">
+      <div className="flex gap-2 mb-6 border-b border-[var(--color-border-subtle)] overflow-x-auto">
         <TabButton
           active={selectedTab === 'dashboard'}
           onClick={() => setSelectedTab('dashboard')}
@@ -24,10 +55,28 @@ export function CommonsScreen() {
           Dashboard
         </TabButton>
         <TabButton
+          active={selectedTab === 'publications'}
+          onClick={() => setSelectedTab('publications')}
+        >
+          Publications
+        </TabButton>
+        <TabButton
           active={selectedTab === 'proposals'}
           onClick={() => setSelectedTab('proposals')}
         >
-          Evolution Proposals
+          Proposals
+        </TabButton>
+        <TabButton
+          active={selectedTab === 'witnesses'}
+          onClick={() => setSelectedTab('witnesses')}
+        >
+          Witnesses
+        </TabButton>
+        <TabButton
+          active={selectedTab === 'forks'}
+          onClick={() => setSelectedTab('forks')}
+        >
+          Forks
         </TabButton>
         <TabButton
           active={selectedTab === 'governance'}
@@ -37,9 +86,20 @@ export function CommonsScreen() {
         </TabButton>
       </div>
 
-      {selectedTab === 'dashboard' && <DashboardTab />}
-      {selectedTab === 'proposals' && <ProposalsTab />}
-      {selectedTab === 'governance' && <GovernanceTab />}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-accent-gold)]" />
+        </div>
+      ) : (
+        <>
+          {selectedTab === 'dashboard' && <DashboardTab stats={stats} />}
+          {selectedTab === 'publications' && <PublicationsTab />}
+          {selectedTab === 'proposals' && <ProposalsTab />}
+          {selectedTab === 'witnesses' && <WitnessesTab />}
+          {selectedTab === 'forks' && <ForksTab />}
+          {selectedTab === 'governance' && <GovernanceTab />}
+        </>
+      )}
     </div>
   );
 }
@@ -59,33 +119,41 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   );
 }
 
-function DashboardTab() {
+function DashboardTab({ stats }: { stats: { publications: number; attestations: number; witnesses: number } }) {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="text-center">
           <div className="flex justify-center mb-2 text-[var(--color-accent-gold)]">
-            <Users size={24} />
+            <BookOpen size={24} />
           </div>
-          <div className="text-2xl font-semibold mb-1">1,247</div>
-          <div className="text-sm text-[var(--color-text-muted)]">Active Mirrors</div>
+          <div className="text-2xl font-semibold mb-1">{stats.publications}</div>
+          <div className="text-sm text-[var(--color-text-muted)]">Publications</div>
         </Card>
         
         <Card className="text-center">
           <div className="flex justify-center mb-2 text-[var(--color-accent-blue)]">
-            <Vote size={24} />
+            <Shield size={24} />
           </div>
-          <div className="text-2xl font-semibold mb-1">3</div>
-          <div className="text-sm text-[var(--color-text-muted)]">Proposals Voted</div>
+          <div className="text-2xl font-semibold mb-1">{stats.attestations}</div>
+          <div className="text-sm text-[var(--color-text-muted)]">Attestations</div>
         </Card>
         
         <Card className="text-center">
           <div className="flex justify-center mb-2 text-[var(--color-accent-green)]">
-            <FileText size={24} />
+            <Award size={24} />
           </div>
-          <div className="text-2xl font-semibold mb-1">8</div>
-          <div className="text-sm text-[var(--color-text-muted)]">Packets Submitted</div>
+          <div className="text-2xl font-semibold mb-1">{stats.witnesses}</div>
+          <div className="text-sm text-[var(--color-text-muted)]">Witnesses</div>
+        </Card>
+
+        <Card className="text-center">
+          <div className="flex justify-center mb-2 text-[var(--color-text-muted)]">
+            <Vote size={24} />
+          </div>
+          <div className="text-2xl font-semibold mb-1">3</div>
+          <div className="text-sm text-[var(--color-text-muted)]">Proposals Voted</div>
         </Card>
       </div>
 
@@ -188,6 +256,388 @@ function ProposalsTab() {
             </div>
           </div>
         </div>
+      </Card>
+    </div>
+  );
+}
+
+function PublicationsTab() {
+  const [publications, setPublications] = useState<Publication[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadPublications();
+  }, []);
+
+  const loadPublications = async () => {
+    try {
+      const response = await commons.listPublications({ limit: 20 });
+      setPublications(response.data.publications);
+    } catch (error) {
+      console.error('Failed to load publications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading publications...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-[var(--color-text-secondary)]">
+          Shared insights, patterns, and resources from the commons
+        </p>
+        <Button variant="secondary" size="sm">
+          <Plus size={16} className="mr-2" />
+          New Publication
+        </Button>
+      </div>
+
+      {publications.length === 0 ? (
+        <Card className="text-center py-12">
+          <BookOpen size={48} className="mx-auto mb-4 text-[var(--color-text-muted)]" />
+          <h3 className="mb-2">No Publications Yet</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            Be the first to share an insight with the commons
+          </p>
+          <Button variant="secondary">Create Publication</Button>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {publications.map((pub) => (
+            <Card key={pub.publication_id} className="hover:border-[var(--color-accent-gold)] transition-colors cursor-pointer">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4>{pub.title}</h4>
+                    <span className="px-2 py-0.5 rounded text-xs bg-[var(--color-accent-blue)]/20 text-[var(--color-accent-blue)]">
+                      {pub.publication_type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
+                    {pub.content}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
+                    <span>{pub.view_count} views</span>
+                    <span>{pub.attestation_count} attestations</span>
+                    <span>v{pub.version}</span>
+                    <span>
+                      {pub.tags.map((tag) => (
+                        <span key={tag} className="mr-2">#{tag}</span>
+                      ))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WitnessesTab() {
+  const [witnesses, setWitnesses] = useState<Witness[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadWitnesses();
+  }, []);
+
+  const loadWitnesses = async () => {
+    try {
+      const response = await commons.listWitnesses({ limit: 20 });
+      setWitnesses(response.data.witnesses);
+    } catch (error) {
+      console.error('Failed to load witnesses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading witnesses...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="mb-1">Witness Registry</h3>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Trusted community members who verify and attest to contributions
+          </p>
+        </div>
+        <Button variant="secondary" size="sm">
+          <Shield size={16} className="mr-2" />
+          Become a Witness
+        </Button>
+      </div>
+
+      {witnesses.length === 0 ? (
+        <Card className="text-center py-12">
+          <Shield size={48} className="mx-auto mb-4 text-[var(--color-text-muted)]" />
+          <h3 className="mb-2">No Witnesses Registered</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            Register as a witness to help verify community contributions
+          </p>
+          <Button variant="secondary">Register as Witness</Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {witnesses.map((witness) => (
+            <Card key={witness.witness_id} className="hover:border-[var(--color-accent-gold)] transition-colors">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full bg-[var(--color-accent-gold)]/20 flex items-center justify-center">
+                  <Award size={24} className="text-[var(--color-accent-gold)]" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h5>Witness {witness.witness_id.substring(0, 8)}</h5>
+                    <span className={`px-2 py-0.5 rounded text-xs ${
+                      witness.verification_level === 'expert' 
+                        ? 'bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)]'
+                        : witness.verification_level === 'verified'
+                        ? 'bg-[var(--color-accent-blue)]/20 text-[var(--color-accent-blue)]'
+                        : 'bg-[var(--color-base-raised)]'
+                    }`}>
+                      {witness.verification_level}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-2">
+                    {witness.expertise_areas.join(', ')}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
+                    <span>⭐ {witness.reputation_score.toFixed(1)}</span>
+                    <span>{witness.attestations_given} given</span>
+                    <span>{witness.attestations_received} received</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ForksTab() {
+  const [forkList, setForkList] = useState<Fork[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedFork, setSelectedFork] = useState<Fork | null>(null);
+  const [showCreateFork, setShowCreateFork] = useState(false);
+
+  useEffect(() => {
+    loadForks();
+  }, []);
+
+  const loadForks = async () => {
+    try {
+      const response = await forks.listForks({ limit: 20 });
+      setForkList(response.data.forks);
+    } catch (error) {
+      console.error('Failed to load forks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading forks...</div>;
+  }
+
+  if (selectedFork) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setSelectedFork(null)}>
+              ← Back
+            </Button>
+            <div>
+              <h3 className="flex items-center gap-2">
+                <GitBranch size={20} />
+                Fork: {selectedFork.fork_id}
+              </h3>
+              <p className="text-sm text-[var(--color-text-muted)]">
+                Forked {new Date(selectedFork.forked_at).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm">
+              <GitMerge size={16} className="mr-2" />
+              Compare
+            </Button>
+            <Button variant="secondary" size="sm">Adopt Fork</Button>
+          </div>
+        </div>
+
+        <Card>
+          <h4 className="mb-3">Fork Details</h4>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-[var(--color-text-muted)]">Parent Instance</span>
+              <span className="font-mono text-xs">{selectedFork.parent_instance_id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--color-text-muted)]">Genesis Hash</span>
+              <span className="font-mono text-xs">{selectedFork.fork_genesis_hash.substring(0, 16)}...</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--color-text-muted)]">Status</span>
+              <span className={`px-2 py-0.5 rounded text-xs ${
+                selectedFork.status === 'active' 
+                  ? 'bg-[var(--color-accent-green)]/20 text-[var(--color-accent-green)]'
+                  : selectedFork.status === 'merged'
+                  ? 'bg-[var(--color-accent-blue)]/20 text-[var(--color-accent-blue)]'
+                  : 'bg-[var(--color-base-raised)]'
+              }`}>
+                {selectedFork.status}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <h4 className="mb-3">Reason for Fork</h4>
+          <p className="text-sm text-[var(--color-text-secondary)]">{selectedFork.reason}</p>
+        </Card>
+
+        {selectedFork.amendments.length > 0 && (
+          <Card>
+            <h4 className="mb-3">Constitutional Amendments ({selectedFork.amendments.length})</h4>
+            <div className="space-y-2">
+              {selectedFork.amendments.map((amendment, i) => (
+                <div key={i} className="p-3 rounded-lg bg-[var(--color-base-raised)] text-sm">
+                  {amendment}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        <Card>
+          <h4 className="mb-3">Fork Actions</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button variant="secondary">View Comparison</Button>
+            <Button variant="secondary">Download Fork</Button>
+            <Button variant="secondary">Propose Merge</Button>
+            <Button variant="ghost">Archive Fork</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="mb-1">Fork Registry</h3>
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            Legitimate forks representing divergent constitutional interpretations
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => setShowCreateFork(true)}>
+          <GitBranch size={16} className="mr-2" />
+          Create Fork
+        </Button>
+      </div>
+
+      {showCreateFork && (
+        <Card className="border-[var(--color-accent-gold)]">
+          <h4 className="mb-4">Create New Fork</h4>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            Forking creates a legitimate divergence in Mirror's evolution. This is a serious governance action that should only be taken when fundamental disagreements cannot be resolved through proposals.
+          </p>
+          <div className="space-y-3 mb-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Fork ID</label>
+              <input
+                type="text"
+                placeholder="e.g., mirror-privacy-first"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--color-surface-card)] border focus:border-[var(--color-accent-gold)] outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Reason for Fork</label>
+              <textarea
+                rows={4}
+                placeholder="Explain why this fork is necessary and what it changes..."
+                className="w-full px-3 py-2 rounded-lg bg-[var(--color-surface-card)] border focus:border-[var(--color-accent-gold)] outline-none"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => setShowCreateFork(false)}>Cancel</Button>
+            <Button variant="secondary">Create Fork</Button>
+          </div>
+        </Card>
+      )}
+
+      {forkList.length === 0 ? (
+        <Card className="text-center py-12">
+          <GitBranch size={48} className="mx-auto mb-4 text-[var(--color-text-muted)]" />
+          <h3 className="mb-2">No Forks Registered</h3>
+          <p className="text-sm text-[var(--color-text-secondary)] mb-4">
+            All instances are running the canonical Mirror implementation
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {forkList.map((fork) => (
+            <Card 
+              key={fork.id} 
+              className="hover:border-[var(--color-accent-gold)] transition-colors cursor-pointer"
+              onClick={() => setSelectedFork(fork)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <GitBranch size={20} className="text-[var(--color-accent-gold)]" />
+                    <h4>{fork.fork_id}</h4>
+                    <span className={`px-2 py-0.5 rounded text-xs ${
+                      fork.status === 'active' 
+                        ? 'bg-[var(--color-accent-green)]/20 text-[var(--color-accent-green)]'
+                        : fork.status === 'merged'
+                        ? 'bg-[var(--color-accent-blue)]/20 text-[var(--color-accent-blue)]'
+                        : 'bg-[var(--color-base-raised)]'
+                    }`}>
+                      {fork.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--color-text-secondary)] mb-3 line-clamp-2">
+                    {fork.reason}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
+                    <span>Forked {new Date(fork.forked_at).toLocaleDateString()}</span>
+                    <span>{fork.amendments.length} amendments</span>
+                    <span className="font-mono">{fork.parent_instance_id.substring(0, 8)}...</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Card>
+        <h4 className="mb-3">About Forks</h4>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-3">
+          Forks represent legitimate divergences in Mirror's evolution. Unlike traditional software forks, Mirror forks:
+        </p>
+        <ul className="text-sm text-[var(--color-text-secondary)] space-y-2 ml-4">
+          <li>• Maintain constitutional legitimacy through governance</li>
+          <li>• Can be adopted or merged back into the mainline</li>
+          <li>• Preserve user sovereignty (you choose which fork to run)</li>
+          <li>• Are tracked transparently in the commons</li>
+        </ul>
       </Card>
     </div>
   );

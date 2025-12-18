@@ -1,0 +1,4 @@
+# file: C:\Users\ilyad\mirror-virtual-platform\mirrorcore\config\settings.py
+# hypothesis_version: 6.148.7
+
+[86400, '.env', '.mirrorcore', '1.0.0', 'DEBUG', 'ERROR', 'EngineSettings', 'INFO', 'MIRROR_', 'MirrorCore', 'MirrorSettings', 'WARNING', 'beta', 'cloud', 'config.json', 'get_settings', 'hybrid', 'llama2', 'local', 'local_llm', 'manual', 'mirror.db', 'remote_llm', 'reset_settings', 'stable']
