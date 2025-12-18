@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mirror-storage"
+version = "1.0.0"
+description = "Data sovereignty storage layer for Mirror"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Mirror Team"}
+]
+dependencies = [
+    "cryptography>=41.0.0",
+    "aiofiles>=23.0.0",
+]
+
+[project.optional-dependencies]
+sqlite = []  # SQLite is built-in
+cloud = [
+    "supabase>=2.0.0",
+    "httpx>=0.25.0",
+]
+all = [
+    "supabase>=2.0.0",
+    "httpx>=0.25.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "hypothesis>=6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mirror_storage*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
