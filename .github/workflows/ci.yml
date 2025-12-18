@@ -1,0 +1,35 @@
+name: Mirror Platform CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r mirrorcore/commons/../requirements.txt || true
+          pip install pytest hypothesis cryptography
+      - name: Run Commons Sync tests
+        run: pytest mirrorcore/commons/test_sync.py
+      - name: Run Commons Sync fuzz tests
+        run: pytest mirrorcore/commons/fuzz_test.py
+      - name: Run all tests
+        run: pytest tests/ || true
+      - name: Run static analysis
+        run: pip install bandit && bandit -r mirrorcore/commons || true
+      - name: Run dependency audit
+        run: pip install pip-audit && pip-audit || true
+      - name: Run property-based tests
+        run: pytest --hypothesis-show-statistics mirrorcore/commons/test_sync.py

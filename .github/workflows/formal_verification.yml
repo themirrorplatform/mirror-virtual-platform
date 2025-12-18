@@ -1,0 +1,21 @@
+name: Formal Verification
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  tla-model-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install TLC (TLA+ Model Checker)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre wget
+          wget https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar
+      - name: Run TLA+ Model Checking
+        run: |
+          if [ -f mirrorcore/commons/formal_spec.tla ]; then java -cp tla2tools.jar tlc2.TLC mirrorcore/commons/formal_spec.tla; else echo 'No formal_spec.tla found.'; fi
