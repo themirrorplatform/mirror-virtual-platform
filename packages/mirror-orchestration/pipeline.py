@@ -356,23 +356,57 @@ async def default_preprocess_handler(context: PipelineContext) -> StageResult:
 
 
 async def default_recognition_handler(context: PipelineContext) -> StageResult:
-    """Default handler for recognition stage."""
-    # Placeholder - would integrate with mirror-recognition
-    return StageResult(
-        stage=PipelineStage.RECOGNITION,
-        status=PipelineStatus.COMPLETED,
-        data={"patterns_found": 0},
-    )
+    """Default handler for recognition stage - detects patterns."""
+    try:
+        from .pattern_detector import detect_patterns
+
+        patterns = detect_patterns(context.user_input, context.user_id)
+
+        # Store in context for downstream stages
+        context.patterns = [p.to_dict() for p in patterns]
+
+        return StageResult(
+            stage=PipelineStage.RECOGNITION,
+            status=PipelineStatus.COMPLETED,
+            data={
+                "patterns_found": len(patterns),
+                "pattern_types": list(set(p.pattern_type.value for p in patterns)),
+            },
+        )
+    except Exception:
+        # Graceful fallback
+        return StageResult(
+            stage=PipelineStage.RECOGNITION,
+            status=PipelineStatus.COMPLETED,
+            data={"patterns_found": 0},
+        )
 
 
 async def default_analysis_handler(context: PipelineContext) -> StageResult:
-    """Default handler for analysis stage."""
-    # Placeholder - would integrate with mirror-recognition tensions
-    return StageResult(
-        stage=PipelineStage.ANALYSIS,
-        status=PipelineStatus.COMPLETED,
-        data={"tensions_found": 0},
-    )
+    """Default handler for analysis stage - detects tensions."""
+    try:
+        from .tension_detector import detect_tensions
+
+        tensions = detect_tensions(context.user_input, context.user_id)
+
+        # Store in context for downstream stages
+        context.tensions = [t.to_dict() for t in tensions]
+
+        return StageResult(
+            stage=PipelineStage.ANALYSIS,
+            status=PipelineStatus.COMPLETED,
+            data={
+                "tensions_found": len(tensions),
+                "tension_types": list(set(t.tension_type.value for t in tensions)),
+            },
+        )
+    except Exception:
+        # Graceful fallback
+        return StageResult(
+            stage=PipelineStage.ANALYSIS,
+            status=PipelineStatus.COMPLETED,
+            data={"tensions_found": 0},
+        )
 
 
 async def default_expression_handler(context: PipelineContext) -> StageResult:

@@ -64,6 +64,29 @@ from .provider_bridge import (
     generate_reflection,
 )
 
+from .pattern_detector import (
+    PatternDetector,
+    DetectedPattern,
+    PatternType,
+    detect_patterns,
+    get_pattern_detector,
+)
+
+from .tension_detector import (
+    TensionDetector,
+    DetectedTension,
+    TensionType,
+    detect_tensions,
+    get_tension_detector,
+)
+
+from .storage_bridge import (
+    StorageBridge,
+    StorageType,
+    StoredReflection,
+    get_storage_bridge,
+)
+
 from .pipeline import create_integrated_pipeline
 
 __version__ = "1.0.0"
@@ -89,6 +112,23 @@ __all__ = [
     "ProviderSettings",
     "MIRROR_SYSTEM_PROMPT",
     "generate_reflection",
+    # Pattern Detection
+    "PatternDetector",
+    "DetectedPattern",
+    "PatternType",
+    "detect_patterns",
+    "get_pattern_detector",
+    # Tension Detection
+    "TensionDetector",
+    "DetectedTension",
+    "TensionType",
+    "detect_tensions",
+    "get_tension_detector",
+    # Storage
+    "StorageBridge",
+    "StorageType",
+    "StoredReflection",
+    "get_storage_bridge",
     # Main
     "MirrorX",
     "MirrorConfig",
