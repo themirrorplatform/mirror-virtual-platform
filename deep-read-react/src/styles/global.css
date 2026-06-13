@@ -239,3 +239,55 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: hidden; }
 .lenis.lenis-smooth iframe { pointer-events: none; }
+
+/* ---------- Prompt 4: micro-interactions ---------- */
+
+/* custom cursor (desktop, pointer:fine only; native cursor stays visible) */
+.cursor-dot, .cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; will-change: transform;
+}
+.cursor-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bone); }
+.cursor-ring {
+  width: 30px; height: 30px; border: 1px solid var(--gold-soft); border-radius: 50%;
+  display: grid; place-items: center;
+  transition: width .25s ease, height .25s ease, border-color .25s ease;
+}
+.cursor-ring.is-active { width: 54px; height: 54px; border-color: var(--gold); }
+.cursor-ring::after {
+  content: attr(data-label); font-family: var(--mono); font-size: .5rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--gold);
+  opacity: 0; transition: opacity .2s ease;
+}
+.cursor-ring.is-active::after { opacity: 1; }
+@media (hover: none), (pointer: coarse) { .cursor-dot, .cursor-ring { display: none; } }
+
+/* link hovers: gold underline draws left -> right */
+.scene a:not(.doclink):not(.magnetic), .attrib a, footer.fin a {
+  text-decoration: none;
+  background-image: linear-gradient(var(--gold), var(--gold));
+  background-size: 0% 1px; background-position: 0 100%; background-repeat: no-repeat;
+  transition: background-size .2s ease;
+}
+.scene a:not(.doclink):not(.magnetic):hover, .attrib a:hover, footer.fin a:hover {
+  background-size: 100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene a, .attrib a, footer.fin a { transition: none; }
+}
+
+/* ---------- View Transitions (one-pager <-> documents) ---------- */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vt-out .35s ease both; }
+::view-transition-new(root) { animation: vt-in .35s ease both; }
+@keyframes vt-out { to { opacity: 0; filter: brightness(.12); } }
+@keyframes vt-in { from { opacity: 0; filter: brightness(.12); } }
+/* the docket / backbar carries across as a flickering mono line */
+.docket { view-transition-name: docket; }
+::view-transition-new(docket) { animation: vt-flicker .5s steps(2, end) both; }
+@keyframes vt-flicker {
+  0% { opacity: 0; } 20% { opacity: .4; } 35% { opacity: .1; }
+  55% { opacity: .7; } 75% { opacity: .3; } 100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

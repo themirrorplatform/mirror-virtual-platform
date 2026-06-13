@@ -157,3 +157,35 @@ footer.fin a{color:var(--dim)}
 .backbar a:hover{color:var(--gold)}
 strong{font-weight:600;color:var(--bone)}
 hr{border:0;border-top:1px solid var(--hair);margin:2.4rem 0}
+
+/* ---------- Prompt 4: document-page polish ---------- */
+/* reading-progress hairline (driven by /doc.js) */
+.backbar{view-transition-name:docket}
+
+/* link hovers sitewide: gold underline draws left -> right */
+.reader p a, .reader li a{
+  text-decoration:none;
+  background-image:linear-gradient(var(--gold),var(--gold));
+  background-size:0% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease;
+}
+.reader p a:hover, .reader li a:hover{background-size:100% 1px}
+.backbar a{
+  background-image:linear-gradient(var(--gold),var(--gold));
+  background-size:0% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease, color .2s ease;
+}
+.backbar a:hover{background-size:100% 1px}
+
+/* ---------- View Transitions (documents <-> one-pager) ---------- */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vt-out .35s ease both}
+::view-transition-new(root){animation:vt-in .35s ease both}
+@keyframes vt-out{to{opacity:0;filter:brightness(.12)}}
+@keyframes vt-in{from{opacity:0;filter:brightness(.12)}}
+::view-transition-new(docket){animation:vt-flicker .5s steps(2,end) both}
+@keyframes vt-flicker{0%{opacity:0}20%{opacity:.4}35%{opacity:.1}55%{opacity:.7}75%{opacity:.3}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important}
+  .reader p a,.reader li a,.backbar a{transition:none}
+}

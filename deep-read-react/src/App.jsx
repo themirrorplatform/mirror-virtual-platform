@@ -3,6 +3,7 @@ import { Docket, Progress, DotNav } from './components/Chrome.jsx';
 import Reveal from './components/Reveal.jsx';
 import HeroCrest from './components/HeroCrest.jsx';
 import MagneticButton from './components/MagneticButton.jsx';
+import CustomCursor from './components/CustomCursor.jsx';
 import { LenisContext } from './motion/LenisContext';
 import { useMotionEngine } from './motion/useMotionEngine';
 import { prefersReducedMotion } from './motion/reducedMotion';
@@ -38,6 +39,7 @@ export default function App() {
 
   return (
     <LenisContext.Provider value={lenis}>
+      <CustomCursor />
       {/* barely-there gold grain, the fastest parallax layer */}
       <div className="grain" data-parallax="grain" aria-hidden="true" />
 
