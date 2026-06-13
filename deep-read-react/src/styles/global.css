@@ -213,6 +213,11 @@ h2 { font-size: clamp(1.7rem, 5vw, 2.8rem); margin-bottom: 1.1rem; }
   .seat .magnetic::before { display: none; }
   .seat .magnetic.sealing { transform: none; }
 }
+.seat-dispatch {
+  margin-top: 1.3rem; font-family: var(--mono); font-size: .62rem;
+  letter-spacing: .12em; color: var(--dim);
+}
+.seat-dispatch a { color: var(--gold); text-decoration-color: var(--gold-soft); }
 :focus-visible { outline: 2px solid var(--steel); outline-offset: 3px; }
 
 /* doc links from scenes */

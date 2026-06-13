@@ -10,6 +10,9 @@ import { prefersReducedMotion } from './motion/reducedMotion';
 
 const STORIES = ['STORY 0001', 'STORY 0002', 'STORY 0003', 'STORY 0004', 'STORY 0005'];
 
+// The two Substack publications (clean canonical URLs, no tracking params).
+const NEWSROOM = 'https://substack.com/@themirrorplatform';   // The Mirror Platform — the newsroom
+
 /**
  * The seat form. Real <form> with labels, autocomplete, and Enter-to-submit.
  * On submit it plays the "seal" micro-animation — delight without claiming the
@@ -174,6 +177,10 @@ export default function App() {
                 when the readers are revealed, when the stories open, and on the day of the answer.
               </p>
               <SeatForm />
+              <p className="seat-dispatch">
+                Dispatches go out through{' '}
+                <a href={NEWSROOM} target="_blank" rel="me noopener noreferrer">The Mirror Platform on Substack</a>.
+              </p>
             </Reveal>
           </div>
         </section>
@@ -222,7 +229,8 @@ export default function App() {
         <footer className="fin">
           <span>THE DEEP READ · BROUGHT TO YOU BY A REFLECTION OF THE MIRROR PLATFORM ·{' '}
             <a href="/protocol.html">HOW IT WORKS</a> · <a href="/vow.html">OUR PROMISE</a> ·{' '}
-            <a href="/seal-log.html">SEAL LEDGER</a> · <a href="/about.html">ABOUT</a></span>
+            <a href="/seal-log.html">SEAL LEDGER</a> · <a href="/about.html">ABOUT</a> ·{' '}
+            <a href={NEWSROOM} target="_blank" rel="me noopener noreferrer">NEWSROOM</a></span>
         </footer>
       </main>
     </LenisContext.Provider>
