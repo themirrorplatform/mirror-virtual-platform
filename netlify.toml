@@ -1,0 +1,15 @@
+# Netlify build config for The Deep Read (Vite app in deep-read-react/).
+# Used when the repo is connected to Netlify for Git-based CI. The manual
+# deploys push the prebuilt dist/ directly; this keeps both paths consistent.
+[build]
+  base = "deep-read-react"
+  command = "npm ci && npm run build"
+  publish = "deep-read-react/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Set in the Netlify UI (Site settings -> Environment variables), not committed:
+#   VITE_SUPABASE_URL       = https://hhyilmbejidzriljesph.supabase.co
+#   VITE_SUPABASE_ANON_KEY  = (publishable anon key)
+# Security headers + cache rules live in deep-read-react/public/_headers.
