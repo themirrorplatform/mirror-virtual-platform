@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seal Log — The Deep Read</title>
+<meta name="description" content="Every sealed artifact, hashed and timestamped in public the day it is created.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=IBM+Plex+Mono:wght@400;600&family=Spectral:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="backbar">
+  <a href="index.html">← The Deep Read</a>
+  <a href="protocol.html">Protocol</a>
+  <a href="vow.html">Vow</a>
+  <a href="seal-log.html">Seal Log</a>
+  <a href="institute.html">Institute</a>
+  <a href="about.html">About</a>
+</div>
+
+<main class="reader">
+  <span class="eyebrow">The public record of everything hidden</span>
+  <h1>Seal Log</h1>
+
+  <p>Every sealed artifact in this match — the storytellers' hidden layers, every contestant
+  submission, every revision, the crowd tally — is SHA-256 hashed and anchored via
+  OpenTimestamps <strong>the day it is created</strong>, then logged here and mirrored as a
+  commit in the public repository. The hash proves <em>when</em>. The referee's custody proves
+  <em>what</em>. This log proves <em>nothing was swapped or dropped</em>.</p>
+
+  <div class="clause">
+LOG FORMAT (one line per seal)<br>
+[date] · [artifact id] · [sha-256] · [ots proof link] · [custodian: referee]<br><br>
+ENTRY 000 — this page, hashed at publication, so even the log has a log.
+  </div>
+
+  <p>When the match ends, every seal opens: the plaintext publishes beside its hash so anyone
+  can verify the pair. Until then, this page is a list of promises with timestamps —
+  which is the only kind of promise this event makes.</p>
+
+  <p class="note">Repository link and verification instructions publish here when the
+  referee signs and the first artifact is sealed.</p>
+</main>
+
+<footer>
+  <span>Public Seal Log · The Deep Read · The Mirror Platform</span>
+  <span><a href="protocol.html">How sealing works — Protocol §6</a></span>
+</footer>
+
+</body>
+</html>
