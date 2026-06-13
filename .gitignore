@@ -46,3 +46,6 @@ logs/
 .cache/
 .pytest_cache/
 coverage/
+
+# Verification artifacts
+deep-read-react/verify-shots/

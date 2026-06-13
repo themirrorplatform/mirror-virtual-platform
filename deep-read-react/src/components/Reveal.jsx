@@ -1,31 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 /**
- * Reveal — the `.rise` reveal primitive, ported from the canonical static site's
- * IntersectionObserver pattern. Prompt 0 baseline; Prompt 1 replaces the engine
- * with Lenis + GSAP ScrollTrigger choreography. Honors prefers-reduced-motion
- * (the CSS collapses .rise to its final state).
- *
- * @param {string} as      element tag (default span/div via `as`)
- * @param {0|1|2|3} delay   staggered delay step (maps to .d1/.d2/.d3)
+ * Reveal — a thin marker that tags an element with `data-rise` so the motion
+ * engine (useMotionEngine) can choreograph its entrance per scene. It carries
+ * no visual state of its own: under reduced-motion the engine never runs and
+ * the element simply renders in its final, visible state.
  */
-export default function Reveal({ as: Tag = 'div', delay = 0, className = '', children, ...rest }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) el.classList.add('in'); }),
-      { threshold: 0.18 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const d = delay ? ` d${delay}` : '';
+export default function Reveal({ as: Tag = 'div', className = '', children, ...rest }) {
   return (
-    <Tag ref={ref} className={`rise${d}${className ? ' ' + className : ''}`} {...rest}>
+    <Tag data-rise className={className || undefined} {...rest}>
       {children}
     </Tag>
   );
