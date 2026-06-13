@@ -38,6 +38,27 @@ SUPABASE_ACCESS_TOKEN=sbp_... SUPABASE_PROJECT_REF=hhyilmbejidzriljesph \
 
 …or paste that SQL into the Supabase dashboard SQL Editor and run it.
 
+## Admin (witness list)
+Private page at **`/admin.html`** (noindex, not linked anywhere). It calls the
+serverless function `/.netlify/functions/admin-witnesses`, which reads the table
+with the **service-role key server-side** (never in the browser) behind an admin
+token, and renders the list with a CSV export.
+
+Required Netlify env vars (set via `netlify env:set`, already configured):
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (secret), `ADMIN_TOKEN` (secret).
+Open `/admin.html`, paste the admin token, and you're in. Rotate the token any
+time with `netlify env:set ADMIN_TOKEN <new> --secret --context production` then
+redeploy.
+
+Deploys that include the function must go through the Netlify CLI (functions
+aren't part of the plain dir-zip upload):
+
+```bash
+cd deep-read-react && npm run build
+NETLIFY_AUTH_TOKEN=… NETLIFY_SITE_ID=42f8c91f-bf56-45d8-a99f-ffedc0cd0e25 \
+  npx netlify-cli deploy --prod --dir dist --functions netlify/functions
+```
+
 ## Go-live: point www.themirrorplatform.com at Netlify  (⏸ needs your go)
 This takes the old Duda site dark for `www`, so do it deliberately.
 

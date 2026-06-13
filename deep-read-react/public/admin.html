@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>The Deep Read — witnesses</title>
+  <style>
+    :root { --bg:#0b0b0d; --ink:#ece9e2; --dim:#8a877f; --gold:#c9a24b; --line:#23231f; --red:#d98a8a; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    h1 { font-size: 1.1rem; letter-spacing:.04em; font-weight:600; margin:0 0 .25rem; }
+    .mono { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .sub { color:var(--dim); font-size:.8rem; letter-spacing:.06em; margin:0 0 2rem; }
+    .gate { display:flex; gap:.5rem; max-width:440px; }
+    input { flex:1; background:#141416; border:1px solid var(--line); color:var(--ink); padding:.6rem .7rem; border-radius:6px; font-family: ui-monospace,monospace; }
+    button { background:var(--gold); color:#1a1500; border:0; padding:.6rem .9rem; border-radius:6px; font-weight:600; cursor:pointer; }
+    button.ghost { background:transparent; color:var(--dim); border:1px solid var(--line); }
+    .bar { display:flex; align-items:center; gap:1rem; margin:1.5rem 0 1rem; flex-wrap:wrap; }
+    .count { font-family: ui-monospace,monospace; color:var(--gold); }
+    .err { color:var(--red); font-family: ui-monospace,monospace; font-size:.8rem; min-height:1.2em; }
+    table { width:100%; border-collapse:collapse; font-size:.86rem; }
+    th,td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:var(--dim); font-weight:500; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+    td.mono { font-family: ui-monospace,monospace; color:var(--dim); white-space:nowrap; }
+    .hidden { display:none; }
+    .empty { color:var(--dim); padding:2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>The Deep Read — witnesses</h1>
+    <p class="sub mono">Private. Service-role read, behind a token. Not linked anywhere public.</p>
+
+    <form id="gate" class="gate">
+      <input id="token" type="password" placeholder="admin token" autocomplete="off" aria-label="Admin token" />
+      <button type="submit">Enter</button>
+    </form>
+    <p id="err" class="err"></p>
+
+    <div id="panel" class="hidden">
+      <div class="bar">
+        <span class="count"><span id="count">0</span> witnesses</span>
+        <button id="csv" class="ghost" type="button">Download CSV</button>
+        <button id="refresh" class="ghost" type="button">Refresh</button>
+        <button id="signout" class="ghost" type="button">Sign out</button>
+      </div>
+      <table>
+        <thead><tr><th>When</th><th>Email</th><th>Name</th><th>Source</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p id="empty" class="empty hidden">No one has saved a seat yet.</p>
+    </div>
+  </div>
+
+  <script>
+    const FN = '/.netlify/functions/admin-witnesses';
+    const $ = (id) => document.getElementById(id);
+    const tokenKey = 'tdr_admin_token';
+    const fmt = (iso) => { try { return new Date(iso).toISOString().replace('T',' ').slice(0,16); } catch { return iso; } };
+
+    async function load() {
+      const token = sessionStorage.getItem(tokenKey);
+      if (!token) return showGate();
+      $('err').textContent = '';
+      let res;
+      try { res = await fetch(FN, { headers: { 'x-admin-token': token } }); }
+      catch { $('err').textContent = 'Network error.'; return; }
+      if (res.status === 401) { sessionStorage.removeItem(tokenKey); showGate('Wrong token.'); return; }
+      if (!res.ok) { $('err').textContent = 'Error ' + res.status; return; }
+      const { count, rows } = await res.json();
+      $('count').textContent = count;
+      $('rows').innerHTML = rows.map((r) =>
+        `<tr><td class="mono">${fmt(r.created_at)}</td><td>${escapeHtml(r.email)}</td><td>${escapeHtml(r.name||'')}</td><td class="mono">${escapeHtml(r.source||'')}</td></tr>`
+      ).join('');
+      $('empty').classList.toggle('hidden', count > 0);
+      $('gate').classList.add('hidden'); $('panel').classList.remove('hidden');
+    }
+    function showGate(msg) {
+      $('panel').classList.add('hidden'); $('gate').classList.remove('hidden');
+      if (msg) $('err').textContent = msg;
+    }
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+    $('gate').addEventListener('submit', (e) => { e.preventDefault(); sessionStorage.setItem(tokenKey, $('token').value.trim()); $('token').value=''; load(); });
+    $('refresh').addEventListener('click', load);
+    $('signout').addEventListener('click', () => { sessionStorage.removeItem(tokenKey); showGate(); });
+    $('csv').addEventListener('click', async () => {
+      const token = sessionStorage.getItem(tokenKey);
+      const res = await fetch(FN + '?format=csv', { headers: { 'x-admin-token': token } });
+      if (!res.ok) { $('err').textContent = 'CSV error ' + res.status; return; }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'witnesses.csv'; a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    load();
+  </script>
+</body>
+</html>

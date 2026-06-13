@@ -4,10 +4,14 @@
 [build]
   base = "deep-read-react"
   command = "npm ci && npm run build"
-  publish = "deep-read-react/dist"
+  publish = "dist"            # relative to base
 
 [build.environment]
   NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"   # relative to base
+  node_bundler = "esbuild"
 
 # Set in the Netlify UI (Site settings -> Environment variables), not committed:
 #   VITE_SUPABASE_URL   = https://dhozgynxwzwysovstvep.supabase.co
