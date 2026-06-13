@@ -7,6 +7,7 @@ import CustomCursor from './components/CustomCursor.jsx';
 import { LenisContext } from './motion/LenisContext';
 import { useMotionEngine } from './motion/useMotionEngine';
 import { prefersReducedMotion } from './motion/reducedMotion';
+import { joinWitnessList } from './witness.js';
 
 const STORIES = ['STORY 0001', 'STORY 0002', 'STORY 0003', 'STORY 0004', 'STORY 0005'];
 
@@ -15,24 +16,51 @@ const NEWSROOM = 'https://substack.com/@themirrorplatform';   // The Mirror Plat
 
 /**
  * The seat form. Real <form> with labels, autocomplete, and Enter-to-submit.
- * On submit it plays the "seal" micro-animation — delight without claiming the
- * form works yet.
- * TODO (Prompt 7): post to the Supabase `join-witness-list` edge function.
+ * Submits to the witness list (Supabase, anon insert under RLS), then plays the
+ * "seal" micro-animation. A hidden honeypot field traps bots. Falls back to a
+ * local-only success when the backend env isn't configured.
  */
 function SeatForm() {
   const [sealing, setSealing] = useState(false);
-  const onSubmit = (e) => {
-    e.preventDefault();
-    // TODO (Prompt 7): wire to the witness list before launch.
-    if (sealing) return;
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  const seal = () => {
     setSealing(true);
-    setTimeout(() => setSealing(false), prefersReducedMotion() ? 650 : 1300);
+    setTimeout(() => { setSealing(false); setDone(true); }, prefersReducedMotion() ? 650 : 1300);
   };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (sealing || done) return;
+    const data = new FormData(e.currentTarget);
+    // Honeypot: a real person never fills this. If it's set, fake success silently.
+    if (data.get('company')) { seal(); return; }
+    setError('');
+    const res = await joinWitnessList({ email: data.get('email'), name: data.get('name') });
+    if (res.ok) seal();
+    else setError("Something went wrong saving your seat. Please try again.");
+  };
+
+  if (done) {
+    return (
+      <p className="seat-done" role="status">
+        Your seat is saved. We'll write only when something real happens.
+      </p>
+    );
+  }
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} noValidate>
       <input type="text" name="name" placeholder="first name" aria-label="First name" autoComplete="given-name" />
       <input type="email" name="email" placeholder="your@email" required aria-label="Email address" autoComplete="email" />
+      {/* honeypot — visually hidden, off the tab order, ignored by humans */}
+      <input
+        type="text" name="company" tabIndex={-1} autoComplete="off"
+        aria-hidden="true" className="hp" defaultValue=""
+      />
       <MagneticButton sealing={sealing}>Save my seat</MagneticButton>
+      {error && <p className="seat-error" role="alert">{error}</p>}
     </form>
   );
 }

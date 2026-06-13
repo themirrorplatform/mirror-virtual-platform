@@ -64,8 +64,12 @@ const browser = await chromium.launch({ args: ['--use-gl=swiftshader'] });
   const dash = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('#seat .seat-border rect')).strokeDashoffset));
   ok('Seat border drew itself (dashoffset → ~0)', dash < 5, `dashoffset=${dash}`);
 
-  // seal micro-animation on a VALID submit (button → red SEALED stamp), then resets.
-  // (An empty required email is correctly blocked by the browser, so fill it first.)
+  // The witness POST is mocked: the *.supabase.co host is unreachable from here,
+  // and the seal now plays only on a successful save. Handler persists across reloads.
+  await page.route('**/rest/v1/witnesses*', (route) => route.fulfill({ status: 201, body: '' }));
+
+  // seal micro-animation on a VALID submit (button → red SEALED stamp), then a
+  // permanent saved-seat confirmation (no longer a reset — the form is one-shot).
   await page.fill('#seat input[type=email]', 'witness@example.com');
   await page.evaluate(() => document.querySelector('#seat form').requestSubmit());
   await page.waitForTimeout(150);
@@ -76,10 +80,13 @@ const browser = await chromium.launch({ args: ['--use-gl=swiftshader'] });
   ok('Submit plays the seal stamp (red SEALED)', sealing.cls && sealing.label === 'SEALED', `label=${sealing.label}`);
   await page.screenshot({ path: `${OUT}/setpiece-seal.png` });
   await page.waitForTimeout(1500);
-  const reset = await page.evaluate(() => document.querySelector('#seat .magnetic .magnetic-label').textContent);
-  ok('Seal resets afterward', reset === 'Save my seat', `label=${reset}`);
+  const confirmed = await page.evaluate(() => !!document.querySelector('#seat .seat-done'));
+  ok('Seal settles into the saved-seat confirmation', confirmed);
 
-  // real form: autocomplete attrs + Enter submits
+  // real form: autocomplete attrs + Enter submits (reload — the form is one-shot)
+  await page.reload({ waitUntil: 'load' });
+  await page.evaluate(() => document.querySelector('#seat')?.scrollIntoView());
+  await page.waitForSelector('#seat input[type=email]', { state: 'visible', timeout: 5000 });
   const attrs = await page.evaluate(() => {
     const email = document.querySelector('#seat input[type=email]');
     const name = document.querySelector('#seat input[type=text]');
