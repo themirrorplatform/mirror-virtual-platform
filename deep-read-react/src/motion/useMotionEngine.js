@@ -3,6 +3,7 @@ import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from './reducedMotion';
+import { initSetPieces } from './setPieces';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,6 +41,7 @@ export function useMotionEngine() {
     setLenis(lenisInstance);
 
     // --- Choreography (scoped so cleanup reverts everything) --------------
+    let disposeSetPieces = () => {};
     const ctx = gsap.context(() => {
       // Split-text: hide each masked line below its mask.
       gsap.set('[data-split] [data-line]', { yPercent: 110 });
@@ -103,6 +105,9 @@ export function useMotionEngine() {
           });
         });
       });
+
+      // bespoke scene set pieces (ledger, sides, seat)
+      disposeSetPieces = initSetPieces();
     });
 
     // Recalculate trigger positions once fonts/images settle.
@@ -113,6 +118,7 @@ export function useMotionEngine() {
     return () => {
       clearTimeout(refreshTimer);
       window.removeEventListener('load', refresh);
+      disposeSetPieces();
       ctx.revert();
       gsap.ticker.remove(tick);
       lenisInstance.destroy();

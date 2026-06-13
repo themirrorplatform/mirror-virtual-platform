@@ -1,27 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Docket, Progress, DotNav } from './components/Chrome.jsx';
 import Reveal from './components/Reveal.jsx';
 import HeroCrest from './components/HeroCrest.jsx';
+import MagneticButton from './components/MagneticButton.jsx';
 import { LenisContext } from './motion/LenisContext';
 import { useMotionEngine } from './motion/useMotionEngine';
+import { prefersReducedMotion } from './motion/reducedMotion';
 
 const STORIES = ['STORY 0001', 'STORY 0002', 'STORY 0003', 'STORY 0004', 'STORY 0005'];
 
 /**
- * The seat form. Prompt 0/1 keep a gentle placeholder handler.
+ * The seat form. Real <form> with labels, autocomplete, and Enter-to-submit.
+ * On submit it plays the "seal" micro-animation — delight without claiming the
+ * form works yet.
  * TODO (Prompt 7): post to the Supabase `join-witness-list` edge function.
  */
 function SeatForm() {
+  const [sealing, setSealing] = useState(false);
   const onSubmit = (e) => {
     e.preventDefault();
     // TODO (Prompt 7): wire to the witness list before launch.
-    alert('Connect this form to the witness list before launch.');
+    if (sealing) return;
+    setSealing(true);
+    setTimeout(() => setSealing(false), prefersReducedMotion() ? 650 : 1300);
   };
   return (
     <form onSubmit={onSubmit}>
       <input type="text" name="name" placeholder="first name" aria-label="First name" autoComplete="given-name" />
       <input type="email" name="email" placeholder="your@email" required aria-label="Email address" autoComplete="email" />
-      <button type="submit">Save my seat</button>
+      <MagneticButton sealing={sealing}>Save my seat</MagneticButton>
     </form>
   );
 }
@@ -69,7 +76,8 @@ export default function App() {
               You'll hear exactly what happened. But what it <em>meant</em> to them — how it changed them inside —
               stays sealed until the very end. They wrote it down, and a trusted referee is keeping it safe.
             </Reveal>
-            <Reveal className="ledger" aria-label="The five sealed stories">
+            {/* set piece: bars draw in, stamps press + pulse (see setPieces.js) */}
+            <div className="ledger" aria-label="The five sealed stories">
               {STORIES.map((no) => (
                 <div className="case" key={no}>
                   <span className="no">{no}</span>
@@ -77,7 +85,7 @@ export default function App() {
                   <span className="stamp">SEALED</span>
                 </div>
               ))}
-            </Reveal>
+            </div>
             <Reveal as="p" className="sub" style={{ marginTop: '1.2rem' }}>
               You'll be there when they open.
             </Reveal>
@@ -88,11 +96,13 @@ export default function App() {
         <section className="scene" id="sides">
           <div className="inner">
             <Reveal as="span" className="eyebrow">The readers</Reveal>
-            <Reveal as="h2">
-              <span className="human">People who read people.</span><br />
-              <span className="machine">Machines learning to.</span><br />And you.
-            </Reveal>
-            <Reveal className="fields">
+            {/* set piece: gold + steel lines enter from opposite edges and meet */}
+            <h2 className="two-corners">
+              <span className="human" data-edge="left">People who read people.</span><br />
+              <span className="machine" data-edge="right">Machines learning to.</span><br />
+              <span data-edge="center">And you.</span>
+            </h2>
+            <div className="fields">
               <div className="row">
                 <span className="k human">The humans</span>
                 <span className="v">Five people whose life's work is understanding others — a chance to show what human insight can still do.</span>
@@ -109,7 +119,7 @@ export default function App() {
                 <span className="k">Two answers</span>
                 <span className="v"><span className="human">Who got it right</span> — measured against what the five actually wrote. And <span className="machine">who made them feel seen</span> — which only the five themselves can say.</span>
               </div>
-            </Reveal>
+            </div>
           </div>
         </section>
 
@@ -152,6 +162,10 @@ export default function App() {
             <Reveal as="span" className="eyebrow">There's a seat for you</Reveal>
             <Reveal as="h2">Watch it unfold from the inside.</Reveal>
             <Reveal className="seat">
+              {/* set piece: the border draws itself as the scene enters */}
+              <svg className="seat-border" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <rect x="0.6" y="0.6" width="98.8" height="98.8" pathLength="100" vectorEffect="non-scaling-stroke" />
+              </svg>
               <p className="sub">
                 Play along with the public round. Try to tell the humans from the machines.
                 Be there the moment the seals open. We'll write only when something real happens —
