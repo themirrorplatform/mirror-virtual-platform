@@ -37,10 +37,13 @@ ok('witnesses table exists & service role can read', r.status === 200, `HTTP ${r
 r = await rest('witnesses', { key: ANON, method: 'POST', body: { email: probe, name: 'Probe', source: 'verify-db' }, prefer: 'return=minimal' });
 ok('anon can INSERT a seat', r.status === 201 || r.status === 204, `HTTP ${r.status}`);
 
-// anon cannot READ (RLS) — returns 200 with zero visible rows
+// anon cannot READ — either a hard privilege denial (401/403, no SELECT grant)
+// or, if select were granted, RLS would return zero rows. Both are "can't read".
 r = await rest(`witnesses?email=eq.${encodeURIComponent(probe)}`, { key: ANON });
-const anonRows = r.ok ? await r.json() : null;
-ok('anon CANNOT read rows (RLS hides them)', Array.isArray(anonRows) && anonRows.length === 0, `rows=${anonRows && anonRows.length}`);
+const denied = r.status === 401 || r.status === 403;
+let emptyOk = false;
+if (r.ok) { const j = await r.json().catch(() => null); emptyOk = Array.isArray(j) && j.length === 0; }
+ok('anon CANNOT read the witness list', denied || emptyOk, denied ? `denied HTTP ${r.status}` : 'rows visible');
 
 // duplicate email rejected
 r = await rest('witnesses', { key: ANON, method: 'POST', body: { email: probe }, prefer: 'return=minimal' });
