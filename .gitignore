@@ -49,3 +49,6 @@ coverage/
 
 # Verification artifacts
 deep-read-react/verify-shots/
+
+# Netlify CLI local state
+.netlify/
