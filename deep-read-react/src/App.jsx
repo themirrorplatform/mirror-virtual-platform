@@ -1,6 +1,7 @@
 import React from 'react';
 import { Docket, Progress, DotNav } from './components/Chrome.jsx';
 import Reveal from './components/Reveal.jsx';
+import HeroCrest from './components/HeroCrest.jsx';
 import { LenisContext } from './motion/LenisContext';
 import { useMotionEngine } from './motion/useMotionEngine';
 
@@ -42,9 +43,7 @@ export default function App() {
         <section className="scene" id="open">
           <div className="glow" data-parallax="glow" aria-hidden="true" />
           <div className="inner">
-            <Reveal as="span" className="crest" data-parallax="crest">
-              <img src="/crest.jpeg" alt="The Mirror Platform crest" />
-            </Reveal>
+            <HeroCrest />
             <Reveal as="h1">The Deep Read</Reveal>
             <Reveal className="rule" />
             {/* split-text moment #1 — the billing */}

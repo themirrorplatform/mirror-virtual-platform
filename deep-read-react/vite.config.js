@@ -10,5 +10,9 @@ export default defineConfig({
     target: 'es2020',
     outDir: 'dist',
     assetsInlineLimit: 2048,
+    // three.js + r3f are intentionally isolated in the lazy HeroCanvas chunk
+    // (loaded only after first paint, only on capable devices). Raise the
+    // advisory limit so that expected chunk doesn't warn.
+    chunkSizeWarningLimit: 900,
   },
 });

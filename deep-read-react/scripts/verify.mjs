@@ -2,8 +2,9 @@
 // Usage: node scripts/verify.mjs [baseURL]
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
+import { startServer } from './_server.mjs';
 
-const BASE = process.argv[2] || 'http://localhost:4173';
+const { server, url: BASE } = await startServer('dist');
 const OUT = 'verify-shots';
 mkdirSync(OUT, { recursive: true });
 
@@ -118,6 +119,7 @@ for (const [w, h] of [[360, 780], [390, 844], [768, 1024], [1024, 768], [1440, 9
 }
 
 await browser.close();
+server.close();
 
 const failed = results.filter((r) => !r.pass);
 console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
