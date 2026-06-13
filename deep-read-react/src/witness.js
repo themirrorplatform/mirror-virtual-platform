@@ -4,7 +4,7 @@
 // a local-only success so the experience never breaks pre-launch.
 
 const URL = import.meta.env.VITE_SUPABASE_URL;
-const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const KEY = import.meta.env.VITE_SUPABASE_KEY; // publishable / anon client key
 
 export const witnessConfigured = () => Boolean(URL && KEY);
 
