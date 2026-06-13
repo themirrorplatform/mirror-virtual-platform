@@ -10,6 +10,6 @@
   NODE_VERSION = "20"
 
 # Set in the Netlify UI (Site settings -> Environment variables), not committed:
-#   VITE_SUPABASE_URL       = https://hhyilmbejidzriljesph.supabase.co
-#   VITE_SUPABASE_ANON_KEY  = (publishable anon key)
+#   VITE_SUPABASE_URL              = https://hhyilmbejidzriljesph.supabase.co
+#   VITE_SUPABASE_PUBLISHABLE_KEY  = sb_publishable_... (safe in the browser)
 # Security headers + cache rules live in deep-read-react/public/_headers.
