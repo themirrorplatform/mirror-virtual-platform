@@ -55,7 +55,11 @@ strong { font-weight: 600; color: var(--bone); }
   display: block; transition: background .3s, border-color .3s; cursor: pointer;
 }
 .dots a.on { background: var(--gold); border-color: var(--gold); }
-@media (max-width: 700px) { .dots { display: none; } }
+@media (max-width: 700px) {
+  .dots { display: none; }
+  /* mobile pacing: shorter scenes (Prompt 6) */
+  .scene { min-height: 84svh; padding: 4.5rem 1.3rem 3.2rem; }
+}
 
 /* ---------- scenes (the feed) ---------- */
 .scene {

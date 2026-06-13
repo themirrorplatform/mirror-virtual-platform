@@ -11,6 +11,8 @@ import gsap from 'gsap';
  */
 export function initSetPieces() {
   const cleanups = [];
+  // Mobile pacing: staggers/durations 30% faster (Prompt 6).
+  const sf = window.matchMedia('(max-width: 700px)').matches ? 0.7 : 1;
 
   // ---- 1. THE SEALED LEDGER (#sealed) --------------------------------------
   // Rows assemble on scroll: redaction bars draw from the left, SEALED stamps
@@ -20,12 +22,12 @@ export function initSetPieces() {
     const tl = gsap.timeline({
       scrollTrigger: { trigger: ledger, start: 'top 78%', toggleActions: 'play none none reverse' },
     });
-    tl.from('#sealed .case .no', { autoAlpha: 0, x: -8, stagger: 0.12, duration: 0.4, ease: 'power2.out' }, 0)
-      .from('#sealed .case .bar', { scaleX: 0, transformOrigin: 'left center', stagger: 0.12, duration: 0.6, ease: 'power2.out' }, 0)
-      .from('#sealed .case .stamp', { scale: 1.3, autoAlpha: 0, transformOrigin: 'center', stagger: 0.12, duration: 0.5, ease: 'back.out(2)' }, 0.15)
+    tl.from('#sealed .case .no', { autoAlpha: 0, x: -8, stagger: 0.12 * sf, duration: 0.4 * sf, ease: 'power2.out' }, 0)
+      .from('#sealed .case .bar', { scaleX: 0, transformOrigin: 'left center', stagger: 0.12 * sf, duration: 0.6 * sf, ease: 'power2.out' }, 0)
+      .from('#sealed .case .stamp', { scale: 1.3, autoAlpha: 0, transformOrigin: 'center', stagger: 0.12 * sf, duration: 0.5 * sf, ease: 'back.out(2)' }, 0.15)
       .fromTo('#sealed .case .stamp',
         { boxShadow: '0 0 0px rgba(179,38,30,0)' },
-        { boxShadow: '0 0 16px rgba(179,38,30,0.6)', duration: 0.28, stagger: 0.12, yoyo: true, repeat: 1 }, 0.32);
+        { boxShadow: '0 0 16px rgba(179,38,30,0.6)', duration: 0.28 * sf, stagger: 0.12 * sf, yoyo: true, repeat: 1 }, 0.32);
 
     const rows = gsap.utils.toArray('#sealed .case');
     const resist = (el) =>
@@ -55,12 +57,12 @@ export function initSetPieces() {
     const tl = gsap.timeline({
       scrollTrigger: { trigger: '#sides', start: 'top 70%', toggleActions: 'play none none reverse' },
     });
-    tl.from('#sides [data-edge="left"]', { x: -70, autoAlpha: 0, duration: 0.7, ease: 'power3.out' }, 0)
-      .from('#sides [data-edge="right"]', { x: 70, autoAlpha: 0, duration: 0.7, ease: 'power3.out' }, 0)
-      .from('#sides [data-edge="center"]', { y: 14, autoAlpha: 0, duration: 0.5, ease: 'power2.out' }, 0.32)
+    tl.from('#sides [data-edge="left"]', { x: -70, autoAlpha: 0, duration: 0.7 * sf, ease: 'power3.out' }, 0)
+      .from('#sides [data-edge="right"]', { x: 70, autoAlpha: 0, duration: 0.7 * sf, ease: 'power3.out' }, 0)
+      .from('#sides [data-edge="center"]', { y: 14, autoAlpha: 0, duration: 0.5 * sf, ease: 'power2.out' }, 0.32 * sf)
       .from('#sides .fields .row', {
-        x: (i) => (i % 2 ? 12 : -12), autoAlpha: 0, stagger: 0.1, duration: 0.5, ease: 'power2.out',
-      }, 0.22);
+        x: (i) => (i % 2 ? 12 : -12), autoAlpha: 0, stagger: 0.1 * sf, duration: 0.5 * sf, ease: 'power2.out',
+      }, 0.22 * sf);
   }
 
   // ---- 3. THE SEAT (#seat) -------------------------------------------------

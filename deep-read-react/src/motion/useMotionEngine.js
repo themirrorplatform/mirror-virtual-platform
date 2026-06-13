@@ -46,35 +46,59 @@ export function useMotionEngine() {
       // Split-text: hide each masked line below its mask.
       gsap.set('[data-split] [data-line]', { yPercent: 110 });
 
-      gsap.utils.toArray('.scene').forEach((scene) => {
+      // Mobile pacing: staggers/durations 30% faster (Prompt 6).
+      const sf = window.matchMedia('(max-width: 700px)').matches ? 0.7 : 1;
+
+      gsap.utils.toArray('.scene').forEach((scene, i) => {
         const isHero = scene.id === 'open';
+        const sealed = scene.id === 'sealed';
+        const odd = i % 2 === 1;
         const items = scene.querySelectorAll('[data-rise]');
 
         if (items.length) {
-          gsap.set(items, { autoAlpha: 0, y: 40, filter: 'blur(8px)' });
           if (isHero) {
+            gsap.set(items, { autoAlpha: 0, y: 40, filter: 'blur(8px)' });
             gsap.to(items, {
               autoAlpha: 1, y: 0, filter: 'blur(0px)',
-              duration: 1.0, ease: 'power3.out', stagger: 0.12, delay: 0.15,
+              duration: 1.0 * sf, ease: 'power3.out', stagger: 0.12 * sf, delay: 0.15,
             });
           } else {
+            // Alternate the entrance character so no two adjacent scenes match,
+            // and let the archive (#sealed) descend from deeper.
+            const from = sealed
+              ? { autoAlpha: 0, y: 64, filter: 'blur(10px)' }
+              : odd
+                ? { autoAlpha: 0, y: 30, x: -16, filter: 'blur(6px)' }
+                : { autoAlpha: 0, y: 42, filter: 'blur(8px)' };
+            gsap.set(items, from);
             gsap.to(items, {
-              autoAlpha: 1, y: 0, filter: 'blur(0px)',
-              ease: 'power3.out', stagger: 0.12,
+              autoAlpha: 1, y: 0, x: 0, filter: 'blur(0px)',
+              ease: 'power3.out',
+              stagger: { each: 0.12 * sf, from: odd ? 'end' : 'start' },
               scrollTrigger: { trigger: scene, start: 'top 85%', end: 'top 45%', scrub: 0.6 },
             });
           }
         }
 
         // Gentle exit drift — the scene rises and dims as the next arrives.
+        // The hero descends a touch deeper into the handoff.
         const inner = scene.querySelector('.inner');
         if (inner) {
           gsap.to(inner, {
-            y: -36, autoAlpha: 0.35, ease: 'none',
+            y: isHero ? -48 : -36, autoAlpha: 0.35, ease: 'none',
             scrollTrigger: { trigger: scene, start: 'bottom 65%', end: 'bottom 12%', scrub: true },
           });
         }
       });
+
+      // hero -> sealed: the archive settles into focus as you descend into it.
+      const sealedInner = document.querySelector('#sealed .inner');
+      if (sealedInner) {
+        gsap.fromTo(sealedInner, { scale: 1.04 }, {
+          scale: 1, ease: 'power2.out',
+          scrollTrigger: { trigger: '#sealed', start: 'top 92%', end: 'top 42%', scrub: 0.5 },
+        });
+      }
 
       // Hero billing — masked lines rise on load (90ms stagger).
       gsap.to('#open [data-split] [data-line]', {
