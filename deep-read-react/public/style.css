@@ -1,0 +1,191 @@
+/* THE DEEP READ — design system v2 (the crest register)
+   Gold is light, not color. Black is a stage, not a background.
+   The scroll holds scenes; the documents hold receipts. */
+
+:root{
+  --stage:#0B0A08;          /* near-black, warm */
+  --panel:#14120E;          /* recessed surfaces */
+  --bone:#E9E4D8;           /* primary text */
+  --dim:#9A917F;            /* secondary text */
+  --gold:#C9A227;           /* human corner / the house light */
+  --gold-soft:rgba(201,162,39,.32);
+  --steel:#8FA7B3;          /* machine corner */
+  --seal:#B3261E;           /* the SEALED stamp only */
+  --hair:rgba(201,162,39,.18);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:17px;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  background:var(--stage);
+  color:var(--bone);
+  font-family:"Spectral",Georgia,serif;
+  font-weight:300;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- persistent chrome ---------- */
+.progress{position:fixed;top:0;left:0;height:2px;width:0;
+  background:linear-gradient(90deg,var(--gold),var(--gold-soft));z-index:50}
+.docket{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  padding:.7rem 1.25rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  background:linear-gradient(180deg,rgba(11,10,8,.92),rgba(11,10,8,0));
+  pointer-events:none;
+}
+.docket .status{color:var(--seal)}
+.dots{position:fixed;right:1rem;top:50%;transform:translateY(-50%);z-index:40;
+  display:flex;flex-direction:column;gap:.7rem}
+.dots a{width:7px;height:7px;border-radius:50%;border:1px solid var(--gold-soft);
+  display:block;transition:background .3s,border-color .3s}
+.dots a.on{background:var(--gold);border-color:var(--gold)}
+@media(max-width:700px){.dots{display:none}}
+
+/* ---------- scenes (the feed) ---------- */
+.scene{
+  min-height:100svh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  padding:5.5rem 1.4rem 4rem;position:relative;
+}
+.scene .inner{max-width:46rem;width:100%}
+.rise{opacity:0;transform:translateY(34px);
+  transition:opacity .9s cubic-bezier(.22,.6,.2,1),transform .9s cubic-bezier(.22,.6,.2,1)}
+.rise.in{opacity:1;transform:none}
+.rise.d1{transition-delay:.12s}.rise.d2{transition-delay:.26s}.rise.d3{transition-delay:.42s}
+@media(prefers-reduced-motion:reduce){.rise{opacity:1;transform:none;transition:none}}
+
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.62rem;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:1.3rem}
+h1,h2{font-family:"Playfair Display",serif;font-weight:500;line-height:1.08}
+h1{font-size:clamp(2.5rem,8vw,5rem);letter-spacing:.01em}
+h2{font-size:clamp(1.7rem,5vw,2.8rem);margin-bottom:1.1rem}
+.scene p{max-width:38rem;margin:0 auto 1rem;color:var(--bone)}
+.scene p.sub{color:var(--dim);font-size:1.02rem}
+.human{color:var(--gold)} .machine{color:var(--steel)}
+a{color:inherit;text-decoration-color:var(--gold-soft);text-underline-offset:4px}
+a:hover{text-decoration-color:var(--gold)}
+
+/* crest */
+.crest{width:min(46vw,230px);margin:0 auto 2.2rem;display:block;position:relative}
+.crest img{width:100%;display:block;
+  filter:drop-shadow(0 0 34px rgba(201,162,39,.22))}
+@keyframes glint{0%{opacity:0}12%{opacity:.85}26%{opacity:0}100%{opacity:0}}
+.crest::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,240,200,.30) 50%,transparent 58%);
+  mix-blend-mode:screen;animation:glint 7s ease-in-out infinite;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.crest::after{animation:none;opacity:0}}
+
+/* billing */
+.billing{font-family:"Playfair Display",serif;font-size:clamp(2rem,7vw,4.2rem);
+  line-height:1.12;font-weight:500}
+.billing .l1{color:var(--gold)}
+.billing .l2{color:var(--steel)}
+.billing .l3{color:var(--bone)}
+
+/* hairline rule between ideas */
+.rule{width:64px;height:1px;background:var(--gold-soft);margin:2rem auto}
+
+/* ---------- the sealed ledger ---------- */
+.ledger{margin-top:1.6rem;border-top:1px solid var(--hair);text-align:left}
+.case{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;
+  padding:1rem .3rem;border-bottom:1px solid var(--hair);
+  font-family:"IBM Plex Mono",monospace;font-size:.76rem;position:relative;cursor:default}
+.case .no{color:var(--dim);letter-spacing:.12em}
+.case .bar{height:.9rem;width:min(30ch,100%);
+  background:repeating-linear-gradient(90deg,#23201a 0 14px,#1b1916 14px 28px)}
+.case .stamp{color:var(--seal);border:1.5px solid var(--seal);
+  padding:.14rem .55rem;font-size:.58rem;letter-spacing:.24em;transform:rotate(-4deg);white-space:nowrap}
+.case::after{content:"You'll be there when it opens.";position:absolute;right:.3rem;top:-1.2rem;
+  font-size:.6rem;color:var(--dim);letter-spacing:.08em;opacity:0;transition:opacity .2s;pointer-events:none}
+.case:hover::after{opacity:1}
+
+/* ---------- fact rows ---------- */
+.fields{margin:1.6rem auto 0;border-top:1px solid var(--hair);text-align:left;max-width:42rem}
+.fields .row{display:grid;grid-template-columns:10.5rem 1fr;gap:1rem;
+  padding:.85rem .2rem;border-bottom:1px solid var(--hair)}
+.fields .k{font-family:"IBM Plex Mono",monospace;font-size:.62rem;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--dim);padding-top:.3rem}
+.fields .v{font-size:.95rem;color:var(--bone)}
+@media(max-width:560px){.fields .row{grid-template-columns:1fr}}
+
+/* ---------- the seat (registration) ---------- */
+.seat{border:1px solid var(--gold-soft);padding:2.2rem 1.6rem;max-width:34rem;margin:0 auto;
+  background:linear-gradient(180deg,rgba(201,162,39,.05),transparent)}
+.seat form{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.2rem;justify-content:center}
+.seat input{flex:1;min-width:12rem;font-family:"IBM Plex Mono",monospace;font-size:.85rem;
+  padding:.8rem .9rem;border:1px solid var(--gold-soft);background:transparent;color:var(--bone)}
+.seat input::placeholder{color:var(--dim)}
+.seat button{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.22em;
+  text-transform:uppercase;background:var(--gold);color:#15120A;border:1px solid var(--gold);
+  padding:.8rem 1.6rem;cursor:pointer;transition:filter .25s}
+.seat button:hover{filter:brightness(1.12)}
+:focus-visible{outline:2px solid var(--steel);outline-offset:3px}
+
+/* doc links from scenes */
+.doclink{display:inline-block;margin-top:1.4rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--gold-soft);padding:.65rem 1.2rem;text-decoration:none;transition:border-color .25s}
+.doclink:hover{border-color:var(--gold)}
+
+/* footer scene */
+.attrib{font-family:"Playfair Display",serif;font-size:clamp(1.3rem,4vw,2rem);line-height:1.5}
+.attrib a{text-decoration:none;border-bottom:1px solid var(--gold-soft)}
+footer.fin{padding:2.5rem 1.4rem 3.5rem;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.14em;color:var(--dim)}
+footer.fin a{color:var(--dim)}
+
+/* ---------- READER PAGES (the documents / receipts) ---------- */
+.reader{max-width:44rem;margin:0 auto;padding:6.5rem 1.4rem 5rem;text-align:left}
+.reader h1{font-size:clamp(2rem,6vw,3.2rem);margin-bottom:1.4rem}
+.reader h2{font-family:"Playfair Display",serif;font-size:1.45rem;margin:2.6rem 0 .9rem;
+  padding-top:1.2rem;border-top:1px solid var(--hair)}
+.reader p{margin-bottom:1.05rem;max-width:62ch}
+.reader .note{font-size:.85rem;color:var(--dim)}
+.reader ol,.reader ul{margin:0 0 1.05rem 1.2rem}
+.reader li{margin-bottom:.5rem}
+.clause{font-family:"IBM Plex Mono",monospace;font-size:.78rem;line-height:1.75;
+  background:var(--panel);border-left:2px solid var(--gold);padding:1.1rem 1.3rem;margin:1.5rem 0;color:var(--bone)}
+.backbar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;gap:1.4rem;
+  padding:.85rem 1.25rem;font-family:"IBM Plex Mono",monospace;font-size:.66rem;
+  letter-spacing:.16em;text-transform:uppercase;
+  background:rgba(11,10,8,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
+.backbar a{color:var(--bone);text-decoration:none}
+.backbar a:hover{color:var(--gold)}
+strong{font-weight:600;color:var(--bone)}
+hr{border:0;border-top:1px solid var(--hair);margin:2.4rem 0}
+
+/* ---------- Prompt 4: document-page polish ---------- */
+/* reading-progress hairline (driven by /doc.js) */
+.backbar{view-transition-name:docket}
+
+/* link hovers sitewide: gold underline draws left -> right */
+.reader p a, .reader li a{
+  text-decoration:none;
+  background-image:linear-gradient(var(--gold),var(--gold));
+  background-size:0% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease;
+}
+.reader p a:hover, .reader li a:hover{background-size:100% 1px}
+.backbar a{
+  background-image:linear-gradient(var(--gold),var(--gold));
+  background-size:0% 1px;background-position:0 100%;background-repeat:no-repeat;
+  transition:background-size .2s ease, color .2s ease;
+}
+.backbar a:hover{background-size:100% 1px}
+
+/* ---------- View Transitions (documents <-> one-pager) ---------- */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:vt-out .35s ease both}
+::view-transition-new(root){animation:vt-in .35s ease both}
+@keyframes vt-out{to{opacity:0;filter:brightness(.12)}}
+@keyframes vt-in{from{opacity:0;filter:brightness(.12)}}
+::view-transition-new(docket){animation:vt-flicker .5s steps(2,end) both}
+@keyframes vt-flicker{0%{opacity:0}20%{opacity:.4}35%{opacity:.1}55%{opacity:.7}75%{opacity:.3}100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important}
+  .reader p a,.reader li a,.backbar a{transition:none}
+}

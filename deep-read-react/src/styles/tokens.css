@@ -1,0 +1,32 @@
+/* THE DEEP READ — design tokens (the crest register)
+   Grammar: gold = human, steel = machine, mono = evidence, red = seals only.
+   Gold is light, not fill — edges, hairlines, glints, never large blocks.
+   Black (#0B0A08) is a stage, never pure black. These values are LOCKED. */
+
+:root {
+  /* surfaces */
+  --stage: #0B0A08;          /* background, never pure black */
+  --panel: #14120E;          /* recessed surfaces */
+
+  /* text */
+  --bone: #E9E4D8;           /* primary text */
+  --dim: #A39A87;            /* secondary text (AA-safe on stage; was #9A917F) */
+
+  /* the three lights */
+  --gold: #C9A227;           /* human side / the house light */
+  --gold-soft: rgba(201, 162, 39, .32);
+  --steel: #8FA7B3;          /* machine side */
+  --seal: #B3261E;           /* the SEALED stamps ONLY */
+
+  /* hairlines */
+  --hair: rgba(201, 162, 39, .18);
+
+  /* type */
+  --display: "Playfair Display", Georgia, serif;
+  --body: "Spectral", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* motion (Prompt 1 reads these) */
+  --ease-rise: cubic-bezier(.22, .6, .2, 1);
+  --dur-rise: .9s;
+}

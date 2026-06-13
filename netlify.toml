@@ -1,40 +1,19 @@
-# Netlify Configuration for Mirror Virtual Platform
-
-# Static marketing site deployment
+# Netlify build config for The Deep Read (Vite app in deep-read-react/).
+# Used when the repo is connected to Netlify for Git-based CI. The manual
+# deploys push the prebuilt dist/ directly; this keeps both paths consistent.
 [build]
-  command = "echo 'Static site - no build needed'"
-  publish = "."
+  base = "deep-read-react"
+  command = "npm ci && npm run build"
+  publish = "dist"            # relative to base
 
-# Environment variables (set in Netlify UI)
 [build.environment]
-  NODE_VERSION = "18"
-  NPM_VERSION = "9"
+  NODE_VERSION = "20"
 
-# Redirect rules for Next.js
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[functions]
+  directory = "netlify/functions"   # relative to base
+  node_bundler = "esbuild"
 
-# Headers for security
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    
-# API proxy for Core API
-[[redirects]]
-  from = "/api/core/*"
-  to = "https://your-core-api.railway.app/:splat"
-  status = 200
-  force = true
-  
-# API proxy for MirrorX Engine
-[[redirects]]
-  from = "/api/mirrorx/*"
-  to = "https://your-mirrorx-engine.railway.app/:splat"
-  status = 200
-  force = true
+# Set in the Netlify UI (Site settings -> Environment variables), not committed:
+#   VITE_SUPABASE_URL   = https://dhozgynxwzwysovstvep.supabase.co
+#   VITE_SUPABASE_KEY   = (anon / publishable key — safe in the browser)
+# Security headers + cache rules live in deep-read-react/public/_headers.
