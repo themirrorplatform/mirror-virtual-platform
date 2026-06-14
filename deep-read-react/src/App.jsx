@@ -8,6 +8,7 @@ import { LenisContext } from './motion/LenisContext';
 import { useMotionEngine } from './motion/useMotionEngine';
 import { prefersReducedMotion } from './motion/reducedMotion';
 import { joinWitnessList } from './witness.js';
+import { useSiteContent } from './siteContent.js';
 
 const STORIES = ['STORY 0001', 'STORY 0002', 'STORY 0003', 'STORY 0004', 'STORY 0005'];
 
@@ -67,6 +68,8 @@ function SeatForm() {
 
 export default function App() {
   const lenis = useMotionEngine();
+  const content = useSiteContent();
+  const home = content.home || {};
 
   return (
     <LenisContext.Provider value={lenis}>
@@ -83,8 +86,8 @@ export default function App() {
         <section className="scene" id="open">
           <div className="glow" data-parallax="glow" aria-hidden="true" />
           <div className="inner">
-            <HeroCrest />
-            <Reveal as="h1">The Deep Read</Reveal>
+            <HeroCrest src={home.crest} />
+            <Reveal as="h1">{home.headline || 'The Deep Read'}</Reveal>
             <Reveal className="rule" />
             {/* split-text moment #1 — the billing */}
             <p className="billing" data-split>
@@ -93,8 +96,8 @@ export default function App() {
               <span className="line-mask"><span className="line l3" data-line>Five true stories.</span></span>
             </p>
             <Reveal as="p" className="sub">
-              A first-of-its-kind experiment about something we all wonder:<br />
-              how well can anyone really understand what an experience does to a person?
+              {home.intro || (<>A first-of-its-kind experiment about something we all wonder:<br />
+              how well can anyone really understand what an experience does to a person?</>)}
             </Reveal>
           </div>
         </section>
@@ -200,9 +203,9 @@ export default function App() {
                 <rect x="0.6" y="0.6" width="98.8" height="98.8" pathLength="100" vectorEffect="non-scaling-stroke" />
               </svg>
               <p className="sub">
-                Play along with the public round. Try to tell the humans from the machines.
+                {home.seatCopy || (<>Play along with the public round. Try to tell the humans from the machines.
                 Be there the moment the seals open. We'll write only when something real happens —
-                when the readers are revealed, when the stories open, and on the day of the answer.
+                when the readers are revealed, when the stories open, and on the day of the answer.</>)}
               </p>
               <SeatForm />
               <p className="seat-dispatch">
