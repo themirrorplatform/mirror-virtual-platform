@@ -217,11 +217,13 @@ h2 { font-size: clamp(1.7rem, 5vw, 2.8rem); margin-bottom: 1.1rem; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .seat-done { font-size: 1rem; color: var(--gold); line-height: 1.5; }
 .seat-error { margin-top: .8rem; font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; color: #d98a8a; }
-.seat-dispatch {
-  margin-top: 1.3rem; font-family: var(--mono); font-size: .62rem;
+.seat-dispatch { margin-top: 1.3rem; font-family: var(--mono); font-size: .62rem;
   letter-spacing: .12em; color: var(--dim);
 }
 .seat-dispatch a { color: var(--gold); text-decoration-color: var(--gold-soft); }
+/* discreet admin entry in the footer — gated by sign-in, kept low-key */
+.fin .admin-link { opacity: .5; }
+.fin .admin-link:hover { opacity: 1; }
 :focus-visible { outline: 2px solid var(--steel); outline-offset: 3px; }
 
 /* doc links from scenes */

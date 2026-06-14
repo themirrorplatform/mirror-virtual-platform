@@ -258,7 +258,8 @@ export default function App() {
           <span>THE DEEP READ · BROUGHT TO YOU BY A REFLECTION OF THE MIRROR PLATFORM ·{' '}
             <a href="/protocol.html">HOW IT WORKS</a> · <a href="/vow.html">OUR PROMISE</a> ·{' '}
             <a href="/seal-log.html">SEAL LEDGER</a> · <a href="/about.html">ABOUT</a> ·{' '}
-            <a href={NEWSROOM} target="_blank" rel="me noopener noreferrer">NEWSROOM</a></span>
+            <a href={NEWSROOM} target="_blank" rel="me noopener noreferrer">NEWSROOM</a> ·{' '}
+            <a href="/admin.html" className="admin-link">ADMIN</a></span>
         </footer>
       </main>
     </LenisContext.Provider>

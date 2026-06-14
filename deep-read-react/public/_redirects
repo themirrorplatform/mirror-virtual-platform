@@ -1,0 +1,2 @@
+# Clean path to the gated admin sign-in.
+/admin   /admin.html   200
