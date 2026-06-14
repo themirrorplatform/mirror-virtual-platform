@@ -9,7 +9,7 @@ import { shouldUseWebGL, isTouch } from '../webgl/capabilities';
  * This element carries data-rise + data-parallax="crest" so the Prompt 1 motion
  * engine still choreographs its entrance and parallax, WebGL or not.
  */
-export default function HeroCrest() {
+export default function HeroCrest({ src }) {
   const [Canvas3D, setCanvas3D] = useState(null);
   const [ready, setReady] = useState(false); // crest visible in WebGL -> fade the <img>
   const [paused, setPaused] = useState(false);
@@ -45,7 +45,7 @@ export default function HeroCrest() {
   return (
     <span className={`crest${ready ? ' webgl-on' : ''}`} data-rise data-parallax="crest">
       <img
-        src="/crest.jpeg"
+        src={src || '/crest.jpeg'}
         alt="The Mirror Platform crest"
         className={ready ? 'crest-faded' : ''}
       />
