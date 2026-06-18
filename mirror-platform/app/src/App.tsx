@@ -5,6 +5,8 @@ import { Thread } from "./templates/Thread";
 import { Construction } from "./templates/Construction";
 import { Home } from "./templates/Home";
 import { Map, Events, About, Forum, Account, Builder, Architect, ColdGate } from "./templates/Pages";
+import { SignIn } from "./templates/SignIn";
+import { RequireRole, RequireArchitect } from "./app/guards";
 
 /* The route table (§A4). Dynamic /t/[slug] and /c/[slug]; the rest derived.
    No front door (§2): / is the exit-reached home, not a landing. Every template
@@ -27,8 +29,9 @@ export function App() {
         <Route path="/about" element={<About />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/account" element={<Account />} />
-        <Route path="/builder" element={<Builder />} />
-        <Route path="/architect" element={<Architect />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/builder" element={<RequireRole min="build"><Builder /></RequireRole>} />
+        <Route path="/architect" element={<RequireArchitect><Architect /></RequireArchitect>} />
         <Route path="*" element={<ColdGate />} />
       </Routes>
     </Chrome>

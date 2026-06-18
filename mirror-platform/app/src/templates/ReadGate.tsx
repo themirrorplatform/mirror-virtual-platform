@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { logEvent } from "../lib/telemetry";
 
@@ -9,8 +9,13 @@ import { logEvent } from "../lib/telemetry";
    -------------------------------------------------------------------------- */
 
 export function ReadGate({ title, kind }: { title: string; kind: "continuation" | "construction" }) {
-  // gate_hit: where the price meets the climb (§1). Emits before any convert.
-  useEffect(() => { logEvent("gate_hit", null, { gate: "read", kind }); }, [kind]);
+  // gate_hit on render; gate_convert if they take the CTA, else gate_abandon on
+  // leave — so the price-vs-meaning distinction is captured (§1, §2, P9).
+  const converted = useRef(false);
+  useEffect(() => {
+    logEvent("gate_hit", null, { gate: "read", kind });
+    return () => { if (!converted.current) logEvent("gate_abandon", null, { gate: "read", kind }); };
+  }, [kind]);
   return (
     <section className="card fadein" style={{ padding: "28px 24px", textAlign: "center" }}>
       <div className="eyebrow" style={{ marginBottom: 12 }}>the rest of the graph</div>
@@ -20,7 +25,8 @@ export function ReadGate({ title, kind }: { title: string; kind: "continuation" 
           ? "The constructions beneath the spine"
           : "The rest of the live spine"} opens with Continuations.
       </p>
-      <Link to="/account" className="btn btn-solid" style={{ display: "inline-block" }}>
+      <Link to="/account" className="btn btn-solid" style={{ display: "inline-block" }}
+        onClick={() => { converted.current = true; logEvent("gate_convert", null, { gate: "read", kind }); }}>
         open the spine — $24.99/mo
       </Link>
       <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 16 }}>

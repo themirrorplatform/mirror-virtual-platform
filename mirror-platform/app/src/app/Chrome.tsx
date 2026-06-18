@@ -16,7 +16,7 @@ const ROLES: { id: Role; label: string }[] = [
 ];
 
 export function Chrome({ children }: { children: React.ReactNode }) {
-  const { role, setRole, viewport, graph } = useSite();
+  const { role, setRole, devPreview, viewport, graph } = useSite();
   const loc = useLocation();
   const c = { register: "system" as const };
   const ctx = { arrival: "cold", isEntryNode: false, viewport, register: "system" as const, readerVocab: new Set<string>() };
@@ -45,6 +45,7 @@ export function Chrome({ children }: { children: React.ReactNode }) {
               <Link className="link" to="/forum">Forum</Link>
               <Link className="link" to="/about">About</Link>
               <Link className="link" to="/account">Account</Link>
+              <Link className="link" to="/signin">Sign in</Link>
             </nav>
           )}
           {adminNav !== "hidden" && (
@@ -54,8 +55,9 @@ export function Chrome({ children }: { children: React.ReactNode }) {
             </nav>
           )}
 
-          {/* dev role switcher — roles are registers; Auth/Stripe arrive in P9 */}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 4 }} className="mono">
+          {/* dev-only role switcher (walking surfaces); hidden in production,
+              where the role is account-derived (the hardened-admin requirement) */}
+          {devPreview && <div style={{ marginLeft: "auto", display: "flex", gap: 4 }} className="mono">
             {ROLES.map((r) => (
               <button key={r.id} onClick={() => setRole(r.id)} className="tap"
                 style={{ fontSize: 10.5, padding: "4px 8px", cursor: "pointer",
@@ -65,7 +67,8 @@ export function Chrome({ children }: { children: React.ReactNode }) {
                 {r.label}
               </button>
             ))}
-          </div>
+          </div>}
+          {!devPreview && <div style={{ marginLeft: "auto" }} />}
         </div>
 
         {strip !== "hidden" && (

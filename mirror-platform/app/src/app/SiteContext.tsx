@@ -4,6 +4,10 @@ import {
 import type { Role, Ctx, Viewport, SurfaceRegister } from "../gates";
 import type { Graph } from "../types";
 import { fetchGraph } from "../lib/data";
+import { useAuth } from "./AuthContext";
+
+/** Dev-only preview override: in production the role is the account's, period. */
+const DEV = import.meta.env.DEV;
 
 /* ----------------------------------------------------------------------------
    The site context. Carries the reader's register (role), the device viewport,
@@ -28,6 +32,8 @@ function readArrival(): string {
 interface SiteValue {
   role: Role;
   setRole: (r: Role) => void;
+  /** true only in dev builds — gates the role-preview switcher in the chrome. */
+  devPreview: boolean;
   viewport: Viewport;
   arrival: string;
   graph: Graph;
@@ -40,9 +46,13 @@ interface SiteValue {
 const SiteContext = createContext<SiteValue | null>(null);
 
 export function SiteProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<Role>(
-    () => (localStorage.getItem("mp.role") as Role) || "free",
+  const { accountRole } = useAuth();
+  // dev preview override (walking the surfaces before commerce exists); ignored
+  // entirely in production, where the role is strictly account-derived.
+  const [preview, setPreview] = useState<Role | null>(
+    () => (DEV ? (localStorage.getItem("mp.role") as Role) : null) || null,
   );
+  const role: Role = DEV && preview ? preview : accountRole;
   const [viewport, setViewport] = useState<Viewport>(readViewport);
   const [arrival] = useState<string>(readArrival);
   const [graph, setGraph] = useState<Graph>({});
@@ -51,7 +61,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   // readerVocab is felt-not-counted (§E): derived from gloss events, never shown.
   const [readerVocab] = useState<ReadonlySet<string>>(new Set());
 
-  const setRole = (r: Role) => { localStorage.setItem("mp.role", r); setRoleState(r); };
+  const setRole = (r: Role) => {
+    if (!DEV) return;                       // production roles come from the account only
+    localStorage.setItem("mp.role", r); setPreview(r);
+  };
+  const devPreview = DEV;
 
   useEffect(() => {
     const onResize = () => setViewport(readViewport());
@@ -69,7 +83,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<SiteValue>(() => ({
-    role, setRole, viewport, arrival, graph, loading, error,
+    role, setRole, devPreview, viewport, arrival, graph, loading, error,
     ctx: (opts = {}) => ({
       arrival,
       isEntryNode: opts.isEntryNode ?? false,
@@ -77,7 +91,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       register: opts.register ?? "transmission",
       readerVocab,
     }),
-  }), [role, viewport, arrival, graph, loading, error, readerVocab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [role, devPreview, viewport, arrival, graph, loading, error, readerVocab]);
 
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
 }
