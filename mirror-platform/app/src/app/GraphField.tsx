@@ -29,7 +29,7 @@ export function GraphField({
   useEffect(() => {
     const canvas = ref.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
     const ids = Object.keys(graph);
 
     const nodes: N[] = ids.map((id, i) => {

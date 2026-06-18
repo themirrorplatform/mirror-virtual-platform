@@ -13,6 +13,8 @@
   --c-bone:   #E9E4D8;  --c-bone2:  #b7b1a4;   --c-bone3:  #7d776c;
   --c-gold:   #C9A227;  --c-gold-2: #e6c659;   --c-steel:  #8FA7B3;
   --c-seal:   #B3261E;  --c-line:   #2a2620;
+  /* extended cosmic accents (atmosphere only — never body text) */
+  --c-violet: #7c5cc4;  --c-teal:   #3a9d92;   --c-plasma: #4a3aa8;
   --font-threshold: 'Playfair Display', Georgia, serif;
   --font-transmission: 'Spectral', Georgia, serif;
   --font-system: 'IBM Plex Mono', ui-monospace, monospace;
@@ -36,8 +38,9 @@ body {
   /* layered ground: a low, off-centre warmth over deep Stage, with a vignette */
   background-color: var(--c-stage);
   background-image:
-    radial-gradient(1100px 700px at 78% -8%, rgba(201,162,39,.07), transparent 60%),
-    radial-gradient(900px 800px at 8% 12%, rgba(143,167,179,.05), transparent 55%),
+    radial-gradient(1100px 700px at 78% -8%, rgba(201,162,39,.08), transparent 60%),
+    radial-gradient(1000px 900px at 12% 8%, rgba(124,92,196,.07), transparent 58%),
+    radial-gradient(900px 800px at 88% 96%, rgba(58,157,146,.05), transparent 55%),
     radial-gradient(1400px 1000px at 50% 120%, rgba(20,18,16,.9), transparent 70%);
   background-attachment: fixed;
   position: relative;

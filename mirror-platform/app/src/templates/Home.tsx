@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSite } from "../app/SiteContext";
 import { showElement } from "../gates";
-import { GraphField } from "../app/GraphField";
 import { fetchNowList } from "../lib/data";
 
 /* ----------------------------------------------------------------------------
@@ -13,7 +12,7 @@ import { fetchNowList } from "../lib/data";
    -------------------------------------------------------------------------- */
 
 export function Home() {
-  const { role, viewport, arrival, graph } = useSite();
+  const { role, viewport, arrival } = useSite();
   const [now, setNow] = useState<{ slug: string; title: string }[]>([]);
   useEffect(() => { fetchNowList().then((rows) => setNow(rows.map((r) => ({ slug: r.slug, title: r.title })))); }, []);
 
@@ -23,14 +22,7 @@ export function Home() {
 
   return (
     <div className="fadein" style={{ position: "relative" }}>
-      {/* the geometry, drifting behind the recognition (fixed, low, non-interactive) */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
-        maskImage: "radial-gradient(70% 60% at 50% 32%, #000 30%, transparent 78%)",
-        WebkitMaskImage: "radial-gradient(70% 60% at 50% 32%, #000 30%, transparent 78%)" }}>
-        <GraphField graph={graph} mode="ambient" style={{ opacity: 0.42 }} />
-      </div>
-
-      <div style={{ position: "relative", zIndex: 1, paddingTop: 18 }}>
+      <div style={{ position: "relative", zIndex: 1, paddingTop: "8vh" }}>
         <img src="/crest.jpg" alt="" aria-hidden width={68} height={54}
           style={{ opacity: 0.5, mixBlendMode: "luminosity", marginBottom: 22, borderRadius: 2 }} />
 
