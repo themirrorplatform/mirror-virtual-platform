@@ -1,0 +1,80 @@
+/* ============================================================================
+   The Mirror Platform — crest stylesheet (P4)
+   Consumes the tokens (see tokens.ts cssVariables()). The accessibility floor
+   lives here as real rules: AA body color, >=44px taps, :focus-visible rings,
+   and prefers-reduced-motion. Gold is used only for large/decorative marks.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--c-stage);
+  color: var(--c-bone);                /* Bone on Stage — passes AA */
+  font-family: var(--font-transmission);
+  font-weight: 300;
+  line-height: 1.62;
+  letter-spacing: .01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--c-gold); color: var(--c-stage); }
+
+/* registers ---------------------------------------------------------------- */
+.threshold { font-family: var(--font-threshold); }
+.transmission { font-family: var(--font-transmission); }
+.system, .mono { font-family: var(--font-system); letter-spacing: 0; }
+
+.eyebrow {
+  font-family: var(--font-system);
+  font-size: 10.5px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--c-bone3);
+}
+
+/* gold is decorative / large only — never body text (fails AA small) -------- */
+.hl { color: var(--c-gold); }          /* used on display sizes only */
+
+/* interactive floor: >=44px taps, visible focus, no hover-only meaning ------ */
+button, a, .tap {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+:focus-visible {
+  outline: 2px solid var(--c-steel);
+  outline-offset: 2px;
+}
+
+.btn {
+  font-family: var(--font-system);
+  font-size: 12px;
+  letter-spacing: .04em;
+  border: 1px solid var(--c-line);
+  color: var(--c-bone);
+  background: transparent;
+  padding: 9px 16px;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: border-color var(--motion-base) ease, color var(--motion-base) ease;
+}
+.btn:hover { border-color: var(--c-gold); color: var(--c-gold); }
+.btn-solid { background: var(--c-gold); color: var(--c-stage); border-color: var(--c-gold); font-weight: 500; }
+
+.link { color: var(--c-steel); cursor: pointer; border-bottom: 1px solid transparent; }
+.link:hover { border-bottom-color: var(--c-steel); }
+
+.card { border: 1px solid var(--c-line); background: var(--c-stage2); border-radius: 2px; }
+
+/* motion ------------------------------------------------------------------- */
+.fadein { animation: fi var(--motion-slide) ease both; }
+@keyframes fi { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.slidein { animation: si var(--motion-slide) var(--motion-easing) both; }
+@keyframes si { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fadein, .slidein { animation: none; }
+  * { transition: none !important; }
+}
