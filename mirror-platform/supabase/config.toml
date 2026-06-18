@@ -1,0 +1,7 @@
+# The Mirror Platform — Supabase project config.
+# project_ref is public (it's in the URL). No secrets live in this file.
+project_id = "eayfuwbzdidhbkfjkohv"
+
+[db]
+# Local dev shadow only; production is the linked project. Postgres 17 line.
+major_version = 17
