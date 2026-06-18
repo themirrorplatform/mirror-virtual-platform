@@ -251,6 +251,28 @@ export function Account() {
       <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 16 }}>
         cancel anytime · your continuations stay yours and leave with you · the guardian can never remove them
       </div>
+
+      {user && (
+        <section className="card" style={{ padding: "14px 16px", marginTop: 20, borderColor: "var(--c-line)" }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>the three kinds of leaving (never conflated)</div>
+          <ul className="mono" style={{ fontSize: 11.5, color: "var(--c-bone2)", lineHeight: 1.7, margin: 0, paddingLeft: 16 }}>
+            <li><b>lapse</b> — stop paying: lose reading the spine; your contributions persist; nothing erased.</li>
+            <li><b>depart</b> (builder) — leave the project: your nodes stay as residue, flagged.</li>
+            <li><b>erase</b> — right to erasure: your PII/billing/activity deleted; your contributions persist under the handle, decoupled.</li>
+          </ul>
+          <button className="btn" style={{ marginTop: 12, borderColor: "var(--c-seal)", color: "var(--c-seal)" }}
+            disabled={busy === "erase"} onClick={() => act("erase", async () => {
+              if (!confirm("Erase your account? This deletes your email, billing, and raw activity. Your contributed work stays under your handle, decoupled. This cannot be undone.")) return "";
+              const { error } = await supabase!.functions.invoke("erase-person", { body: {} });
+              if (error) return error.message;
+              await signOut(); window.location.href = "/"; return null;
+            })}>{busy === "erase" ? "erasing…" : "erase my account (PII only — corpus persists)"}</button>
+        </section>
+      )}
+
+      <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 16, display: "flex", gap: 12 }}>
+        <a className="link" href="/terms">Terms</a><a className="link" href="/privacy">Privacy</a><a className="link" href="/refund">Cancellation</a>
+      </div>
     </div>
   );
 }

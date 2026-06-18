@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth, type OAuthProvider } from "../app/AuthContext";
+import { Disclaimer } from "./Legal";
 
 /* ----------------------------------------------------------------------------
    Sign in — three methods, one session (the architect's routing requirement):
@@ -71,6 +72,8 @@ export function SignIn() {
       </div>
 
       {msg && <div className="mono" style={{ fontSize: 12, color: "var(--c-steel)", marginTop: 14 }}>{msg}</div>}
+
+      <div style={{ marginTop: 20 }}><Disclaimer compact /></div>
     </div>
   );
 }

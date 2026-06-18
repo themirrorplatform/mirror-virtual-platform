@@ -1,0 +1,33 @@
+# The Mirror Platform — "Encounter Platform" Netlify site.
+# Base directory is this folder (mirror-platform/app). The edge functions deliver
+# the server-true <head>, the derived sitemap, and robots (P15); the SPA fallback
+# serves index.html for every client route.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Edge function path bindings are also declared in each function's `config`,
+# but pinned here for clarity / precedence.
+[[edge_functions]]
+  function = "head"
+  path = "/"
+[[edge_functions]]
+  function = "head"
+  path = "/t/*"
+[[edge_functions]]
+  function = "head"
+  path = "/c/*"
+[[edge_functions]]
+  function = "sitemap"
+  path = "/sitemap.xml"
+[[edge_functions]]
+  function = "robots"
+  path = "/robots.txt"
+
+# SPA fallback — every other route serves the shell (the head fn runs first on
+# the matched paths above).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

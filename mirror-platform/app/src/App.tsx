@@ -6,6 +6,7 @@ import { Construction } from "./templates/Construction";
 import { Home } from "./templates/Home";
 import { Map, Events, About, Forum, Account, ColdGate } from "./templates/Pages";
 import { SignIn } from "./templates/SignIn";
+import { Terms, Privacy, Refund } from "./templates/Legal";
 import { ArchitectConsole } from "./templates/ArchitectConsole";
 import { BuilderSlot } from "./templates/BuilderSlot";
 import { RequireRole, RequireArchitect } from "./app/guards";
@@ -32,6 +33,9 @@ export function App() {
         <Route path="/forum" element={<Forum />} />
         <Route path="/account" element={<Account />} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/refund" element={<Refund />} />
         <Route path="/builder" element={<RequireRole min="build"><BuilderSlot /></RequireRole>} />
         <Route path="/architect" element={<RequireArchitect><ArchitectConsole /></RequireArchitect>} />
         <Route path="*" element={<ColdGate />} />

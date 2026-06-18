@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../app/AuthContext";
+import { Disclaimer } from "./Legal";
 
 /* ----------------------------------------------------------------------------
    The builder slot (P11). The minimum admin: upload-only, append-only,
@@ -53,6 +54,7 @@ export function BuilderSlot() {
         publishes at once, rendered as an unmet encounter; the architect meets it after.
       </p>
 
+      <div style={{ marginBottom: 12 }}><Disclaimer compact /></div>
       <section className="card" style={{ padding: 16, display: "grid", gap: 8 }}>
         <input style={inp} placeholder="new node_id (your own, e.g. W-12)" value={f.node_id} onChange={(e) => setF({ ...f, node_id: e.target.value })} />
         <input style={inp} placeholder="label — what your continuation tries to do" value={f.label} onChange={(e) => setF({ ...f, label: e.target.value })} />

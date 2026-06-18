@@ -92,7 +92,12 @@ export function Chrome({ children }: { children: React.ReactNode }) {
       {footer !== "hidden" && (
         <footer className="mono" style={{ borderTop: "1px solid var(--c-line)",
           padding: "18px 20px", fontSize: 11, color: "var(--c-bone3)", textAlign: "center" }}>
-          nothing completes · your continuations stay yours and leave with you · the guardian can never remove them
+          <div>nothing completes · your continuations stay yours and leave with you · the guardian can never remove them</div>
+          <div style={{ marginTop: 8, display: "flex", gap: 12, justifyContent: "center" }}>
+            <Link className="link" to="/terms">Terms</Link>
+            <Link className="link" to="/privacy">Privacy</Link>
+            <Link className="link" to="/refund">Cancellation</Link>
+          </div>
         </footer>
       )}
     </>
