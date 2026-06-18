@@ -27,9 +27,11 @@ export function Thread() {
 
   useEffect(() => {
     let live = true; setLoading(true);
-    Promise.all([fetchThreadBySlug(slug), fetchThreadBySlug(slug).then((t) =>
-      t ? fetchMembranes(t.node_id) : [])])
-      .then(([t, m]) => { if (live) { setThread(t); setMembranes(m); } })
+    fetchThreadBySlug(slug)
+      .then(async (t) => {
+        const m = t ? await fetchMembranes(t.node_id) : [];
+        if (live) { setThread(t); setMembranes(m); }
+      })
       .finally(() => { if (live) setLoading(false); });
     return () => { live = false; };
   }, [slug]);

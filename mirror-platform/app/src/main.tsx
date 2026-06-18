@@ -7,7 +7,7 @@ import { SiteProvider } from "./app/SiteContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <SiteProvider>
         <App />
       </SiteProvider>
