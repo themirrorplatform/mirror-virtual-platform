@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ElementState, Role } from "../gates";
+import { logEvent } from "../lib/telemetry";
 
 /* ----------------------------------------------------------------------------
    The frontier prompt (§7, Composition §3). A node whose "leads to" is empty is
@@ -34,7 +35,8 @@ export function Frontier({
         </div>
       ) : (
         <>
-          <button className="btn btn-solid" style={{ marginTop: 12 }} onClick={() => setPrompted(true)}>
+          <button className="btn btn-solid" style={{ marginTop: 12 }}
+            onClick={() => { logEvent("continue_pressed", null, {}); setPrompted(true); }}>
             continue this thought →
           </button>
           {prompted && (

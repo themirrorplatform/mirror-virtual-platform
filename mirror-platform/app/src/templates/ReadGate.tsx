@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { logEvent } from "../lib/telemetry";
 
 /* ----------------------------------------------------------------------------
    The read-gate preview (§6, Composition §3 "Locked"). Title + the lock, never
@@ -7,6 +9,8 @@ import { Link } from "react-router-dom";
    -------------------------------------------------------------------------- */
 
 export function ReadGate({ title, kind }: { title: string; kind: "continuation" | "construction" }) {
+  // gate_hit: where the price meets the climb (§1). Emits before any convert.
+  useEffect(() => { logEvent("gate_hit", null, { gate: "read", kind }); }, [kind]);
   return (
     <section className="card fadein" style={{ padding: "28px 24px", textAlign: "center" }}>
       <div className="eyebrow" style={{ marginBottom: 12 }}>the rest of the graph</div>

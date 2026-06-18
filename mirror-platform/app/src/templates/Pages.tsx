@@ -167,6 +167,13 @@ export function Builder() {
 export function Architect() {
   const { role } = useSite();
   const ctx = useCtx();
+  const [metrics, setMetrics] = useState<Record<string, unknown> | null>(null);
+  const [denied, setDenied] = useState(false);
+  useEffect(() => {
+    supabase?.rpc("event_metrics").then(({ data, error }) => {
+      if (error) setDenied(true); else setMetrics(data as Record<string, unknown>);
+    });
+  }, []);
   if (showElement("architect_console", role, ctx) === "hidden") {
     return <p className="mono" style={{ color: "var(--c-bone3)" }}>not found.</p>;
   }
@@ -178,6 +185,26 @@ export function Architect() {
         8-field capture · the why-ledger · live structural-load ranking · firewall reroute · the review
         inbox · conduct withdrawal. The console wires to commit_node (already live) in P10.
       </p>
+
+      <section className="card" style={{ padding: "16px 18px", marginTop: 20 }}>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>
+          the instrument · where the climb stalls (§2) · architect-only, never a reader score
+        </div>
+        {denied && (
+          <div className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>
+            telemetry is architect-gated (§4) — live aggregates read once Auth signs you in as the
+            architect (P9). the event log is already capturing.
+          </div>
+        )}
+        {metrics && (
+          <pre className="mono" style={{ fontSize: 11, color: "var(--c-bone2)", whiteSpace: "pre-wrap", margin: 0 }}>
+            {JSON.stringify(metrics, null, 2)}
+          </pre>
+        )}
+      </section>
+      <div className="mono" style={{ fontSize: 10.5, color: "var(--c-bone3)", marginTop: 10 }}>
+        the razor: intelligibility carried, never time held · no streaks, no nudges, no reader-facing number
+      </div>
     </div>
   );
 }

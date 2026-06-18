@@ -11,6 +11,7 @@ import { Rails } from "../reader/Rails";
 import { Prose } from "../reader/Prose";
 import { Frontier } from "../reader/Frontier";
 import { ReadGate } from "./ReadGate";
+import { logEvent } from "../lib/telemetry";
 
 /* ----------------------------------------------------------------------------
    /t/[slug] — the continuation. Arrives mid-thought (§2). Transmission-first:
@@ -35,6 +36,24 @@ export function Thread() {
       .finally(() => { if (live) setLoading(false); });
     return () => { live = false; };
   }, [slug]);
+
+  // arrival + read-depth capture (§1). Pseudonymous, append-only, never surfaced.
+  useEffect(() => {
+    if (!thread) return;
+    logEvent("arrival", thread.node_id, { arrival, arrived_from: thread.arrived_from });
+    if (reverseRail(graph, thread.node_id).length === 0) logEvent("frontier_reached", thread.node_id, {});
+    let maxDepth = 0;
+    const onScroll = () => {
+      const h = document.documentElement;
+      const pct = Math.round((h.scrollTop / Math.max(h.scrollHeight - h.clientHeight, 1)) * 100);
+      maxDepth = Math.max(maxDepth, Math.min(pct, 100));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      logEvent("read_depth", thread.node_id, { depth_reached: maxDepth });
+    };
+  }, [thread, arrival, graph]);
 
   if (loading) return <p className="mono" style={{ color: "var(--c-bone3)" }}>…</p>;
   if (!thread) return <p className="mono" style={{ color: "var(--c-bone3)" }}>This continuation doesn't resolve.</p>;
@@ -84,7 +103,8 @@ export function Thread() {
       <Frontier state={frontier} role={role} isFrontier={isFrontier} />
 
       <div style={{ marginTop: 28 }}>
-        <a className="link mono" href="/" style={{ fontSize: 12 }}>← exit to where this lives</a>
+        <a className="link mono" href="/" style={{ fontSize: 12 }}
+          onClick={() => node && logEvent("exit_to_home", node.id, {})}>← exit to where this lives</a>
       </div>
     </article>
   );

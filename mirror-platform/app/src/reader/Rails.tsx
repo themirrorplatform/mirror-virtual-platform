@@ -4,6 +4,7 @@ import type { Graph } from "../types";
 import type { ElementState, Viewport } from "../gates";
 import { reverseRail } from "../engine";
 import { routeForNode } from "../lib/data";
+import { logEvent } from "../lib/telemetry";
 
 /* ----------------------------------------------------------------------------
    The three rails (§7, Composition §3, Device §1):
@@ -39,6 +40,7 @@ function RailGroup({
         )}
         {capped.map((id) => (
           <button key={id} className="rail" onClick={async () => {
+            logEvent("rail_follow", id, { rail: def.key });
             const r = await routeForNode(id); if (r) nav(r);
           }} style={{ padding: "7px 12px", fontSize: 13.5, textAlign: "left" }}>
             {graph[id]?.label ?? id}

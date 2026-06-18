@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { routeForNode } from "../lib/data";
+import { logEvent } from "../lib/telemetry";
 
 /* ----------------------------------------------------------------------------
    The membrane (§3, §7, Device §1). A construction showing through the prose at
@@ -22,7 +23,7 @@ export function Membrane({
         className="membrane"
         aria-label={`peek at the construction beneath: ${teaser}`}
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => { if (!open) logEvent("membrane_open", constructionId, { target: constructionId }); setOpen((o) => !o); }}
         style={{ background: "none", border: 0, padding: 0, font: "inherit", cursor: "pointer" }}
       >
         {text}
