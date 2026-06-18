@@ -5,6 +5,7 @@ import { showElement } from "../gates";
 import { supabase } from "../lib/supabase";
 import { routeForNode } from "../lib/data";
 import { startCheckout, openPortal } from "../lib/billing";
+import { GraphField } from "../app/GraphField";
 
 /* ----------------------------------------------------------------------------
    The remaining templates (§3,§5). Lean but pipeline-driven: each gates its
@@ -21,7 +22,7 @@ function useCtx(register: "system" | "threshold" | "transmission" = "system") {
 interface MapRow { domain: string; verb: string; owes: string | null; status: string; node_id: string | null }
 
 export function Map() {
-  const { role } = useSite();
+  const { role, graph } = useSite();
   const ctx = useCtx();
   const [rows, setRows] = useState<MapRow[]>([]);
   const [routes, setRoutes] = useState<Record<string, string>>({});
@@ -44,7 +45,19 @@ export function Map() {
   return (
     <div className="fadein">
       <div className="eyebrow">the atlas · reach, verb-tagged</div>
-      <h1 className="threshold" style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 18px" }}>Where the work reaches</h1>
+      <h1 className="threshold" style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 16px" }}>Where the work reaches</h1>
+
+      {/* the living geometry — gold = rests_on (the firewall), steel = pulls_to */}
+      <div className="card" style={{ height: 320, marginBottom: 8, overflow: "hidden",
+        background: "radial-gradient(120% 120% at 50% 0%, var(--c-stage2), var(--c-stage))" }}>
+        <GraphField graph={graph} mode="interactive" />
+      </div>
+      <div className="mono" style={{ fontSize: 10.5, color: "var(--c-bone3)", marginBottom: 22 }}>
+        <span style={{ color: "var(--c-gold)" }}>●</span> depth by structural load ·
+        <span style={{ color: "var(--c-gold)" }}> —</span> rests_on (the firewall) ·
+        <span style={{ color: "var(--c-steel)" }}> —</span> pulls_to (the encounter geometry)
+      </div>
+
       {rows.length === 0 && <p className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>— the atlas is being seeded.</p>}
       <div style={{ display: "grid", gap: 10 }}>
         {cards !== "hidden" && rows.map((r, i) => {

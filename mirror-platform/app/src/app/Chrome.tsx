@@ -86,7 +86,7 @@ export function Chrome({ children }: { children: React.ReactNode }) {
       </header>
 
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px 64px" }}>
-        {children}
+        <div className="route-enter" key={loc.pathname}>{children}</div>
       </main>
 
       {footer !== "hidden" && (

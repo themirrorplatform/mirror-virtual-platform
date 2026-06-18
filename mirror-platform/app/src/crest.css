@@ -1,80 +1,163 @@
 /* ============================================================================
-   The Mirror Platform — crest stylesheet (P4)
-   Consumes the tokens (see tokens.ts cssVariables()). The accessibility floor
-   lives here as real rules: AA body color, >=44px taps, :focus-visible rings,
-   and prefers-reduced-motion. Gold is used only for large/decorative marks.
+   The Mirror Platform — crest stylesheet (atmospheric pass)
+   The frozen §16 palette, used richly: layered Stage gradients, film grain, a
+   gold bloom on accents, depth on surfaces, and a considered motion system.
+   Mobile-first and fully reduced-motion-aware (Device §0/§2). Gold stays
+   decorative/large-only — never body text.
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --c-stage:  #0B0A08;  --c-stage2: #141210;  --c-stage3: #1d1a16;
+  --c-bone:   #E9E4D8;  --c-bone2:  #b7b1a4;   --c-bone3:  #7d776c;
+  --c-gold:   #C9A227;  --c-gold-2: #e6c659;   --c-steel:  #8FA7B3;
+  --c-seal:   #B3261E;  --c-line:   #2a2620;
+  --font-threshold: 'Playfair Display', Georgia, serif;
+  --font-transmission: 'Spectral', Georgia, serif;
+  --font-system: 'IBM Plex Mono', ui-monospace, monospace;
+  --ease: cubic-bezier(.2,.7,.2,1);
+  --gold-glow: 0 0 24px rgba(201,162,39,.18);
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
-  background: var(--c-stage);
-  color: var(--c-bone);                /* Bone on Stage — passes AA */
+  color: var(--c-bone);
   font-family: var(--font-transmission);
   font-weight: 300;
   line-height: 1.62;
   letter-spacing: .01em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* layered ground: a low, off-centre warmth over deep Stage, with a vignette */
+  background-color: var(--c-stage);
+  background-image:
+    radial-gradient(1100px 700px at 78% -8%, rgba(201,162,39,.07), transparent 60%),
+    radial-gradient(900px 800px at 8% 12%, rgba(143,167,179,.05), transparent 55%),
+    radial-gradient(1400px 1000px at 50% 120%, rgba(20,18,16,.9), transparent 70%);
+  background-attachment: fixed;
+  position: relative;
+  min-height: 100vh;
 }
+
+/* film grain — a faint static texture so the black has tooth, not flatness */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .035; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+#root { position: relative; z-index: 1; }
 
 ::selection { background: var(--c-gold); color: var(--c-stage); }
 
 /* registers ---------------------------------------------------------------- */
-.threshold { font-family: var(--font-threshold); }
+.threshold { font-family: var(--font-threshold); letter-spacing: -.01em; }
 .transmission { font-family: var(--font-transmission); }
 .system, .mono { font-family: var(--font-system); letter-spacing: 0; }
 
 .eyebrow {
-  font-family: var(--font-system);
-  font-size: 10.5px;
-  letter-spacing: .28em;
-  text-transform: uppercase;
-  color: var(--c-bone3);
+  font-family: var(--font-system); font-size: 10.5px; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--c-bone3);
+}
+/* a hairline gold lede before eyebrows, the crest's signature tick */
+.eyebrow::before {
+  content: ""; display: inline-block; width: 14px; height: 1px;
+  background: linear-gradient(90deg, var(--c-gold), transparent);
+  vertical-align: middle; margin-right: 8px; opacity: .8;
 }
 
-/* gold is decorative / large only — never body text (fails AA small) -------- */
-.hl { color: var(--c-gold); }          /* used on display sizes only */
+/* display type with a faint warm gradient + bloom on the big marks */
+h1.threshold { background: linear-gradient(180deg, #fbf6ea, #d8d0bf 70%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 1px 40px rgba(201,162,39,.05); }
+
+.hl { color: var(--c-gold); text-shadow: var(--gold-glow); }
+
+/* drop-cap for continuation prose */
+.dropcap::first-letter {
+  font-family: var(--font-threshold); font-weight: 700; float: left;
+  font-size: 3.1em; line-height: .82; padding: 6px 10px 0 0; color: var(--c-gold);
+}
 
 /* interactive floor: >=44px taps, visible focus, no hover-only meaning ------ */
-button, a, .tap {
-  min-height: var(--tap-min);
-  min-width: var(--tap-min);
-}
-:focus-visible {
-  outline: 2px solid var(--c-steel);
-  outline-offset: 2px;
-}
+button, a, .tap { min-height: 44px; min-width: 44px; }
+:focus-visible { outline: 2px solid var(--c-steel); outline-offset: 2px; border-radius: 2px; }
 
 .btn {
-  font-family: var(--font-system);
-  font-size: 12px;
-  letter-spacing: .04em;
-  border: 1px solid var(--c-line);
-  color: var(--c-bone);
-  background: transparent;
-  padding: 9px 16px;
-  cursor: pointer;
-  border-radius: 1px;
-  transition: border-color var(--motion-base) ease, color var(--motion-base) ease;
+  font-family: var(--font-system); font-size: 12px; letter-spacing: .04em;
+  border: 1px solid var(--c-line); color: var(--c-bone); background: linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+  padding: 9px 16px; cursor: pointer; border-radius: 2px;
+  transition: border-color .25s var(--ease), color .25s var(--ease), box-shadow .25s var(--ease), transform .15s var(--ease);
 }
-.btn:hover { border-color: var(--c-gold); color: var(--c-gold); }
-.btn-solid { background: var(--c-gold); color: var(--c-stage); border-color: var(--c-gold); font-weight: 500; }
+.btn:hover { border-color: var(--c-gold); color: var(--c-gold-2); box-shadow: var(--gold-glow); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-solid { background: linear-gradient(180deg, var(--c-gold-2), var(--c-gold)); color: #1a1505; border-color: var(--c-gold); font-weight: 500; }
+.btn-solid:hover { color: #1a1505; box-shadow: 0 0 30px rgba(201,162,39,.35); }
 
-.link { color: var(--c-steel); cursor: pointer; border-bottom: 1px solid transparent; }
-.link:hover { border-bottom-color: var(--c-steel); }
+.link { color: var(--c-steel); cursor: pointer; position: relative; text-decoration: none; }
+.link::after { content: ""; position: absolute; left: 0; bottom: -2px; height: 1px; width: 0;
+  background: var(--c-steel); transition: width .3s var(--ease); }
+.link:hover::after { width: 100%; }
 
-.card { border: 1px solid var(--c-line); background: var(--c-stage2); border-radius: 2px; }
+.card {
+  border: 1px solid var(--c-line);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 40%),
+    var(--c-stage2);
+  border-radius: 4px; position: relative;
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), transform .2s var(--ease);
+}
+/* a tappable card lifts and warms its top edge */
+a.card:hover, .card.tap:hover {
+  border-color: rgba(201,162,39,.4); transform: translateY(-2px);
+  box-shadow: 0 14px 40px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(201,162,39,.06);
+}
+
+.rail {
+  border: 1px solid var(--c-line);
+  background: linear-gradient(180deg, var(--c-stage2), var(--c-stage));
+  border-radius: 3px; cursor: pointer; color: var(--c-bone);
+  transition: border-color .25s var(--ease), background .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
+}
+.rail:hover { border-color: var(--c-gold); background: var(--c-stage3); transform: translateY(-1px); box-shadow: var(--gold-glow); }
+
+/* the membrane: a construction bleeding through prose — dashed gold, it warms
+   and faintly pulses on hover/focus, the proof "showing through" */
+.membrane { display: inline; border-bottom: 1px dashed var(--c-gold); color: var(--c-bone);
+  cursor: pointer; padding-bottom: 1px; transition: background .25s var(--ease), color .25s var(--ease); }
+.membrane:hover { background: rgba(201,162,39,.12); color: var(--c-gold-2); }
 
 /* motion ------------------------------------------------------------------- */
-.fadein { animation: fi var(--motion-slide) ease both; }
+.fadein { animation: fi .6s var(--ease) both; }
 @keyframes fi { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.slidein { animation: si var(--motion-slide) var(--motion-easing) both; }
-@keyframes si { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.slidein { animation: si .6s var(--ease) both; }
+@keyframes si { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* scroll-reveal: starts hidden, .is-in (set by IntersectionObserver) reveals */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.reveal.is-in { opacity: 1; transform: none; }
+
+/* stagger children of a .stagger container */
+.stagger > * { opacity: 0; animation: fi .6s var(--ease) forwards; }
+.stagger > *:nth-child(1){ animation-delay:.04s } .stagger > *:nth-child(2){ animation-delay:.10s }
+.stagger > *:nth-child(3){ animation-delay:.16s } .stagger > *:nth-child(4){ animation-delay:.22s }
+.stagger > *:nth-child(5){ animation-delay:.28s } .stagger > *:nth-child(6){ animation-delay:.34s }
+.stagger > *:nth-child(n+7){ animation-delay:.4s }
+
+/* a recompute pulse — when the geometry changes, the value flares gold once */
+.pulse { animation: pulse 1.1s var(--ease); }
+@keyframes pulse { 0%{ text-shadow:none } 30%{ text-shadow:0 0 18px rgba(201,162,39,.7) } 100%{ text-shadow:none } }
+
+/* route transition wrapper */
+.route-enter { animation: routein .5s var(--ease) both; }
+@keyframes routein { from { opacity: 0; transform: translateY(10px) scale(.997); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .fadein, .slidein { animation: none; }
-  * { transition: none !important; }
+  html { scroll-behavior: auto; }
+  .fadein, .slidein, .stagger > *, .pulse, .route-enter, .reveal { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+  body { background-attachment: scroll; }
 }

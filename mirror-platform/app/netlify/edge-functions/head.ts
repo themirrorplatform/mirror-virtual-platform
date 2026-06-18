@@ -9,7 +9,7 @@ import type { Context } from "https://edge.netlify.com";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://eayfuwbzdidhbkfjkohv.supabase.co";
 const ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "sb_publishable_UPRtH2k8qIC7AxUoEyErWA_2nHAybU7";
-const HOUSE_IMG = "/og-default.png";
+const HOUSE_IMG = "/og-default.jpg";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -62,8 +62,9 @@ async function buildMeta(url: URL): Promise<Meta> {
   return { title: house, description: "", canonical: origin + path };
 }
 
-function metaTags(m: Meta): string {
+function metaTags(m: Meta, origin: string): string {
   const og = m.canonical;
+  const image = `${origin}${HOUSE_IMG}`; // absolute — scrapers reject relative og:image
   const lines = [
     `<meta name="description" content="${esc(m.description)}" />`,
     m.noindex ? `<meta name="robots" content="noindex" />` : `<meta name="robots" content="index,follow" />`,
@@ -72,7 +73,7 @@ function metaTags(m: Meta): string {
     `<meta property="og:title" content="${esc(m.title)}" />`,
     `<meta property="og:description" content="${esc(m.description)}" />`,
     `<meta property="og:url" content="${esc(og)}" />`,
-    `<meta property="og:image" content="${HOUSE_IMG}" />`,
+    `<meta property="og:image" content="${esc(image)}" />`,
     `<meta property="og:site_name" content="The Mirror Platform" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${esc(m.title)}" />`,
@@ -87,11 +88,12 @@ export default async (request: Request, context: Context) => {
   const ctype = res.headers.get("content-type") ?? "";
   if (!ctype.includes("text/html")) return res;
 
-  const meta = await buildMeta(new URL(request.url));
+  const url = new URL(request.url);
+  const meta = await buildMeta(url);
   let html = await res.text();
   html = html
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(meta.title)}</title>`)
-    .replace("</head>", metaTags(meta) + "\n</head>");
+    .replace("</head>", metaTags(meta, url.origin) + "\n</head>");
 
   const headers = new Headers(res.headers);
   headers.delete("content-length");
