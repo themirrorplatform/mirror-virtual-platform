@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSite } from "../app/SiteContext";
+import { useAuth } from "../app/AuthContext";
 import { showElement } from "../gates";
 import { supabase } from "../lib/supabase";
+import { startCheckout, openPortal } from "../lib/billing";
 
 /* ----------------------------------------------------------------------------
    The remaining templates (§3,§5). Lean but pipeline-driven: each gates its
@@ -110,36 +112,67 @@ const ROLE_TIER: Record<string, string> = { free: "Free", cont: "Continuations",
 
 export function Account() {
   const { role } = useSite();
+  const { user, accountRole, signOut } = useAuth();
   const ctx = useCtx();
   const cards = showElement("tier_cards", role, ctx);
-  const current = ROLE_TIER[role] ?? "Free";
+  const current = ROLE_TIER[accountRole] ?? "Free";
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const checkout = new URLSearchParams(window.location.search).get("checkout");
+
+  const act = async (name: string, fn: () => Promise<string | null>) => {
+    if (!user) { window.location.href = "/signin"; return; }
+    setBusy(name); setErr(null);
+    const e = await fn(); if (e) { setErr(e); setBusy(null); }
+  };
+
   return (
     <div className="fadein">
       <div className="eyebrow">account</div>
-      <h1 className="threshold" style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 18px" }}>Your account</h1>
+      <h1 className="threshold" style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 12px" }}>Your account</h1>
+      <div className="mono" style={{ fontSize: 12, color: "var(--c-bone2)", marginBottom: 16 }}>
+        {user ? <>{user.email} · register <span className="hl">{accountRole}</span> · <button className="link" style={btnLink} onClick={signOut}>sign out</button></>
+              : <><a className="link" href="/signin">sign in</a> to subscribe and to read the spine.</>}
+      </div>
+
+      {checkout === "success" && <div className="card" style={{ padding: "12px 14px", marginBottom: 14, borderColor: "var(--c-gold)" }}>
+        <span className="mono" style={{ fontSize: 12, color: "var(--c-bone2)" }}>payment received — your tier opens the moment Stripe confirms it (a second or two).</span></div>}
+      {checkout === "cancel" && <div className="mono" style={{ fontSize: 12, color: "var(--c-bone3)", marginBottom: 14 }}>checkout canceled — nothing was charged.</div>}
+
       {cards !== "hidden" && (
         <div style={{ display: "grid", gap: 10 }}>
           {TIERS.map((t) => (
             <div key={t.name} className="card" style={{ padding: "14px 16px",
               borderColor: t.name === current ? "var(--c-gold)" : "var(--c-line)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span className="threshold" style={{ fontSize: 17 }}>{t.name}</span>
                 <span className="mono" style={{ fontSize: 12, color: "var(--c-bone2)" }}>
                   {t.price}{t.name === current ? " · current" : ""}
                 </span>
               </div>
               <div style={{ fontSize: 13.5, color: "var(--c-bone2)", marginTop: 6 }}>{t.unlocks}</div>
+              <div style={{ marginTop: 10 }}>
+                {t.name === "Continuations" && current !== "Continuations" &&
+                  <button className="btn" disabled={!!busy} onClick={() => act("c", () => startCheckout("continuations"))}>{busy === "c" ? "…" : "subscribe — $24.99/mo"}</button>}
+                {t.name === "Builder" && current !== "Builder" &&
+                  <button className="btn" disabled={!!busy} onClick={() => act("b", () => startCheckout("builder"))}>{busy === "b" ? "…" : "open a slot — $59.99/mo"}</button>}
+                {t.name === "Patron" &&
+                  <a className="link mono" style={{ fontSize: 12 }} href="mailto:contact@mirrorplatform.online?subject=Patron">contact A Reflection →</a>}
+                {(t.name === current && current !== "Free") &&
+                  <button className="btn" disabled={!!busy} onClick={() => act("p", openPortal)}>{busy === "p" ? "…" : "manage / cancel"}</button>}
+              </div>
             </div>
           ))}
         </div>
       )}
+      {err && <div className="mono" style={{ fontSize: 12, color: "var(--c-seal)", marginTop: 12 }}>{err}</div>}
       <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 16 }}>
         cancel anytime · your continuations stay yours and leave with you · the guardian can never remove them
-        <br />(Stripe checkout + one-click cancel wire in P9)
       </div>
     </div>
   );
 }
+const btnLink: React.CSSProperties = { background: "none", border: 0, padding: 0, cursor: "pointer", font: "inherit" };
 
 export function Builder() {
   const { role } = useSite();

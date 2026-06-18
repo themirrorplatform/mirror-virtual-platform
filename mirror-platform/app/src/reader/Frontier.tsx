@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ElementState, Role } from "../gates";
 import { logEvent } from "../lib/telemetry";
+import { startCheckout } from "../lib/billing";
+import { useAuth } from "../app/AuthContext";
 
 /* ----------------------------------------------------------------------------
    The frontier prompt (§7, Composition §3). A node whose "leads to" is empty is
@@ -14,9 +17,17 @@ export function Frontier({
   state, role, isFrontier,
 }: { state: ElementState; role: Role; isFrontier: boolean }) {
   const [prompted, setPrompted] = useState(false);
+  const { user } = useAuth();
+  const nav = useNavigate();
   if (state === "hidden" || state === "locked" || !isFrontier) return null;
 
   const builder = role === "build" || role === "arch";
+  const onContinue = () => {
+    logEvent("continue_pressed", null, {});
+    logEvent("gate_hit", null, { gate: "contribution" });
+    setPrompted(true);
+    if (!user) nav("/signin"); else startCheckout("builder");
+  };
 
   return (
     <section className="card" style={{ padding: "16px 18px", marginTop: 22, borderColor: "var(--c-line)" }}>
@@ -35,14 +46,13 @@ export function Frontier({
         </div>
       ) : (
         <>
-          <button className="btn btn-solid" style={{ marginTop: 12 }}
-            onClick={() => { logEvent("continue_pressed", null, {}); setPrompted(true); }}>
+          <button className="btn btn-solid" style={{ marginTop: 12 }} onClick={onContinue}>
             continue this thought →
           </button>
           {prompted && (
             <div className="mono" style={{ fontSize: 12, color: "var(--c-bone3)", marginTop: 10 }}>
               continuing requires a Builder slot ($59.99) — a borne cost filters for seriousness, not
-              means (§6). the contribution gate is wired in P9.
+              means (§6).
             </div>
           )}
         </>

@@ -23,6 +23,11 @@ vi.mock("./lib/data", () => ({
   fetchThreadBySlug: vi.fn(), fetchMembranes: vi.fn(), fetchConstructionBySlug: vi.fn(),
   fetchNowList: vi.fn(), routeForNode: vi.fn(), fetchGraph: vi.fn(),
 }));
+vi.mock("./app/AuthContext", () => ({
+  useAuth: () => ({ user: null, accountRole: "free", signOut: () => {} }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+vi.mock("./lib/billing", () => ({ startCheckout: vi.fn(), openPortal: vi.fn() }));
 
 import * as data from "./lib/data";
 import { Thread } from "./templates/Thread";
