@@ -9,28 +9,31 @@ these before I write code.
 
 ---
 
-## D1 — Rendering & the server-true `<head>` (the biggest choice)
-**Decision (proposed): Next.js (App Router) with server-side rendering, deployed on
-Netlify.** Reader pages render on the server, per role.
+## D1 — Rendering & the server-true `<head>` (settled by the spec)
+**Decision: Vite-React SPA + Netlify Edge Function for per-route server-true
+`<head>`/OG/JSON-LD.** This is what the Build Plan (P1) and Device Spec (§3)
+specify — *"a Vite-React SPA with server-true `<head>`"*, *"a single responsive SPA
+serves phone, tablet, desktop"* — and what the `MirrorPlatform.jsx` prototype is
+written in. Per §0 rule 8 I build to the spec, not to my own framework preference.
 
-Why, not the lighter "Vite SPA + edge meta-injection" path:
-- §0 rule 1 (**deny by default**) + P15 (**gated body never previews, even to bots**)
-  are *structurally* satisfied by SSR: gated content is never sent to an
-  unauthorized client at all. With a client SPA, the body ships to the browser and
-  is hidden by JS — weaker, and a leak risk.
-- The three read gates (`canAccess → showElement → resolveTerm`) want to run
-  **server-side per request** with `ctx` (role, arrival, viewport). App Router
-  server components are the natural home for that pipeline.
-- Server-true `<title>`/OG/JSON-LD per `/t/` and `/c/` (P1, P15) is first-class.
+Why this satisfies the security model **without** server-rendered bodies:
+- **Deny-by-default lives at the RLS layer (P2), not in client JS.** The database
+  will not return a gated body to an unauthorized role, so gated content **never
+  reaches the client** — it isn't *served*, not merely hidden. That is §0 rule 1
+  enforced at the data door, stronger than client-side hiding.
+- **Server-true previews** come from the edge function reading the node and writing
+  `<title>`/`share_line`/OG/JSON-LD into the HTML before it ships — so scrapers
+  (which don't run JS) get correct previews, and a gated `/c/` previews teaser-only
+  (P15). The gated body is never in the served HTML or the API response.
+- The three read gates (`canAccess → showElement → resolveTerm`) run client-side as
+  the **composition** pipeline over data RLS already permitted — they decide *how*
+  to render, never *whether* you're allowed the bytes. Allowance is RLS's job.
 
-**Cost / tradeoff:** the WebGL crest + motion engine become **client components**
-(`"use client"`), not the whole app. We re-home the existing Three.js/motion craft
-as islands inside SSR pages. Real work, but the craft carries over.
+**Performance fit (Device §3):** load/depth/rails are computed at write-time and
+cached (P3), so a mobile read is a plain fetch — no per-read graph closure.
 
-**Documented alternative (if you'd rather minimize migration):** keep the Vite SPA
-and inject per-route `<head>` via a Netlify Edge Function. Lighter, reuses more, but
-gates run client-side (weaker deny-by-default). I recommend against it for a
-platform of this ambition.
+*(Earlier draft proposed Next.js full-SSR; withdrawn — it overrode the spec's stated
+stack and the existing prototype. The RLS-layer gating above closes the same gap.)*
 
 ## D2 — Hosting & coexistence (you chose: keep Deep Read live)
 - The Mirror Platform builds on a **separate Netlify site** with a **staging URL**
@@ -81,15 +84,25 @@ platform of this ambition.
 
 ## ⚠ Two prerequisites that block Batch 1
 
-**PR1 — The source materials.** §0 rule 8 forbids inventing UX ("test against the
-prototype; do not invent UX"). To build faithfully I need:
-- `protocol.py` and `graph.json` (the engine + seed) — required for P3, P17.
-- `MirrorPlatform.jsx` (the prototype) — the behavior to reproduce.
-- The specs that define the matrices/rules: **Everything, Composition, Lexicon,
-  Telemetry, Device, Permanence, Contribution, Voice, SEO.** At minimum the
-  Composition §3 matrices and Lexicon §B′/§E rules — without them P5/P6 are guesswork.
+**PR1 — The source materials.** §0 rule 8 forbids inventing UX. Status as of
+2026-06-18 — **enough to start Batch 1 (P1–P4); Batch 2+ still blocked:**
 
-Drop them in the repo (e.g. a `mirror-platform/_source/` folder) or paste them.
+*Received:* Build Plan (the master) · Data-Permanence Spec · Device-Access Spec ·
+`protocol.py` (the engine) · the Attempt Register (sample corpus rows).
+
+*Still needed, and which batch each unblocks:*
+- **Composition Schema** (§3 matrices) → blocks **P5 / Batch 2**.
+- **Lexicon Schema** (§B′ binding, §E states) → blocks **P6 / Batch 2**.
+- **Telemetry Spec** → blocks **P14 / Batch 4**.
+- **SEO-Shareability Spec** → refines **P15 / Batch 8** (P1 head skeleton is fine now).
+- **Contribution-Conduct Spec** → blocks **P10–P12 / Batches 6–7**.
+- **Everything Spec** + **Voice Spec / Surface-Sweep** → cross-cutting; Voice gives
+  the banned-word lint (P4+) and the System/Threshold register copy.
+- **`graph.json`** (the seed) + **`MirrorPlatform.jsx`** (the prototype to test
+  against) → needed for visual parity now, hard-required for **P17 / Batch 9**.
+
+I have everything I need for **Batch 1**. Send the Composition + Lexicon specs next
+so Batch 2 isn't blocked when Batch 1 lands.
 
 **PR2 — Supabase access.** A new project + a **Personal Access Token (`sbp_…`)** so I
 can run migrations and deploy edge functions end-to-end. (Alternative: you run each
@@ -122,10 +135,14 @@ migration in the dashboard and deploy functions — slower, more back-and-forth.
 ---
 
 ## What I need from you to start
-1. **Sign off** (or amend) D1–D8 — especially **D1** (Next.js SSR vs the lighter
-   SPA+edge alternative).
-2. **PR1:** the source materials (specs + `protocol.py` + `graph.json` +
-   `MirrorPlatform.jsx`).
-3. **PR2:** a new Supabase project + `sbp_` token (or agree to dashboard runs).
+1. **Sign off** (or amend) D1–D8. D1 is now settled to the spec's stack (Vite-React
+   SPA + edge head), so the only open architecture call is whether you accept D2–D8.
+2. **PR2 — Supabase access:** a new project + `sbp_` token (or agree to dashboard
+   runs) — needed for the Supabase parts of P1/P2/P3.
+3. **Next specs:** Composition + Lexicon (to keep Batch 2 unblocked).
 
-Give me those and I start Batch 1 on the staging site, live Deep Read untouched.
+**I can start the Supabase-independent slice of Batch 1 immediately on your word:**
+the engine port (**P3** — pure TS from `protocol.py`), the crest design tokens
+(**P4**), and the client read-gate pipeline + repo scaffold (**P1**, minus the
+Supabase init). The Supabase init, tables/RLS (P2), and the commit edge function
+(P3) wire in the moment the `sbp_` token lands.
