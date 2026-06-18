@@ -88,11 +88,12 @@ stack and the existing prototype. The RLS-layer gating above closes the same gap
 2026-06-18 — **enough to start Batch 1 (P1–P4); Batch 2+ still blocked:**
 
 *Received:* Build Plan (the master) · Data-Permanence Spec · Device-Access Spec ·
-`protocol.py` (the engine) · the Attempt Register (sample corpus rows).
+**Lexicon Schema** · `protocol.py` (the engine) · the Attempt Register (sample
+corpus rows).
 
 *Still needed, and which batch each unblocks:*
 - **Composition Schema** (§3 matrices) → blocks **P5 / Batch 2**.
-- **Lexicon Schema** (§B′ binding, §E states) → blocks **P6 / Batch 2**.
+- ~~Lexicon Schema~~ → **received** (unblocks **P6 / Batch 2**).
 - **Telemetry Spec** → blocks **P14 / Batch 4**.
 - **SEO-Shareability Spec** → refines **P15 / Batch 8** (P1 head skeleton is fine now).
 - **Contribution-Conduct Spec** → blocks **P10–P12 / Batches 6–7**.
