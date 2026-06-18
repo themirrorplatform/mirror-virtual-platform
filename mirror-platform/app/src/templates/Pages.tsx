@@ -3,6 +3,7 @@ import { useSite } from "../app/SiteContext";
 import { useAuth } from "../app/AuthContext";
 import { showElement } from "../gates";
 import { supabase } from "../lib/supabase";
+import { routeForNode } from "../lib/data";
 import { startCheckout, openPortal } from "../lib/billing";
 
 /* ----------------------------------------------------------------------------
@@ -17,33 +18,59 @@ function useCtx(register: "system" | "threshold" | "transmission" = "system") {
   return { arrival, isEntryNode: false, viewport, register, readerVocab: new Set<string>() };
 }
 
+interface MapRow { domain: string; verb: string; owes: string | null; status: string; node_id: string | null }
+
 export function Map() {
   const { role } = useSite();
   const ctx = useCtx();
-  const [rows, setRows] = useState<{ domain: string; verb: string; owes: string | null; status: string }[]>([]);
-  useEffect(() => { supabase?.from("map_entry").select("domain,verb,owes,status").then(({ data }) => setRows((data as never) ?? [])); }, []);
+  const [rows, setRows] = useState<MapRow[]>([]);
+  const [routes, setRoutes] = useState<Record<string, string>>({});
+  useEffect(() => {
+    supabase?.from("map_entry").select("domain,verb,owes,status,node_id").then(async ({ data }) => {
+      const rs = (data as MapRow[]) ?? []; setRows(rs);
+      // resolve walkable routes only for BUILT wings with a node (Continuations may walk)
+      const map: Record<string, string> = {};
+      for (const r of rs) if (r.status === "built" && r.node_id) {
+        const route = await routeForNode(r.node_id); if (route) map[r.node_id] = route;
+      }
+      setRoutes(map);
+    });
+  }, []);
 
   const cards = showElement("domain_cards", role, ctx);
   const owes = showElement("what_it_owes", role, ctx);
+  const showVerb = cards === "full" || role !== "free";
+
   return (
     <div className="fadein">
       <div className="eyebrow">the atlas · reach, verb-tagged</div>
       <h1 className="threshold" style={{ fontSize: 26, fontWeight: 700, margin: "6px 0 18px" }}>Where the work reaches</h1>
-      {rows.length === 0 && <p className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>— the atlas is being seeded (P13/P17).</p>}
+      {rows.length === 0 && <p className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>— the atlas is being seeded.</p>}
       <div style={{ display: "grid", gap: 10 }}>
-        {cards !== "hidden" && rows.map((r, i) => (
-          <div key={i} className="card" style={{ padding: "14px 16px" }}>
-            <div className="threshold" style={{ fontSize: 17 }}>{r.domain}</div>
-            <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 4 }}>
-              {r.status}{cards === "full" || role !== "free" ? ` · ${r.verb}` : ""}
-            </div>
-            {owes !== "hidden" && r.owes && (
-              <div style={{ fontSize: 13.5, color: "var(--c-bone2)", marginTop: 8 }}>
-                <span className="eyebrow">what it owes · </span>{r.owes}
+        {cards !== "hidden" && rows.map((r, i) => {
+          const walkable = r.status === "built" && r.node_id && routes[r.node_id];
+          return (
+            <div key={i} className="card" style={{ padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span className="threshold" style={{ fontSize: 17 }}>{r.domain}</span>
+                <span className="mono" style={{ fontSize: 10.5, color: r.status === "built" ? "var(--c-steel)" : "var(--c-bone3)" }}>{r.status}</span>
               </div>
-            )}
-          </div>
-        ))}
+              <div className="mono" style={{ fontSize: 11, color: "var(--c-bone3)", marginTop: 4 }}>
+                {showVerb ? r.verb : " "}
+              </div>
+              {owes !== "hidden" && r.owes && (
+                <div style={{ fontSize: 13.5, color: "var(--c-bone2)", marginTop: 8 }}>
+                  <span className="eyebrow">what it owes · </span>{r.owes}
+                </div>
+              )}
+              <div style={{ marginTop: 10 }}>
+                {walkable
+                  ? <a className="link mono" style={{ fontSize: 12 }} href={routes[r.node_id!]}>walk it →</a>
+                  : <span className="mono" style={{ fontSize: 11, color: "var(--c-bone3)" }}>{r.status === "coming" ? "coming — not yet walkable" : "—"}</span>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -76,11 +103,40 @@ export function About() {
   );
 }
 
+interface Post { id: string; body: string; author_display: string; author_handle: string; created_at: string }
+interface Removal { id: string; target_id: string; conduct_reason: string; created_at: string }
+
 export function Forum() {
   const { role } = useSite();
+  const { user, accountRole, accountHandle } = useAuth();
   const ctx = useCtx();
   const banner = showElement("conduct_banner", role, ctx);
-  const posts = showElement("forum_posts", role, ctx);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [removals, setRemovals] = useState<Removal[]>([]);
+  const [draft, setDraft] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const isArch = accountRole === "arch";
+
+  const load = async () => {
+    if (!user) return;
+    const { data } = await supabase!.from("forum_thread").select("*").order("created_at", { ascending: false }).limit(50);
+    setPosts((data as Post[]) ?? []);
+    if (isArch) { const r = await supabase!.from("removal").select("id,target_id,conduct_reason,created_at").eq("target_kind", "forum_post"); setRemovals((r.data as Removal[]) ?? []); }
+  };
+  useEffect(() => { load(); }, [user, isArch]);
+
+  const post = async () => {
+    if (!draft.trim() || !accountHandle) return;
+    const { error } = await supabase!.from("forum_post").insert({ author_handle: accountHandle, body: draft.trim() });
+    setMsg(error ? error.message : null); if (!error) { setDraft(""); load(); }
+  };
+  const remove = async (id: string) => {
+    const reason = prompt("Conduct reason (never a content reason):");
+    if (!reason) return;
+    const { error } = await supabase!.rpc("withdraw_forum_post", { p_post_id: id, p_reason: reason });
+    if (error) setMsg(error.message); else load();
+  };
+
   return (
     <div className="fadein">
       <div className="eyebrow">forum · free, email-gated</div>
@@ -93,11 +149,37 @@ export function Forum() {
           </span>
         </div>
       )}
-      {posts === "locked"
-        ? <p className="mono" style={{ fontSize: 12.5, color: "var(--c-bone3)" }}>
-            the forum is email-gated — sign in to read and post. (auth lands in P9)
-          </p>
-        : <p className="mono" style={{ fontSize: 12.5, color: "var(--c-bone3)" }}>posts + compose wire in P12.</p>}
+
+      {!user ? (
+        <p className="mono" style={{ fontSize: 12.5, color: "var(--c-bone3)" }}>
+          the forum is free but email-gated — <a className="link" href="/signin">sign in</a> to read and post.
+        </p>
+      ) : (
+        <>
+          <div className="card" style={{ padding: 12, marginBottom: 16 }}>
+            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="speak plainly."
+              style={{ width: "100%", minHeight: 64, background: "var(--c-stage2)", border: "1px solid var(--c-line)", borderRadius: 2, color: "var(--c-bone)", padding: 10, fontFamily: "var(--font-transmission)", fontSize: 14, boxSizing: "border-box" }} />
+            <button className="btn btn-solid" style={{ marginTop: 8 }} disabled={!draft.trim()} onClick={post}>post</button>
+            {msg && <span className="mono" style={{ fontSize: 11, color: "var(--c-seal)", marginLeft: 10 }}>{msg}</span>}
+          </div>
+          {posts.length === 0 && <span className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>— nothing yet. say the first thing.</span>}
+          {posts.map((p) => (
+            <div key={p.id} className="card" style={{ padding: "12px 14px", marginBottom: 8 }}>
+              <div className="mono" style={{ fontSize: 10.5, color: "var(--c-bone3)", marginBottom: 4 }}>{p.author_display}</div>
+              <div style={{ fontSize: 14.5, color: "var(--c-bone)" }}>{p.body}</div>
+              {isArch && <button className="btn" style={{ fontSize: 10.5, padding: "3px 8px", minHeight: 0, marginTop: 8, borderColor: "var(--c-seal)", color: "var(--c-seal)" }} onClick={() => remove(p.id)}>remove (conduct)</button>}
+            </div>
+          ))}
+
+          {isArch && (
+            <section className="card" style={{ padding: 14, marginTop: 18 }}>
+              <div className="eyebrow" style={{ marginBottom: 8 }}>removal audit · architect-only · conduct reasons (self-binding)</div>
+              {removals.length === 0 ? <span className="mono" style={{ fontSize: 12, color: "var(--c-bone3)" }}>— no removals.</span>
+                : removals.map((r) => <div key={r.id} className="mono" style={{ fontSize: 11, color: "var(--c-bone2)" }}>{r.target_id.slice(0, 8)} · {r.conduct_reason}</div>)}
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }

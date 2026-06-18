@@ -21,6 +21,8 @@ interface AuthValue {
   loading: boolean;
   /** the account-derived role; 'free' when signed out. */
   accountRole: Role;
+  /** the account's chosen handle (PII-free attribution); null when signed out. */
+  accountHandle: string | null;
   signInMagicLink: (email: string) => Promise<{ error: string | null }>;
   signInPassword: (email: string, password: string) => Promise<{ error: string | null }>;
   signUpPassword: (email: string, password: string) => Promise<{ error: string | null }>;
@@ -30,36 +32,37 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null);
 
-/** Map account state -> register. Architect is the highest trust; then tier. */
-async function deriveRole(): Promise<Role> {
-  if (!supabase) return "free";
-  const [{ data: arch }, { data: tier }] = await Promise.all([
+/** Map account state -> register + handle. Architect is highest trust; then tier. */
+async function deriveProfile(): Promise<{ role: Role; handle: string | null }> {
+  if (!supabase) return { role: "free", handle: null };
+  const [{ data: arch }, { data: tier }, { data: hrow }] = await Promise.all([
     supabase.rpc("is_architect"),
     supabase.rpc("current_tier"),
+    supabase.from("app_user").select("handle").maybeSingle(),
   ]);
-  if (arch === true) return "arch";
-  if (tier === "builder" || tier === "patron") return "build";
-  if (tier === "continuations") return "cont";
-  return "free";
+  const handle = (hrow as { handle: string | null } | null)?.handle ?? null;
+  const role: Role = arch === true ? "arch"
+    : tier === "builder" || tier === "patron" ? "build"
+    : tier === "continuations" ? "cont" : "free";
+  return { role, handle };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [accountRole, setAccountRole] = useState<Role>("free");
+  const [accountHandle, setAccountHandle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session); setUser(data.session?.user ?? null);
-      setAccountRole(data.session ? await deriveRole() : "free");
-      setLoading(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+    const apply = async (s: Session | null) => {
       setSession(s); setUser(s?.user ?? null);
-      setAccountRole(s ? await deriveRole() : "free");
-    });
+      const p = s ? await deriveProfile() : { role: "free" as Role, handle: null };
+      setAccountRole(p.role); setAccountHandle(p.handle);
+    };
+    supabase.auth.getSession().then(async ({ data }) => { await apply(data.session); setLoading(false); });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { apply(s); });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -67,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     p.then(({ error }) => ({ error: error?.message ?? null }));
 
   const value: AuthValue = {
-    user, session, loading, accountRole,
+    user, session, loading, accountRole, accountHandle,
     signInMagicLink: (email) =>
       wrap(supabase!.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })),
     signInPassword: (email, password) => wrap(supabase!.auth.signInWithPassword({ email, password })),

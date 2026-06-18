@@ -59,6 +59,26 @@ describe("Composition §3 — [A] cells: Architect inherits Builder except marke
   });
 });
 
+describe("Forum + Atlas gating (P12 · P13)", () => {
+  it("conduct banner is public; the removal audit is architect-only", () => {
+    for (const r of ["free", "cont", "build", "arch"] as Role[])
+      expect(showElement("conduct_banner", r, ctx())).toBe("full");
+    expect(showElement("removal_audit", "free", ctx())).toBe("hidden");
+    expect(showElement("removal_audit", "cont", ctx())).toBe("hidden");
+    expect(showElement("removal_audit", "arch", ctx())).toBe("full");
+  });
+  it("forum posts are email-gated: locked for Free, full once in", () => {
+    expect(showElement("forum_posts", "free", ctx())).toBe("locked");
+    expect(showElement("forum_posts", "cont", ctx())).toBe("full");
+  });
+  it("atlas: domain cards public, 'what it owes' Continuations+ only", () => {
+    expect(showElement("domain_cards", "free", ctx())).toBe("plain");
+    expect(showElement("domain_cards", "build", ctx())).toBe("full");
+    expect(showElement("what_it_owes", "free", ctx())).toBe("hidden");
+    expect(showElement("what_it_owes", "cont", ctx())).toBe("full");
+  });
+});
+
 describe("Device §1 — the viewport axis (reader-equal, instrument-graceful)", () => {
   it("rails stack on mobile, side-by-side on desktop", () => {
     expect(deviceBehavior("rail_grounds", "mobile")).toBe("stacked");
