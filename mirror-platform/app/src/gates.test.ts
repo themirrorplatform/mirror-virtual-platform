@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   canAccess, showElement, resolveTerm, runPipeline,
-  type Ctx, type TermRecord,
+  type Ctx,
 } from "./gates";
+import type { TermRecord } from "./lexicon";
 import type { MirrorNode } from "./types";
 
 function node(id: string, p: Partial<MirrorNode> = {}): MirrorNode {
@@ -53,15 +54,16 @@ describe("showElement (element gate, deny by default to hidden)", () => {
     expect(showElement("honest_ledger", "free", ctx({ arrival: "cold" }))).toBe("deferred");
     expect(showElement("honest_ledger", "free", ctx({ arrival: "lesswrong" }))).toBe("full");
   });
-  it("locks a body for a free non-entry view", () => {
+  it("shows the entry body to free, locks the non-entry body (the read gate)", () => {
+    expect(showElement("continuation_body", "free", ctx({ isEntryNode: true }))).toBe("full");
     expect(showElement("continuation_body", "free", ctx({ isEntryNode: false }))).toBe("locked");
-    expect(showElement("continuation_body", "free", ctx({ isEntryNode: true }))).toBe("hidden");
   });
 });
 
 describe("resolveTerm (word gate, deny by default to plain)", () => {
   const teach = (p: Partial<TermRecord> = {}): TermRecord => ({
-    term: "the-ground", disposition: "teach", requires: ["valence", "stake"],
+    term: "the-ground", register: "transmission", collision: "inverts",
+    disposition: "teach", requires: ["valence", "stake"],
     first_gloss: "what the whole thing rests on", ...p,
   });
 
@@ -69,7 +71,9 @@ describe("resolveTerm (word gate, deny by default to plain)", () => {
     expect(resolveTerm(undefined, ctx())).toBe("PLAIN");
   });
   it("errors on a banned term (the build lint)", () => {
-    expect(resolveTerm({ term: "unlock", disposition: "banned", requires: [] }, ctx())).toBe("ERROR");
+    expect(resolveTerm(
+      { term: "unlock", register: "system", collision: "none", disposition: "banned", requires: [] },
+      ctx())).toBe("ERROR");
   });
   it("defers a teach term until its requires are earned", () => {
     expect(resolveTerm(teach(), ctx({ readerVocab: new Set() }))).toBe("DEFER");
@@ -80,9 +84,14 @@ describe("resolveTerm (word gate, deny by default to plain)", () => {
     expect(resolveTerm(teach({ arrival_early: ["lesswrong"] }), ctx({ arrival: "lesswrong" }))).toBe("BARE");
   });
   it("suppresses an experience term on a reader surface, bare in system", () => {
-    const exp: TermRecord = { term: "rests-on", disposition: "experience", requires: [] };
+    const exp: TermRecord = { term: "rests-on", register: "system", collision: "mild", disposition: "experience", requires: [] };
     expect(resolveTerm(exp, ctx({ register: "transmission" }))).toBe("SUPPRESS");
     expect(resolveTerm(exp, ctx({ register: "system" }))).toBe("BARE");
+  });
+  it("demotes to plain on a reader surface, bare in system or when earned", () => {
+    const dem: TermRecord = { term: "spine", register: "system", collision: "inverts", disposition: "demote", plain: "the rest of the writing", requires: [] };
+    expect(resolveTerm(dem, ctx({ register: "transmission" }))).toBe("PLAIN");
+    expect(resolveTerm(dem, ctx({ register: "system" }))).toBe("BARE");
   });
 });
 
