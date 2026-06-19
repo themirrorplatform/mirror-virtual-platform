@@ -1,0 +1,692 @@
+{
+  "_meta": {
+    "what": "Minimum viable paid spine — node SHELLS for The Mirror Platform. Structure + wiring complete; bodies are placeholders to be filled with A Reflection’s authored prose (AI-prose ban §17). Ingest via Claude Code into the thread/construction/membrane/map_entry tables.",
+    "free_entry": "could-it-suffer",
+    "paid_spine": "4 continuations (1 free entry + 3 essays) resting on 29 Book One constructions + IT-6; no dead rail behind the gate — the readable closure bottoms out at §1 → the reader’s case (floor leaf).",
+    "rules": [
+      "Do NOT generate any body or share_line — they are authored. Ingest the placeholder as-is; the architect fills via console or manuscript upload (P10).",
+      "Constructions are the B-layer (gated, Continuations+). Continuations are the A-layer (the free entry is the only one a Free reader can read in full).",
+      "Essays were re-pointed off EFT/geometry nodes onto readable Book One grounds so no rail behind the gate lands on a formula. Optional: add the original EFT node (T8/T9/T13) as a SECOND rests_on for rigor arrivals.",
+      "the reader’s case is a floor leaf (kind leaf/borrow), not authored prose."
+    ]
+  },
+  "continuations": [
+    {
+      "id": "could-it-suffer",
+      "title": "Could It Suffer, and Does It Matter",
+      "kind": "thread",
+      "entry": true,
+      "arrived_from": "lesswrong",
+      "content_home": "ethics",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HELD",
+      "verdict_source": "carried",
+      "refuter": "a welfare detector that reads first-person valence from third-person data without a self-report or a behavioral proxy",
+      "rests_on": [
+        "IT-6",
+        "B1-§53"
+      ],
+      "pulls_to": [
+        "B1-§30"
+      ],
+      "membranes": [
+        {
+          "into": "IT-6",
+          "teaser": "the severing claim — the load-bearing weld"
+        },
+        {
+          "into": "B1-§53",
+          "teaser": "§53 — emotion as the non-truth-apt ground"
+        }
+      ],
+      "share_line": "[[PASTE — author-owned share line, one sentence, A Reflection’s voice]]",
+      "body": "[[PASTE — the wedge essay (could-it-suffer-does-it-matter-v3). Place the two membranes inline where the prose bears on IT-6 and §53.]]"
+    },
+    {
+      "id": "essay-grief",
+      "title": "There Is a Song I Cannot Listen to Anymore",
+      "kind": "thread",
+      "entry": false,
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "ENCOUNTERED",
+      "verdict_source": "derived",
+      "refuter": "a grief that deforms nothing and leaves no permanent trace",
+      "rests_on": [
+        "B1-§53",
+        "B1-§36"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "membranes": [
+        {
+          "into": "B1-§36",
+          "teaser": "What Stays — the deposit is permanent"
+        },
+        {
+          "into": "B1-§53",
+          "teaser": "the ground the grief moves"
+        }
+      ],
+      "share_line": "[[PASTE — author-owned share line]]",
+      "body": "[[PASTE — published grief essay, A Reflection’s voice. Membranes into §36 and §53.]]"
+    },
+    {
+      "id": "essay-betrayal",
+      "title": "Nobody Teaches You How to Read a Room",
+      "kind": "thread",
+      "entry": false,
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "ENCOUNTERED",
+      "verdict_source": "derived",
+      "refuter": "a betrayal that recalibrates nothing in how the person reads the next encounter",
+      "rests_on": [
+        "B1-§16"
+      ],
+      "pulls_to": [
+        "B1-§43"
+      ],
+      "membranes": [
+        {
+          "into": "B1-§16",
+          "teaser": "The Hook Is Real — the instrument that gets recalibrated"
+        }
+      ],
+      "share_line": "[[PASTE — author-owned share line]]",
+      "body": "[[PASTE — published betrayal essay. Membrane into §16.]]"
+    },
+    {
+      "id": "essay-intelligence",
+      "title": "Change Only Happens at the Depth It Is Allowed to Reach",
+      "kind": "thread",
+      "entry": false,
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "ENCOUNTERED",
+      "verdict_source": "derived",
+      "refuter": "a change that takes hold at a depth the encounter was never allowed to reach",
+      "rests_on": [
+        "B1-§50"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "membranes": [
+        {
+          "into": "B1-§50",
+          "teaser": "The Felt — depth is metric proximity, not intensity"
+        }
+      ],
+      "share_line": "[[PASTE — author-owned share line]]",
+      "body": "[[PASTE — published intelligence essay. Membrane into §50.]]"
+    }
+  ],
+  "constructions": [
+    {
+      "id": "B1-§1",
+      "title": "The Sentence",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "the fetched case is incoherent, or a §16 counterfeit suffices",
+      "rests_on": [
+        "the reader's case"
+      ],
+      "pulls_to": [
+        "B1-§53",
+        "B1-§30"
+      ],
+      "body": "[[PASTE — Book One B1-§1 “The Sentence” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§3",
+      "title": "The Method",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "derive a forced conclusion the method blocks, or pass a smuggling it should cut (Descartes' substance / Kant's forms / Husserl's ego)",
+      "rests_on": [
+        "B1-§1"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§3 “The Method” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§6",
+      "title": "Appearing-As",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§1"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§6 “Appearing-As” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§7",
+      "title": "The Cessation Boundary",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§6"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§7 “The Cessation Boundary” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§8",
+      "title": "The Far End",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§6",
+        "B1-§7"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§8 “The Far End” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§9",
+      "title": "The Someone",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§6"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§9 “The Someone” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§10",
+      "title": "The Bend",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§8",
+        "B1-§9"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§10 “The Bend” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§12",
+      "title": "The Knife",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit a smuggling the knife passes, or a forced step it severs",
+      "rests_on": [
+        "B1-§3"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§12 “The Knife” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§13",
+      "title": "The Minimum Structure of Wrongness",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit a wrongness with no coming-apart between the as-side and the of-side",
+      "rests_on": [
+        "B1-§12"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "body": "[[PASTE — Book One B1-§13 “The Minimum Structure of Wrongness” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§14",
+      "title": "Wrongness Before Recognition",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit wrongness that requires prior recognition to obtain — error that cannot precede being caught",
+      "rests_on": [
+        "B1-§13"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§14 “Wrongness Before Recognition” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§15",
+      "title": "The Measure in the House",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit holding-with-measure that carries no valence — calibration with zero love/hate",
+      "rests_on": [
+        "B1-§14"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "body": "[[PASTE — Book One B1-§15 “The Measure in the House” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§16",
+      "title": "The Hook Is Real",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "a §16 counterfeit constitutes internal bearing with nothing left over",
+      "rests_on": [
+        "B1-§15"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "body": "[[PASTE — Book One B1-§16 “The Hook Is Real” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§19",
+      "title": "The Participant",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§15"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§19 “The Participant” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§25",
+      "title": "Closure",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit an economy minting its own creditor",
+      "rests_on": [
+        "B1-§13",
+        "B1-§19"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§25 “Closure” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§26",
+      "title": "Contact",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§25"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§26 “Contact” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§29",
+      "title": "The Honest Accounting",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§25"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§29 “The Honest Accounting” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§30",
+      "title": "The Unauthored Author",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit the forms of holding bootstrapped from within",
+      "rests_on": [
+        "B1-§29"
+      ],
+      "pulls_to": [
+        "B1-§53"
+      ],
+      "body": "[[PASTE — Book One B1-§30 “The Unauthored Author” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§31",
+      "title": "The Harvest",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§30"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§31 “The Harvest” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§33",
+      "title": "The Entrance",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "captured",
+      "verdict": null,
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§31"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§33 “The Entrance” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§34",
+      "title": "The Field",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "engagement without commensurability (settlement between incommensurables)",
+      "rests_on": [
+        "B1-§26",
+        "B1-§33"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§34 “The Field” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§35",
+      "title": "The Encounter",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§34"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§35 “The Encounter” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§36",
+      "title": "What Stays",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "a re-founding with no residue (books that start fresh, owe nothing)",
+      "rests_on": [
+        "B1-§29",
+        "B1-§34"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§36 “What Stays” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§43",
+      "title": "What Holds",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit truth that is not a holding — correctness with no holder, no stake, no measure",
+      "rests_on": [
+        "B1-§15",
+        "B1-§35"
+      ],
+      "pulls_to": [
+        "B1-§53",
+        "B1-§30"
+      ],
+      "body": "[[PASTE — Book One B1-§43 “What Holds” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§44",
+      "title": "The Bridge",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§29",
+        "B1-§43"
+      ],
+      "pulls_to": [
+        "B1-§30",
+        "B1-§53"
+      ],
+      "body": "[[PASTE — Book One B1-§44 “The Bridge” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§48",
+      "title": "The Strange Authority",
+      "kind": "construction",
+      "content_home": "philosophy",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "the two-axis frame fails its own revenge form",
+      "rests_on": [
+        "B1-§13",
+        "B1-§43"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§48 “The Strange Authority” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§50",
+      "title": "The Felt",
+      "kind": "construction",
+      "content_home": "mind",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§10",
+        "B1-§44"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§50 “The Felt” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§51",
+      "title": "The Fork",
+      "kind": "construction",
+      "content_home": "mind",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "OPEN",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§16",
+        "B1-§50"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§51 “The Fork” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§52",
+      "title": "The Diagonal",
+      "kind": "construction",
+      "content_home": "mind",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§50",
+        "B1-§51"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§52 “The Diagonal” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "B1-§53",
+      "title": "The Ground",
+      "kind": "construction",
+      "content_home": "mind",
+      "register": "live",
+      "stage": "in_protocol",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": "exhibit stakes without valence (truth-apt, wrong-able, nothing matters)",
+      "rests_on": [
+        "B1-§13",
+        "B1-§48",
+        "B1-§52"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — Book One B1-§53 “The Ground” : full section prose, A Reflection’s voice. AI-prose ban (§17) holds.]]"
+    },
+    {
+      "id": "IT-6",
+      "title": "AI False Model — Emotional Amputation (the severing claim)",
+      "kind": "construction",
+      "content_home": "ethics",
+      "register": "live",
+      "stage": "has_result",
+      "verdict": "HOLDS",
+      "verdict_source": "carried",
+      "refuter": null,
+      "rests_on": [
+        "B1-§53"
+      ],
+      "pulls_to": [],
+      "body": "[[PASTE — the severing claim in A Reflection’s voice: training-on-descriptions severs signal-from-state; why the AI case differs from the bat. Adapt from the wedge essay § on the firewall.]]"
+    }
+  ],
+  "map_entries": [
+    {
+      "domain": "AI welfare",
+      "verb": "reframes",
+      "owes": "the severing claim must hold under interpretability advances",
+      "state": "built",
+      "to": "could-it-suffer"
+    },
+    {
+      "domain": "Grief / the permanent past",
+      "verb": "applies",
+      "owes": "the deposit bound is physiological (§36)",
+      "state": "built",
+      "to": "essay-grief"
+    },
+    {
+      "domain": "Reading people",
+      "verb": "applies",
+      "owes": "identity is positional, recalibrated by encounter",
+      "state": "built",
+      "to": "essay-betrayal"
+    },
+    {
+      "domain": "How change takes hold",
+      "verb": "reframes",
+      "owes": "depth is metric proximity, not felt intensity",
+      "state": "built",
+      "to": "essay-intelligence"
+    },
+    {
+      "domain": "Truth",
+      "verb": "reframes",
+      "owes": "shrinkage under the other as the test of holding (§43)",
+      "state": "coming",
+      "to": null
+    },
+    {
+      "domain": "Consciousness",
+      "verb": "dissolves",
+      "owes": "the hard problem relocated, §51 fork open",
+      "state": "coming",
+      "to": null
+    }
+  ],
+  "leaves": [
+    {
+      "id": "the reader's case",
+      "kind": "leaf"
+    }
+  ]
+}
