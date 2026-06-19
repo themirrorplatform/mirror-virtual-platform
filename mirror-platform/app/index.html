@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      The <head> is a placeholder here. Per-route server-true title/OG/JSON-LD
+      for /t/ and /c/ is injected by a Netlify edge function before the HTML is
+      served (SEO §2 / decision D1) — scrapers never run JS, so client meta is
+      not relied on. There is no front door (§2): the SPA boots mid-thought.
+    -->
+    <title>The Mirror Platform</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

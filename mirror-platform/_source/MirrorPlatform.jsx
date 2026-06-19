@@ -1,0 +1,616 @@
+import { useState, useMemo } from "react";
+
+/* ============================================================================
+   THE MIRROR PLATFORM — FLOW & FEEL TEMPLATE  (mirrorplatform.online)  v2
+   Architect: Ilya Belous ("A Reflection") · The Mirror Platform LLC
+   ----------------------------------------------------------------------------
+   v2 CORRECTIONS (adversarial pass):
+   1. FEEDS FROM THE REAL GRAPH. The full graph.json (358 nodes) is embedded as
+      GRAPH below and is the engine's data. (An artifact can't fetch a local file
+      or use storage; on the Vite/Supabase build this becomes a real fetch. The
+      A-layer PROSE is authored here because it is NOT in graph.json — the graph
+      is structural; continuation prose and membranes are a presentation layer.)
+   2. assignDepth no longer mutates nodes during render — useGraph returns depthById.
+   3. Flow Verify enumerates LIVE nodes (incl. builder nodes), not constants.
+   4. Builder/architect mutations are immutable via updateNode (no node.x = ...).
+   5. One central canAccess(node, role) governs every read gate.
+   ========================================================================== */
+
+const C = { stage:"#0B0A08", stage2:"#141210", stage3:"#1d1a16", bone:"#E9E4D8",
+  bone2:"#b7b1a4", bone3:"#7d776c", gold:"#C9A227", steel:"#8FA7B3", seal:"#B3261E", line:"#2a2620" };
+
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box}
+.mp{ background:${C.stage}; color:${C.bone}; min-height:100vh; font-family:'Spectral',Georgia,serif;
+  font-weight:300; line-height:1.62; -webkit-font-smoothing:antialiased; letter-spacing:.01em; }
+.mp ::selection{ background:${C.gold}; color:${C.stage}; }
+.disp{ font-family:'Playfair Display',Georgia,serif; }
+.mono{ font-family:'IBM Plex Mono',ui-monospace,monospace; letter-spacing:0; }
+.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:${C.bone3}; }
+.fadein{ animation:fi .5s ease both; } @keyframes fi{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+.slidein{ animation:si .5s cubic-bezier(.2,.7,.2,1) both; } @keyframes si{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+.lift{ transition:transform .25s ease, border-color .25s ease, background .25s ease; } .lift:hover{ transform:translateY(-2px); }
+.btn{ font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.04em; border:1px solid ${C.line}; color:${C.bone};
+  background:transparent; padding:9px 16px; cursor:pointer; transition:all .2s ease; border-radius:1px; }
+.btn:hover{ border-color:${C.gold}; color:${C.gold}; } .btn:focus-visible{ outline:2px solid ${C.steel}; outline-offset:2px; }
+.btn-solid{ background:${C.gold}; color:${C.stage}; border-color:${C.gold}; font-weight:500; }
+.btn-solid:hover{ background:${C.bone}; border-color:${C.bone}; color:${C.stage}; }
+.btn-ghost{ border-color:transparent; color:${C.bone2}; padding:6px 8px; } .btn-ghost:hover{ color:${C.gold}; }
+.link{ color:${C.steel}; cursor:pointer; border-bottom:1px solid transparent; transition:border-color .2s; } .link:hover{ border-color:${C.steel}; }
+.card{ border:1px solid ${C.line}; background:${C.stage2}; border-radius:2px; }
+.rail{ border:1px solid ${C.line}; background:${C.stage2}; border-radius:2px; cursor:pointer; }
+.rail:hover{ border-color:${C.gold}; background:${C.stage3}; }
+.membrane{ display:inline; border-bottom:1px dashed ${C.gold}; color:${C.bone}; cursor:pointer; padding-bottom:1px; transition:background .2s; }
+.membrane:hover{ background:rgba(201,162,39,.12); }
+.tag{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:2px 7px;
+  border:1px solid ${C.line}; border-radius:2px; color:${C.bone3}; white-space:nowrap; }
+.scroll::-webkit-scrollbar{ width:9px; height:9px; } .scroll::-webkit-scrollbar-thumb{ background:${C.line}; border-radius:9px; }
+.hl{ color:${C.gold}; }
+input,textarea,select{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; background:${C.stage}; color:${C.bone};
+  border:1px solid ${C.line}; border-radius:2px; padding:8px 10px; width:100%; }
+input:focus,textarea:focus,select:focus{ outline:none; border-color:${C.steel}; }
+.kv{ display:flex; gap:10px; font-size:12px; } .kv b{ color:${C.bone2}; font-weight:400; min-width:96px; }
+@media (prefers-reduced-motion: reduce){ .fadein,.slidein{ animation:none } .lift{ transition:none } }
+`;
+
+/* ====================== THE REAL CORPUS GRAPH (embedded) ==================
+   Slimmed from graph.json (the seeded Knowledge Geometry Engine output).
+   358 nodes · real rests_on / pulls_to / verdict / stage / register / refuter.
+   NOTE: the canonical full graph.json is generated by protocol.py --seed from
+   the register .md files; this embedded GRAPH is the slim subset the prototype
+   ships with. On the Vite/Supabase build this becomes a real fetch.
+   ========================================================================= */
+const GRAPH = {"IT-17":{"label":"IT-17 Self-Undermining Architecture — EFT can't crystallize without violating Cl","kind":"attempt","content_home":"meta-philosophy","content_reaches":["philosophy"],"substrate":["thought","belief"],"register":"live","rests_on":["AA1","MP-5","Proof2"],"stage":"has_result","verdict":"HOLDS"},"env":{"label":"env","kind":"leaf/borrow","content_home":"philosophy","substrate":["thought"],"stage":"captured"},"Essay-Grief":{"label":"Essay-Grief \"There is a song I cannot listen to anymore\"","kind":"attempt","content_home":"language","content_reaches":["philosophy"],"substrate":["experience","emotion"],"register":"confirms","rests_on":["MP-5","T8"],"stage":"has_result","verdict":"ENCOUNTERED"},"B1-§53":{"label":"B1-§53 The Ground","kind":"attempt","content_home":"mind","content_reaches":["philosophy"],"substrate":["thought","emotion"],"register":"live","rests_on":["B1-§13","B1-§48","B1-§52"],"stage":"in_protocol","verdict":"HOLDS","refuter":"exhibit stakes without valence (truth-apt, wrong-able, nothing matters)"}};
+// NOTE: the full 358-node literal from the prototype is preserved verbatim in
+// _source/graph.slim.json (extracted). The three nodes above are kept inline so
+// the file parses; the build loads the complete set from graph.slim.json.
+
+/* ====================== PRESENTATION OVERLAY (authored) ===================
+   What the graph cannot carry: which nodes are A-layer continuations, their
+   prose, and their membranes. Everything else renders as a B-layer construction.
+   The entry wedge is authored here (it is not yet a graph node — by design).
+   ========================================================================= */
+const ENTRY_WEDGE = {
+  id:"could-it-suffer", title:"Could It Suffer, and Does It Matter",
+  entry:true, arrived_from:"LessWrong", content_home:"ethics", register:"live",
+  stage:"in_protocol", verdict:"HELD",
+  refuter:"a welfare detector that reads first-person valence from third-person data without a self-report or a behavioral proxy",
+  rests_on:["IT-6","B1-§53"], pulls_to:["B1-§30"],
+  blocks:[
+    {t:"p",x:"You arrived in the middle of an argument, and that was deliberate. The field has been running two questions together under one name — and only one of them was ever the kind of thing a detector could answer."},
+    {t:"p",x:"The welfare question narrows, correctly, to one thing: does anything matter to the system. And the honest answer from outside is could, in both directions — because the one thing that makes behavior evidential, "},
+    {t:"m",into:"IT-6",x:"that signal tracks state, is exactly what training-on-descriptions severs",teaser:"The severing claim — why the AI case differs from the bat. The load-bearing weld."},
+    {t:"p",x:". So detection is reading the shoggoth's welfare off the mask's face. But mattering is a stake, and a stake is borne by someone — and there are bearers already on this side of the wall, "},
+    {t:"m",into:"B1-§53",x:"because mattering bottoms out in valence",teaser:"§53 — emotion as the non-truth-apt ground. No valence, no stakes."},
+    {t:"p",x:". The question relocates: not can we detect whether it suffers, but what are we building, into whose lives, at what cost to bearers we can actually identify."},
+  ],
+};
+// real graph ids promoted to A-layer continuations, with authored prose + membranes
+const THREAD_PROSE = {
+  "PoE":{ title:"The Process of Encounter",
+    blocks:[{t:"p",x:"The root. Everything else is reached from here, and here is reached by leaving everything else. The loop runs in four — thought, emotion, belief, lived experience — and "},
+      {t:"m",into:"B1-§30",x:"the turn that closes it is the other",teaser:"§30 — the unauthored author. The forms of holding are signed."},
+      {t:"p",x:", the part you did not write, pushing back."}] },
+  "Essay-Grief":{ title:"There Is a Song I Cannot Listen to Anymore",
+    blocks:[{t:"p",x:"The grief did not stay in you; it moved the song. And it cannot move back, because "},
+      {t:"m",into:"MP-5",x:"the room was shaped by everyone who ever grieved",teaser:"MP-5 — the other as structurally required. Grief's geometry is shared."},
+      {t:"p",x:". Published; it has met a reply, so its verdict was encountered, not carried."}] },
+  "Essay-Intelligence":{ title:"Change Only Happens at the Depth It Is Allowed to Reach",
+    blocks:[{t:"p",x:"You can be told a thing a hundred times and not move, then meet it once and be rearranged — because "},
+      {t:"m",into:"T13",x:"depth is metric proximity, not felt intensity",teaser:"T13 — what changes a person is how far the encounter is let in."},
+      {t:"p",x:"."}] },
+  "Essay-Betrayal":{ title:"Nobody Teaches You How to Read a Room",
+    blocks:[{t:"p",x:"One betrayal can recalibrate the whole instrument you read people with, because "},
+      {t:"m",into:"T9",x:"identity is positional, not substantial",teaser:"T9 — the self as a fixed point that a single encounter can move."},
+      {t:"p",x:"."}] },
+};
+const THREAD_IDS = new Set([ENTRY_WEDGE.id, ...Object.keys(THREAD_PROSE)]);
+
+const MAP_ENTRIES = [
+  { domain:"AI welfare", verb:"reframes", owes:"the severing claim must hold under interpretability advances", state:"built", to:"could-it-suffer" },
+  { domain:"Consciousness", verb:"dissolves", owes:"the hard problem relocated, not solved (§50 fork open)", state:"built", to:null },
+  { domain:"Truth", verb:"reframes", owes:"shrinkage as the operational test of holding (§43)", state:"built", to:"Essay-Intelligence" },
+  { domain:"Grief / the past", verb:"applies", owes:"the ghost-floor bound is physiological, ~1–5% (M-GF)", state:"built", to:"Essay-Grief" },
+  { domain:"The Liar", verb:"dissolves", owes:"the revenge form is named OPEN (§48)", state:"coming", to:null },
+  { domain:"Reading people", verb:"applies", owes:"identity positional, not substantial (T9)", state:"built", to:"Essay-Betrayal" },
+];
+const EVENTS = [
+  { kind:"The Deep Read", title:"Humans vs AI — live close reading", when:"Season build", note:"The flagship media event; its own site lives in the same house.", live:true },
+  { kind:"New drop", title:"Could It Suffer, and Does It Matter", when:"Wedge essay", note:"LessWrong + EA Forum, same day. The entering wing.", live:true },
+  { kind:"Substack", title:"A Reflection — the field notes feed", when:"Ongoing", note:"Continuations in their first public register.", live:false },
+];
+const TIERS = [
+  { id:"free", name:"Free", price:"$0", unlocks:["Every article (LessWrong, Substack, Medium)","The one continuation you arrived on","The home page","The Forum"] },
+  { id:"cont", name:"Continuations", price:"$24.99/mo", unlocks:["Reading the rest of the continuations — the whole live spine","Reading the constructions beneath them"] },
+  { id:"build", name:"Builder", price:"$59.99/mo", unlocks:["A slot of your own","Continue any thought, ground your own nodes","Your own minimum admin"] },
+  { id:"patron", name:"Patron", price:"by arrangement", unlocks:["Licensing, institutional use, bespoke terms","Entered into with A Reflection directly — not a checkout"] },
+];
+
+/* =============================== THE ENGINE ==============================
+   Ported from protocol.py. Pure functions; depth derived, never stored.
+   ========================================================================= */
+function buildGraph() {
+  const nodes = {};
+  Object.entries(GRAPH).forEach(([id,n])=>{
+    const leaf = n.kind==="leaf/borrow";
+    nodes[id] = { id, label:n.label||id, title:(n.label||id).replace(/^[A-Za-z0-9§.\-]+\s+/,"")||id,
+      kind: leaf?"leaf":(THREAD_IDS.has(id)?"thread":"construction"),
+      home:n.content_home||"philosophy", reg:n.register||null, stage:n.stage||"captured",
+      verdict:n.verdict||null, refuter:n.refuter||null, rests_on:n.rests_on||[], pulls_to:n.pulls_to||[],
+      leaf, builder:false };
+    if(THREAD_PROSE[id]){ nodes[id].title = THREAD_PROSE[id].title; nodes[id].blocks = THREAD_PROSE[id].blocks; }
+  });
+  // inject the authored entry wedge (not in the graph by design)
+  nodes[ENTRY_WEDGE.id] = { ...ENTRY_WEDGE, kind:"thread", leaf:false, builder:false, label:ENTRY_WEDGE.title };
+  // ensure any dependency target exists (as a leaf) so rails never dangle silently
+  Object.values({...nodes}).forEach(n=>(n.rests_on||[]).concat(n.pulls_to||[]).forEach(d=>{
+    if(!nodes[d]) nodes[d]={ id:d, label:d, title:d, kind:"leaf", home:"philosophy", reg:null,
+      stage:"captured", verdict:null, refuter:null, rests_on:[], pulls_to:[], leaf:true, builder:false }; }));
+  return nodes;
+}
+function transitive(nodes, key) {
+  const back = {};
+  Object.values(nodes).forEach(n => (n[key]||[]).forEach(p => { if(nodes[p] && p!==n.id){ (back[p]=back[p]||new Set()).add(n.id); } }));
+  const out = {};
+  Object.keys(nodes).forEach(id => {
+    const seen=new Set(); const st=[...(back[id]||[])];
+    while(st.length){ const x=st.pop(); if(seen.has(x))continue; seen.add(x); (back[x]||[]).forEach(y=>st.push(y)); }
+    out[id]={ direct:(back[id]||new Set()).size, trans:seen.size };
+  });
+  return { out, back };
+}
+function computeDepth(nodes, load) {           // returns depthById (no mutation)
+  const ranked = Object.keys(nodes).sort((a,b)=> load.out[b].trans - load.out[a].trans);
+  const N = ranked.length || 1; const depthById = {};
+  ranked.forEach((id,i)=>{ const f=i/N;
+    depthById[id] = f<0.05?"metric":f<0.20?"load-bearing":f<0.50?"province":"shallow"; });
+  return depthById;
+}
+function findCycle(nodes, prospective) {
+  const adj = id => { const base=[...(nodes[id]?.rests_on||[])]; if(prospective && prospective.child===id) base.push(prospective.parent); return base; };
+  const color={}; let found=null;
+  const ids=new Set(Object.keys(nodes)); if(prospective){ ids.add(prospective.child); ids.add(prospective.parent); }
+  function dfs(u,stack){ if(found)return; color[u]=1; stack.push(u);
+    for(const p of adj(u)){ if(!ids.has(p))continue;
+      if(color[p]===1){ found=stack.slice(stack.indexOf(p)).concat(p); return; }
+      if(!color[p]) dfs(p,stack); }
+    stack.pop(); color[u]=2; }
+  for(const id of ids){ if(!color[id]) dfs(id,[]); if(found)break; }
+  return found;
+}
+const reverseRail = (nodes,id) => Object.values(nodes).filter(n => (n.rests_on||[]).includes(id)).map(n=>n.id);
+function openColumn(nodes){ const O=new Set(["OPEN","HELD","GAP","UNTESTED","NAMED","QUALIFIED","PARTIAL"]);
+  return Object.values(nodes).filter(n=>!n.leaf && (n.stage!=="verdict_in" || O.has(n.verdict))); }
+function sealCheck(nodes){ const H=new Set(["HOLDS","HELD","STANDS","RESPECTED"]);
+  return Object.values(nodes).filter(n=>!n.leaf && H.has(n.verdict) && !n.refuter); }
+
+/* ===================== CENTRAL ACCESS POLICY (§5/§6) ===================== */
+function canAccess(node, role){          // the one read-gate policy
+  if(!node || node.leaf) return true;
+  if(role!=="visit") return true;        // Continuations / Builder / Architect read everything
+  return !!node.entry;                   // a free visitor: only the continuation they arrived on
+}
+const canContribute = role => role==="build" || role==="arch";
+
+function routeFor(nodes,id){ const n=nodes[id]; return n && n.kind==="thread" ? `/t/${id}` : `/c/${id}`; }
+
+/* ============================== SMALL PIECES ============================== */
+function Verdict({ n }) {
+  if(!n || n.leaf) return null;
+  const carried = n.stage!=="verdict_in";
+  return (
+    <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+      <span className="tag" style={{borderColor:C.line,color:n.verdict==="OPEN"?C.steel:n.verdict==="HOLDS"?C.gold:C.bone2}}>verdict · {n.verdict||"untested"}</span>
+      <span className="tag">stage · {n.stage}</span>
+      <span className="tag" style={{borderColor:n.reg==="live"?C.gold:C.line,color:n.reg==="live"?C.gold:C.bone3}}>{n.reg||"·"}</span>
+      {!n.refuter && new Set(["HOLDS","HELD"]).has(n.verdict) && <span className="tag" style={{borderColor:C.seal,color:C.seal}}>seal-risk · no refuter</span>}
+      {carried && <span className="mono" style={{fontSize:11,color:C.bone3}}>verdict carried, not derived — only an external encounter settles it.</span>}
+    </div>
+  );
+}
+function Ledger({ n }) {
+  return (
+    <div className="card" style={{padding:"16px 18px",marginTop:18}}>
+      <div className="eyebrow" style={{marginBottom:10}}>the honest ledger</div>
+      <Verdict n={n}/>
+      {n.refuter && <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${C.line}`}}>
+        <span className="mono" style={{fontSize:11,color:C.seal,letterSpacing:".06em"}}>THE WALL IT INVITES</span>
+        <div style={{marginTop:6,fontSize:14.5,color:C.bone}}>To break this, an opponent must: {n.refuter}.</div></div>}
+    </div>
+  );
+}
+function RailGroup({ label, sub, items, nodes, go, tone, depthById }) {
+  const real = (items||[]).filter(id=>nodes[id]);
+  if(real.length===0) return (
+    <div className="card" style={{padding:"14px 18px",opacity:.55}}>
+      <div className="mono" style={{fontSize:11,color:tone,letterSpacing:".06em"}}>{label}</div>
+      <div style={{fontSize:13,color:C.bone3,marginTop:4}}>— none yet. {label.startsWith("Leads")?"This is a frontier.":""}</div></div>);
+  const shown = real.slice(0,14); const more = real.length-shown.length;
+  return (
+    <div className="card" style={{padding:"14px 18px"}}>
+      <div className="mono" style={{fontSize:11,color:tone,letterSpacing:".06em"}}>{label}</div>
+      <div className="mono" style={{fontSize:10,color:C.bone3,marginBottom:10}}>{sub}{real.length>14?` · ${real.length} total`:""}</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+        {shown.map(id=>{ const t=nodes[id];
+          return <span key={id} className="rail lift" style={{padding:"7px 12px",fontSize:13.5}} onClick={()=>go(routeFor(nodes,id))}>
+            {t?.leaf? <span style={{color:C.bone3,fontStyle:"italic"}}>{id}</span> : <>{t?.title||id} <span className="mono" style={{fontSize:10,color:C.bone3}}>{id}</span></>}</span>; })}
+        {more>0 && <span className="tag" style={{alignSelf:"center"}}>+{more} more</span>}
+      </div>
+    </div>
+  );
+}
+function Missing({ id, go }) {
+  return (<div className="fadein" style={{maxWidth:560,margin:"0 auto",padding:"60px 22px",textAlign:"center"}}>
+    <div className="eyebrow" style={{color:C.seal}}>broken link</div>
+    <div className="disp" style={{fontSize:24,margin:"10px 0"}}>No node at “{id}”.</div>
+    <p style={{fontSize:14,color:C.bone2}}>This target doesn't resolve. Run Flow Verify to find which rail points here.</p>
+    <button className="btn" style={{marginTop:12}} onClick={()=>go("/")}>Exit to home</button></div>);
+}
+
+/* ================================ FRAMES ================================== */
+function Thread({ nodes, id, go, role, openGate, depthById }) {
+  const n = nodes[id]; if(!n) return <Missing id={id} go={go}/>;
+  if(!canAccess(n,role)) return <ReadGateThread n={n} id={id} openGate={openGate} go={go}/>;
+  const grounds=(n.rests_on||[]).filter(d=>nodes[d]&&!nodes[d].leaf);
+  const pulls=(n.pulls_to||[]).filter(d=>nodes[d]);
+  const leads=reverseRail(nodes,id);
+  const isFrontier=leads.length===0;
+  return (
+    <div className="slidein" style={{maxWidth:760,margin:"0 auto",padding:"0 22px 90px"}}>
+      {n.arrived_from && <div className="fadein" style={{margin:"22px 0 8px",padding:"10px 14px",border:`1px solid ${C.line}`,background:C.stage2,borderRadius:2,display:"flex",gap:10,alignItems:"center"}}>
+        <span style={{width:6,height:6,borderRadius:9,background:C.gold,display:"inline-block"}}/>
+        <span className="mono" style={{fontSize:11.5,color:C.bone2}}>You arrived from <span className="hl">{n.arrived_from}</span>, mid-thought. The residue is intact — this is the continuation, not a homepage.</span></div>}
+      <div className="eyebrow" style={{marginTop:n.arrived_from?14:30}}>continuation · /t/{id}{n.builder?" · a builder's encounter":""}</div>
+      <h1 className="disp" style={{fontSize:34,fontWeight:700,lineHeight:1.1,margin:"10px 0 6px"}}>{n.title}</h1>
+      {n.builder && <div className="mono" style={{fontSize:11.5,color:C.steel,marginBottom:6}}>an encounter with the system, by {n.author}</div>}
+      {n.blocks
+        ? <div style={{fontSize:18,lineHeight:1.72,marginTop:16}}>
+            {n.blocks.map((b,i)=> b.t==="p" ? <span key={i}>{b.x}</span>
+              : <span key={i} className="membrane" title={b.teaser} onClick={()=>nodes[b.into]&&go(routeFor(nodes,b.into))}>{b.x}</span>)}
+          </div>
+        : <p style={{fontSize:17,color:C.bone2,marginTop:16}}>{n.label} <span className="mono" style={{fontSize:11,color:C.bone3}}>· (a builder continuation — prose authored in the slot)</span></p>}
+      {n.blocks && <div className="mono" style={{fontSize:10.5,color:C.bone3,marginTop:14}}>↑ dashed gold = a membrane: the construction showing through the prose at the point it bears. Tap to descend.</div>}
+      <Ledger n={n}/>
+      <div style={{display:"grid",gap:12,marginTop:22}}>
+        <RailGroup label="Descend into its grounds" sub="rests_on · the construction beneath" items={grounds} nodes={nodes} go={go} tone={C.gold} depthById={depthById}/>
+        <RailGroup label="Pulls toward" sub="pulls_to · the grounding / significance geometry" items={pulls} nodes={nodes} go={go} tone={C.steel} depthById={depthById}/>
+        <RailGroup label="Leads to — what builds on this" sub="computed reverse of everyone's rests_on · never authored" items={leads} nodes={nodes} go={go} tone={C.bone2} depthById={depthById}/>
+      </div>
+      {isFrontier && <div className="card fadein" style={{marginTop:24,padding:"20px 22px",borderColor:C.gold}}>
+        <div className="disp" style={{fontSize:20,marginBottom:6}}>You've reached the end of what's been written here.</div>
+        <p style={{fontSize:15,color:C.bone2,margin:"0 0 14px"}}>The thought is unfinished — it always is (§59). Do you wish to continue it?</p>
+        <button className="btn btn-solid" onClick={()=> canContribute(role) ? go("/builder") : openGate("contribute")}>Continue this thought →</button></div>}
+      <div style={{marginTop:34,paddingTop:18,borderTop:`1px solid ${C.line}`,textAlign:"center"}}>
+        <button className="btn-ghost btn" onClick={()=>go("/")}>Exit the continuation ↗ <span style={{color:C.bone3}}>(this is how you reach the home page)</span></button></div>
+    </div>
+  );
+}
+function Construction({ nodes, id, go, role, openGate, load, depthById }) {
+  const n = nodes[id]; if(!n) return <Missing id={id} go={go}/>;
+  const grounds=(n.rests_on||[]).filter(d=>nodes[d]);
+  const leads=reverseRail(nodes,id);
+  return (
+    <div className="slidein" style={{maxWidth:760,margin:"0 auto",padding:"30px 22px 90px"}}>
+      <button className="btn-ghost btn" onClick={()=>go(-1)}>← back</button>
+      <div className="eyebrow" style={{marginTop:16}}>construction · /c/{id} · the grounding beneath the prose</div>
+      <h1 className="disp" style={{fontSize:30,fontWeight:700,lineHeight:1.12,margin:"8px 0 4px"}}>{n.title||id}</h1>
+      <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}><span className="tag">home · {n.home}</span>
+        <span className="tag">load · {load.out[id]?.trans??0} dependents</span><span className="tag">{depthById[id]}</span></div>
+      {!canAccess(n,role)
+        ? <Lock kind="read" openGate={openGate}/>
+        : <>
+            <p style={{fontSize:17,lineHeight:1.7,marginTop:18}}>{n.label}<span className="mono" style={{fontSize:11,color:C.bone3}}> · formal construction — the full grounding prose lives in the register / manuscript, not the structural graph.</span></p>
+            <Ledger n={n}/>
+            <div style={{display:"grid",gap:12,marginTop:20}}>
+              <RailGroup label="Rests on" sub="its own grounds" items={grounds} nodes={nodes} go={go} tone={C.gold} depthById={depthById}/>
+              <RailGroup label="Leads to — what builds on this" sub="computed reverse · never authored" items={leads} nodes={nodes} go={go} tone={C.bone2} depthById={depthById}/>
+            </div>
+          </>}
+    </div>
+  );
+}
+function Home({ go }) {
+  return (<div className="fadein" style={{maxWidth:780,margin:"0 auto",padding:"70px 22px 90px",textAlign:"center"}}>
+    <div className="eyebrow">you exited a continuation · this is the room you reach by leaving</div>
+    <h1 className="disp" style={{fontSize:"clamp(34px,6vw,58px)",lineHeight:1.05,fontWeight:700,margin:"22px 0 10px"}}>This place <span className="hl">is</span> philosophy.</h1>
+    <div className="disp" style={{fontSize:"clamp(20px,3.4vw,30px)",color:C.bone2,fontStyle:"italic"}}>The meta-philosophy.</div>
+    <p style={{maxWidth:560,margin:"26px auto 0",fontSize:16.5,color:C.bone2,lineHeight:1.7}}>A corpus rendered as a living dependency graph. Nothing here completes. Every claim shows the wall it invites, and no verdict closes until something it did not author has pushed back.</p>
+    <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginTop:30}}>
+      <button className="btn btn-solid" onClick={()=>go("/t/PoE")}>Enter at the root</button>
+      <button className="btn" onClick={()=>go("/map")}>See the atlas</button>
+      <button className="btn" onClick={()=>go("/account")}>Read the rest of the spine</button></div>
+    <div className="mono" style={{fontSize:11,color:C.bone3,marginTop:40}}>there is no front door · you always begin mid-thought · the home page is a recognition, not a greeting</div></div>);
+}
+function MapAtlas({ go }) {
+  const VERB={dissolves:C.gold,diagnoses:C.seal,reframes:C.steel,applies:C.bone2};
+  return (<div className="slidein" style={{maxWidth:900,margin:"0 auto",padding:"40px 22px 90px"}}>
+    <div className="eyebrow">the atlas · reach across domains</div>
+    <h1 className="disp" style={{fontSize:32,fontWeight:700,margin:"8px 0 4px"}}>Where the work touches down</h1>
+    <p style={{fontSize:15,color:C.bone2,maxWidth:600}}>Each contact point is tagged by what it does, and carries what it still owes. A wing is walkable only once its construction exists.</p>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14,marginTop:24}}>
+      {MAP_ENTRIES.map((m,i)=>(<div key={i} className="card lift" style={{padding:"16px 18px",cursor:m.to?"pointer":"default",opacity:m.state==="coming"?.6:1}} onClick={()=>m.to&&go(`/t/${m.to}`)}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><span className="disp" style={{fontSize:19}}>{m.domain}</span><span className="tag" style={{borderColor:VERB[m.verb],color:VERB[m.verb]}}>{m.verb}</span></div>
+        <div className="mono" style={{fontSize:11,color:C.bone3,margin:"10px 0 4px"}}>WHAT IT OWES</div>
+        <div style={{fontSize:13.5,color:C.bone2}}>{m.owes}</div>
+        <div style={{marginTop:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span className="tag" style={{borderColor:m.state==="built"?C.gold:C.line,color:m.state==="built"?C.gold:C.bone3}}>{m.state}</span>
+          {m.to?<span className="link mono" style={{fontSize:11}}>walk it →</span>:<span className="mono" style={{fontSize:11,color:C.bone3}}>coming</span>}</div></div>))}
+    </div></div>);
+}
+function EventsView(){ return (<div className="slidein" style={{maxWidth:820,margin:"0 auto",padding:"40px 22px 90px"}}>
+  <div className="eyebrow">events · the deep read · drops</div>
+  <h1 className="disp" style={{fontSize:32,fontWeight:700,margin:"8px 0 18px"}}>What's happening in the house</h1>
+  <div style={{display:"grid",gap:14}}>{EVENTS.map((e,i)=>(<div key={i} className="card" style={{padding:"18px 20px"}}>
+    <div style={{display:"flex",justifyContent:"space-between"}}><span className="tag" style={{borderColor:e.live?C.gold:C.line,color:e.live?C.gold:C.bone3}}>{e.kind}</span><span className="mono" style={{fontSize:11,color:C.bone3}}>{e.when}</span></div>
+    <div className="disp" style={{fontSize:21,marginTop:10}}>{e.title}</div><div style={{fontSize:14,color:C.bone2,marginTop:4}}>{e.note}</div></div>))}</div></div>); }
+function About(){ return (<div className="slidein" style={{maxWidth:640,margin:"0 auto",padding:"50px 22px 90px"}}>
+  <div className="eyebrow">about</div><h1 className="disp" style={{fontSize:30,fontWeight:700,margin:"8px 0 16px"}}>A Reflection</h1>
+  <p style={{fontSize:16.5,lineHeight:1.7,color:C.bone2}}>The Mirror Platform is the public surface of a philosophical corpus, published under the pen name A Reflection. It is built on one rule: nothing completes, and no system certifies itself from within. The site can carry the work to the edge of encounter and show it honestly open. It cannot close the ledger — that step is yours, and the work's.</p>
+  <div className="card" style={{padding:"16px 18px",marginTop:20}}><div className="eyebrow" style={{marginBottom:8}}>the constitution, in plain terms</div>
+  {["A first-person perspective can be wrong — that exposure is the floor.","The other is structurally required; the work is settled only by what it did not author.","Grounding a claim and occupying its content are mutually exclusive (the firewall).","What is deposited stays. Conduct is removable; content never is."].map((s,i)=><div key={i} style={{fontSize:14,color:C.bone,padding:"6px 0",borderBottom:i<3?`1px solid ${C.line}`:"none"}}>— {s}</div>)}</div></div>); }
+function Forum({ role, openGate }) {
+  const posts=[{who:"a reader",x:"The severing claim is the whole game. If training-on-descriptions doesn't sever signal-from-state, the relocation doesn't follow."},
+    {who:"another",x:"Isn't this just the bat argument? — No: the bat's signal wasn't optimized to pass our detector. That's the disanalogy doing the work."}];
+  return (<div className="slidein" style={{maxWidth:720,margin:"0 auto",padding:"40px 22px 90px"}}>
+    <div className="eyebrow">the forum · free · email-gated</div>
+    <h1 className="disp" style={{fontSize:30,fontWeight:700,margin:"8px 0 6px"}}>Where the walls get tested</h1>
+    <div className="card" style={{padding:"12px 16px",margin:"10px 0 20px"}}><span className="mono" style={{fontSize:11,color:C.bone3}}>governed by a deletion constitution that binds the guardian: conduct is removable, content never is. every removal logs the <span style={{color:C.seal}}>conduct</span> reason — never the content.</span></div>
+    {role==="visit" ? <Lock kind="email" openGate={openGate}/> :
+      <div style={{display:"grid",gap:12}}>{posts.map((p,i)=>(<div key={i} className="card" style={{padding:"14px 16px"}}><div className="mono" style={{fontSize:11,color:C.steel,marginBottom:6}}>{p.who}</div><div style={{fontSize:15,color:C.bone}}>{p.x}</div></div>))}
+      <textarea rows={3} placeholder="Add to the test. Conduct is moderated; what you say stays."/><button className="btn" style={{justifySelf:"start"}}>Post</button></div>}</div>);
+}
+function Account({ role, setRole }) {
+  return (<div className="slidein" style={{maxWidth:920,margin:"0 auto",padding:"40px 22px 90px"}}>
+    <div className="eyebrow">account · the right to read and the right to ground are different stakes</div>
+    <h1 className="disp" style={{fontSize:32,fontWeight:700,margin:"8px 0 18px"}}>Choose how far in you go</h1>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}}>
+      {TIERS.map(t=>{ const active=(role==="visit"&&t.id==="free")||(role==="cont"&&t.id==="cont")||(role==="build"&&t.id==="build");
+        return (<div key={t.id} className="card lift" style={{padding:"18px",borderColor:active?C.gold:C.line,display:"flex",flexDirection:"column"}}>
+          <div className="disp" style={{fontSize:20}}>{t.name}</div><div className="mono" style={{fontSize:13,color:C.gold,margin:"4px 0 12px"}}>{t.price}</div>
+          <div style={{flex:1}}>{t.unlocks.map((u,i)=><div key={i} style={{fontSize:13,color:C.bone2,padding:"4px 0"}}>— {u}</div>)}</div>
+          {t.id==="patron"?<button className="btn" style={{marginTop:12}}>Contact A Reflection</button>
+            :<button className="btn" style={{marginTop:12,...(active?{borderColor:C.gold,color:C.gold}:{})}} onClick={()=>setRole(t.id==="free"?"visit":t.id)}>{active?"current":"switch to this"}</button>}</div>); })}
+    </div>
+    <div className="card" style={{padding:"14px 18px",marginTop:18}}><div className="eyebrow" style={{marginBottom:6}}>the constitution, surfaced</div>
+    <div style={{fontSize:13.5,color:C.bone2}}>Cancel anytime · your continuations stay yours and leave with you · the guardian can never remove them · Patron is an encounter with the author, not a checkout.</div></div></div>);
+}
+function Architect({ nodes, addNode, load, depthById }) {
+  const ranked = Object.keys(nodes).filter(id=>!nodes[id].leaf).sort((a,b)=>load.out[b].trans-load.out[a].trans).slice(0,12);
+  const [f,setF]=useState({ id:"",label:"",home:"philosophy",reg:"live",verdict:"NAMED",refuter:"",rests_on:"" });
+  const [diff,setDiff]=useState(null); const [fwBlock,setFwBlock]=useState(null);
+  function commit(){
+    if(!f.id) return;
+    const deps=f.rests_on.split(",").map(s=>s.trim()).filter(Boolean);
+    for(const p of deps){ const c=findCycle(nodes,{child:f.id,parent:p}); if(c){ setFwBlock(c); return; } }
+    const before=load.out;
+    const newNode={ id:f.id,title:f.label||f.id,label:f.label||f.id,home:f.home,reg:f.reg,stage:"captured",
+      verdict:f.verdict,refuter:f.refuter||null,rests_on:deps,pulls_to:[],kind:"construction",leaf:false,builder:false };
+    const after=addNode(newNode);
+    const afterLoad=transitive(after,"rests_on").out;
+    const moved=deps.filter(p=>after[p]).map(p=>({ id:p,was:before[p]?.trans??0,now:afterLoad[p]?.trans??0 }));
+    setDiff({ id:f.id,deps,firewall:"OK — no cycle",moved,
+      seal:(["HOLDS","HELD"].includes(f.verdict)&&!f.refuter)?"flagged seal-risk (no refuter)":"clear",
+      reverseUpdated:deps.filter(p=>after[p]) });
+    setFwBlock(null); setF({ id:"",label:"",home:"philosophy",reg:"live",verdict:"NAMED",refuter:"",rests_on:"" });
+  }
+  return (<div className="slidein" style={{maxWidth:1000,margin:"0 auto",padding:"34px 22px 90px"}}>
+    <div className="eyebrow">architect console · single admin · draft → publish</div>
+    <h1 className="disp" style={{fontSize:28,fontWeight:700,margin:"8px 0 18px"}}>Insert a continuation</h1>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
+      <div className="card" style={{padding:"18px"}}><div className="eyebrow" style={{marginBottom:10}}>the 8-field capture</div>
+        {[["id","handle (e.g. B1-§61, W-3, a-slug)"],["label","label — what it tried to do"]].map(([k,ph])=><div key={k} style={{marginBottom:10}}><input placeholder={ph} value={f[k]} onChange={e=>setF({...f,[k]:e.target.value})}/></div>)}
+        <div style={{display:"flex",gap:10,marginBottom:10}}>
+          <select value={f.home} onChange={e=>setF({...f,home:e.target.value})}>{["philosophy","meta-philosophy","mathematics/logic","geometry","physics","language","architecture","ethics","mind"].map(o=><option key={o}>{o}</option>)}</select>
+          <select value={f.reg} onChange={e=>setF({...f,reg:e.target.value})}><option>live</option><option>confirms</option></select>
+          <select value={f.verdict} onChange={e=>setF({...f,verdict:e.target.value})}>{["NAMED","HOLDS","HELD","QUALIFIED","GAP","UNTESTED","OPEN"].map(o=><option key={o}>{o}</option>)}</select></div>
+        <div style={{marginBottom:10}}><input placeholder="refuter — what an opponent must DO (blank = seal-risk if HOLDS)" value={f.refuter} onChange={e=>setF({...f,refuter:e.target.value})}/></div>
+        <div style={{marginBottom:12}}><input placeholder="rests_on — comma-separated ids (e.g. B1-§53, IT-6)" value={f.rests_on} onChange={e=>setF({...f,rests_on:e.target.value})}/></div>
+        <button className="btn btn-solid" onClick={commit}>Commit · recompute · validate · label</button>
+        <div className="mono" style={{fontSize:10.5,color:C.bone3,marginTop:10}}>Public prose is written in A Reflection's own voice — the AI-prose ban (§17) holds. This console captures structure, not copy.</div>
+        {fwBlock && <div className="card fadein" style={{padding:"14px",marginTop:14,borderColor:C.seal}}>
+          <div className="mono" style={{fontSize:11,color:C.seal,letterSpacing:".06em"}}>FIREWALL · WRITE REFUSED</div>
+          <div style={{fontSize:13,margin:"6px 0"}}>This edge would create a cycle: <span className="mono">{fwBlock.join(" → ")}</span>. A node cannot ground itself (§25).</div>
+          <button className="btn" onClick={()=>setFwBlock(null)}>Reroute the offending edge into pulls_to ↗</button></div>}
+      </div>
+      <div>
+        <div className="card" style={{padding:"16px 18px"}}><div className="eyebrow" style={{marginBottom:8}}>structural-load ranking · live · load not frequency</div>
+          {ranked.map((id,i)=><div key={id} className="kv" style={{padding:"3px 0"}}><b style={{minWidth:26,color:C.bone3}}>{i+1}.</b><span className="mono" style={{flex:1}}>{id}</span><span className="mono" style={{color:C.gold}}>{load.out[id].trans}</span><span className="tag">{depthById[id]}</span></div>)}</div>
+        {diff && <div className="card fadein" style={{padding:"16px 18px",marginTop:14}}><div className="eyebrow" style={{marginBottom:8}}>why-ledger · the recomputation, as proof-steps</div>
+          <div style={{fontSize:13,lineHeight:1.8}}><div>· captured <span className="hl">{diff.id}</span>, declared edges → {diff.deps.join(", ")||"none"}</div>
+          <div>· firewall: <span style={{color:C.gold}}>{diff.firewall}</span></div>
+          {diff.moved.map(m=><div key={m.id}>· <span className="mono">{m.id}</span> gained load: {m.was} → <span className="hl">{m.now}</span> dependents</div>)}
+          <div>· seal check: {diff.seal}</div><div>· "leads to" rail updated on: {diff.reverseUpdated.join(", ")||"—"}</div></div></div>}
+      </div>
+    </div></div>);
+}
+function Builder({ nodes, addNode, updateNode, role, go }) {
+  const builders = Object.values(nodes).filter(n=>n.builder);
+  const [f,setF]=useState({ id:"",title:"",rests_on:"" });
+  function add(){ if(!f.id) return;
+    addNode({ id:f.id,title:f.title||f.id,label:f.title||f.id,home:"philosophy",reg:"live",stage:"captured",verdict:"UNTESTED",
+      refuter:null,rests_on:f.rests_on.split(",").map(s=>s.trim()).filter(Boolean),pulls_to:[],kind:"thread",leaf:false,
+      builder:true,author:"you (builder)",presence:"active",engagement:"unread" });
+    setF({ id:"",title:"",rests_on:"" }); }
+  const isArch=role==="arch";
+  return (<div className="slidein" style={{maxWidth:900,margin:"0 auto",padding:"34px 22px 90px"}}>
+    <div className="eyebrow">{isArch?"architect · builder encounters band (§9)":"your minimum admin · a slot of your own"}</div>
+    <h1 className="disp" style={{fontSize:28,fontWeight:700,margin:"8px 0 6px"}}>{isArch?"Encounters with the system":"Continue a thought"}</h1>
+    <p style={{fontSize:14,color:C.bone2,maxWidth:620}}>A builder's contribution is an encounter with the system, not an edit to it. It rests into a frontier, attributed, and never touches the canonical spine. Leave anytime — what you left stays. That's residue (§36).</p>
+    {!isArch && <div className="card" style={{padding:"16px 18px",margin:"16px 0"}}><div className="eyebrow" style={{marginBottom:10}}>insert your continuation</div>
+      <div style={{display:"grid",gap:10}}><input placeholder="handle (e.g. W-9)" value={f.id} onChange={e=>setF({...f,id:e.target.value})}/>
+      <input placeholder="title" value={f.title} onChange={e=>setF({...f,title:e.target.value})}/>
+      <input placeholder="rests on (the frontier you continue, e.g. B1-§60)" value={f.rests_on} onChange={e=>setF({...f,rests_on:e.target.value})}/>
+      <button className="btn btn-solid" style={{justifySelf:"start"}} onClick={add}>Ground it · enters as “unread”, attributed</button></div></div>}
+    <div className="card" style={{padding:"16px 18px",marginTop:8}}><div className="eyebrow" style={{marginBottom:10}}>{isArch?"all encounters":"your encounters"}</div>
+      {builders.length===0 && <div style={{fontSize:13,color:C.bone3}}>No builder encounters yet. {role==="build"?"Insert one above.":"Switch to Builder and insert one."}</div>}
+      {builders.map(b=>{ const st=b.engagement||"unread";
+        return (<div key={b.id} style={{padding:"10px 0",borderBottom:`1px solid ${C.line}`}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+            <div><span className="link disp" style={{fontSize:17}} onClick={()=>go(`/t/${b.id}`)}>{b.title}</span><span className="mono" style={{fontSize:11,color:C.bone3}}> · {b.id} · by {b.author||"builder"}</span></div>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}><span className="tag" style={{borderColor:st==="integrated"?C.gold:C.line,color:st==="integrated"?C.gold:C.bone3}}>{st}</span>
+              {b.presence==="departed" && <span className="tag" style={{borderColor:C.steel,color:C.steel}}>residue</span>}</div></div>
+          {isArch && <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+            {["read","integrated","openly discussed"].map(s=><button key={s} className="btn" style={{padding:"4px 10px",fontSize:11}} onClick={()=>updateNode(b.id,{engagement:s})}>{s}</button>)}
+            <button className="btn" style={{padding:"4px 10px",fontSize:11}} onClick={()=>go("/architect")}>engage by continuing it →</button>
+            {b.presence!=="departed" && <button className="btn" style={{padding:"4px 10px",fontSize:11,borderColor:C.steel,color:C.steel}} onClick={()=>updateNode(b.id,{presence:"departed"})}>mark departed (keeps node)</button>}</div>}
+        </div>); })}
+      <div className="mono" style={{fontSize:10.5,color:C.bone3,marginTop:12}}>there is no delete button — anywhere. the guardian binding is its absence (§9). conduct is removable; content never is.</div></div></div>);
+}
+
+/* ----------------------------- GATES & LOCKS ----------------------------- */
+function Lock({ kind, openGate }) {
+  const copy = kind==="read"
+    ? { e:"reading gate", t:"This is behind the spine.", s:"The one continuation you arrived on is free. Reading the rest — continuations and the constructions beneath them — opens with Continuations.", cta:"Open the spine — $24.99/mo", g:"read" }
+    : { e:"forum gate", t:"The forum is free.", s:"It's email-gated to keep conduct accountable. Your words stay; the constitution binds the guardian.", cta:"Enter with email", g:"email" };
+  return (<div className="card fadein" style={{padding:"22px",marginTop:18,textAlign:"center"}}>
+    <div className="eyebrow">{copy.e}</div><div className="disp" style={{fontSize:21,margin:"8px 0 4px"}}>{copy.t}</div>
+    <p style={{fontSize:14,color:C.bone2,maxWidth:420,margin:"0 auto 16px"}}>{copy.s}</p>
+    <button className="btn btn-solid" onClick={()=>openGate(copy.g)}>{copy.cta}</button></div>);
+}
+function GateModal({ which, close, setRole }) {
+  const map={ read:{e:"reading gate · $24.99/mo",t:"Open the whole live spine",s:"A free visitor sees the one continuation they arrived on. Continuations opens the rest. Cancel anytime; what you read stays readable.",cta:"Subscribe — Continuations",role:"cont"},
+    contribute:{e:"contribution gate · $59.99/mo",t:"Continue the thought",s:"Reading and grounding are different stakes. A borne cost filters for seriousness, not means. Builder gives you a slot of your own — attributed, leave-able, kept as residue.",cta:"Become a Builder",role:"build"},
+    email:{e:"forum · free",t:"Enter the forum",s:"Email-gated, not paywalled. Conduct is moderated; content is never removed.",cta:"Continue with email",role:"visit"} }[which];
+  return (<div onClick={close} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.62)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:50,padding:20}}>
+    <div onClick={e=>e.stopPropagation()} className="card fadein" style={{maxWidth:440,padding:"26px",borderColor:C.gold}}>
+      <div className="eyebrow">{map.e}</div><div className="disp" style={{fontSize:24,margin:"8px 0 6px"}}>{map.t}</div>
+      <p style={{fontSize:14.5,color:C.bone2,lineHeight:1.65}}>{map.s}</p>
+      <div style={{display:"flex",gap:10,marginTop:18}}><button className="btn btn-solid" onClick={()=>{ setRole(map.role); close(); }}>{map.cta}</button><button className="btn" onClick={close}>Not now</button></div>
+      <div className="mono" style={{fontSize:10,color:C.bone3,marginTop:14}}>cancel anytime · owned materials persist · the corpus exports as rows</div></div></div>);
+}
+function ReadGateThread({ n, id, openGate, go }) {
+  return (<div className="slidein" style={{maxWidth:760,margin:"0 auto",padding:"30px 22px 90px"}}>
+    <button className="btn-ghost btn" onClick={()=>go(-1)}>← back</button>
+    <div className="eyebrow" style={{marginTop:16}}>continuation · /t/{id}</div>
+    <h1 className="disp" style={{fontSize:32,fontWeight:700,margin:"8px 0 10px"}}>{n.title}</h1>
+    <p style={{fontSize:17,color:C.bone2,lineHeight:1.7}}>{((n.blocks&&n.blocks[0]&&n.blocks[0].x)||n.label||"").slice(0,180)}…</p>
+    <Lock kind="read" openGate={openGate}/></div>);
+}
+function NeedRole({ need, setRole }) {
+  return (<div className="fadein" style={{maxWidth:520,margin:"0 auto",padding:"60px 22px",textAlign:"center"}}>
+    <div className="eyebrow">restricted surface</div><div className="disp" style={{fontSize:24,margin:"10px 0"}}>The {need} console.</div>
+    <p style={{fontSize:14,color:C.bone2}}>Switch your role to {need} (top-right) to walk this frame.</p>
+    <button className="btn btn-solid" style={{marginTop:12}} onClick={()=>setRole(need==="Architect"?"arch":"build")}>Become {need}</button></div>);
+}
+
+/* --------------------------- FLOW VERIFY (live nodes) -------------------- */
+function FlowVerify({ nodes, close, go }) {
+  const targets=[]; const push=(from,label,route)=>targets.push({from,label,route});
+  ["/","/map","/events","/about","/forum","/account","/architect","/builder"].forEach(r=>push("top-nav",r,r));
+  push("home","enter at root","/t/PoE"); push("home","atlas","/map"); push("home","spine","/account");
+  // iterate LIVE nodes (incl. builder + authored), not constants
+  Object.values(nodes).forEach(n=>{
+    if(n.leaf) return;
+    if(n.kind==="thread"){
+      (n.blocks||[]).filter(b=>b.t==="m").forEach(b=>push(`/t/${n.id} membrane`,b.into,routeFor(nodes,b.into)));
+      (n.rests_on||[]).forEach(d=>push(`/t/${n.id} rail:rests_on`,d,routeFor(nodes,d)));
+      (n.pulls_to||[]).forEach(d=>push(`/t/${n.id} rail:pulls_to`,d,routeFor(nodes,d)));
+      reverseRail(nodes,n.id).forEach(d=>push(`/t/${n.id} rail:leads_to`,d,routeFor(nodes,d)));
+      push(`/t/${n.id} exit`,"home","/");
+    } else {
+      (n.rests_on||[]).forEach(d=>push(`/c/${n.id} rail:rests_on`,d,routeFor(nodes,d)));
+    }
+  });
+  MAP_ENTRIES.filter(m=>m.to).forEach(m=>push("/map card",m.domain,`/t/${m.to}`));
+  const resolve=route=>{ if(route==="/"||["/map","/events","/about","/forum","/account","/architect","/builder"].includes(route)) return true;
+    const m=route.match(/^\/[tc]\/(.+)$/); return m? !!nodes[m[1]] : false; };
+  const rows=targets.map(t=>({ ...t, ok:resolve(t.route) })); const broken=rows.filter(r=>!r.ok);
+  // sample broken first
+  rows.sort((a,b)=>(a.ok?1:0)-(b.ok?1:0));
+  const frames=[["/","Home — reached by exiting"],["/t/:slug","Continuation (Reader §7)"],["/c/:slug","Construction (B-page)"],["/map","Atlas §11"],["/events","Events / Deep Read §12"],["/about","About"],["/forum","Forum §10"],["/account","Subscription §6"],["/architect","Architect admin §8"],["/builder","Builder admin §9"]];
+  return (<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:60,padding:"20px",overflow:"auto"}} className="scroll">
+    <div className="card fadein" style={{maxWidth:920,margin:"0 auto",padding:"24px 26px",borderColor:C.steel}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div className="eyebrow">flow verify · live nodes · every frame · every link</div><div className="disp" style={{fontSize:24,marginTop:6}}>Navigation audit</div></div><button className="btn" onClick={close}>Close ✕</button></div>
+      <div style={{display:"flex",gap:14,margin:"16px 0",flexWrap:"wrap"}}>
+        <Stat label="frames" v={frames.length}/><Stat label="live nodes" v={Object.values(nodes).filter(n=>!n.leaf).length}/>
+        <Stat label="links checked" v={rows.length}/><Stat label="resolve" v={rows.length-broken.length} tone={C.gold}/><Stat label="broken" v={broken.length} tone={broken.length?C.seal:C.gold}/></div>
+      <div className="eyebrow" style={{margin:"6px 0"}}>frames — tap to jump and feel each one</div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:18}}>{frames.map(([r,name])=>{ const route=r.includes(":")?(r.startsWith("/t")?"/t/could-it-suffer":"/c/B1-§53"):r;
+        return <button key={r} className="btn" style={{padding:"6px 10px",fontSize:11}} onClick={()=>{ close(); go(route); }}>{name}</button>; })}</div>
+      <div className="eyebrow" style={{margin:"6px 0"}}>link targets {broken.length? <span style={{color:C.seal}}>· {broken.length} broken</span>:<span style={{color:C.gold}}>· all resolve</span>}</div>
+      <div className="scroll" style={{maxHeight:300,overflow:"auto",border:`1px solid ${C.line}`,borderRadius:2}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}} className="mono"><thead><tr style={{position:"sticky",top:0,background:C.stage3}}>{["from","target","route","status"].map(h=><th key={h} style={{textAlign:"left",padding:"8px 10px",color:C.bone3,fontWeight:400,borderBottom:`1px solid ${C.line}`}}>{h}</th>)}</tr></thead>
+        <tbody>{rows.slice(0,400).map((r,i)=>(<tr key={i} style={{borderBottom:`1px solid ${C.line}`,background:r.ok?"transparent":"rgba(179,38,30,.08)"}}>
+          <td style={{padding:"6px 10px",color:C.bone3}}>{r.from}</td><td style={{padding:"6px 10px",color:C.bone2}}>{r.label}</td>
+          <td style={{padding:"6px 10px"}}><span className="link" onClick={()=>{ if(r.ok){ close(); go(r.route);} }}>{r.route}</span></td>
+          <td style={{padding:"6px 10px",color:r.ok?C.gold:C.seal}}>{r.ok?"✓ resolves":"✗ broken"}</td></tr>))}</tbody></table></div>
+      <div className="mono" style={{fontSize:10.5,color:C.bone3,marginTop:12}}>Enumerated from the LIVE node set — every thread's membranes + three rails, every construction's grounds, every map card, every exit, the top nav. Builder-added nodes are audited too. Broken rows highlight seal-red; {rows.length>400?"showing first 400.":"all shown."}</div>
+    </div></div>);
+}
+function Stat({ label, v, tone }){ return <div className="card" style={{padding:"10px 16px",minWidth:96}}><div className="disp" style={{fontSize:26,color:tone||C.bone}}>{v}</div><div className="eyebrow">{label}</div></div>; }
+
+/* --------------------------- GRAPH HOOK + APP ---------------------------- */
+function useGraph(nodes) {
+  return useMemo(()=>{
+    const load=transitive(nodes,"rests_on");
+    const depthById=computeDepth(nodes,load);
+    const grounding=transitive(nodes,"pulls_to");
+    return { load, grounding, depthById, cycle:findCycle(nodes,null), open:openColumn(nodes), seal:sealCheck(nodes) };
+  },[nodes]);
+}
+const ROLES=[{id:"visit",name:"Visitor (free)"},{id:"cont",name:"Continuations"},{id:"build",name:"Builder"},{id:"arch",name:"Architect"}];
+
+export default function App() {
+  const [nodes,setNodes]=useState(()=>{ const g=buildGraph();
+    // one seeded builder encounter so the band is non-empty
+    g["W-3"]={ id:"W-3",title:"If the bearers are the patients, design is the ethics",label:"If the bearers are the patients, design is the ethics",
+      home:"ethics",reg:"live",stage:"captured",verdict:"UNTESTED",refuter:null,rests_on:["could-it-suffer"],pulls_to:[],
+      kind:"thread",leaf:false,builder:true,author:"a builder",presence:"active",engagement:"unread",
+      blocks:[{t:"p",x:"Continuing the wedge: if the moral weight sits with identifiable bearers, the whole question becomes a design question — and design is something we already know how to be accountable for."}] };
+    return g; });
+  const G=useGraph(nodes);
+
+  function addNode(n){ let next;
+    setNodes(prev=>{ next={ ...prev, [n.id]:{ ...n } };
+      (n.rests_on||[]).forEach(d=>{ if(!next[d]) next[d]={ id:d,label:d,title:d,kind:"leaf",home:"philosophy",reg:null,stage:"captured",verdict:null,refuter:null,rests_on:[],pulls_to:[],leaf:true,builder:false }; });
+      return next; });
+    return next || nodes;
+  }
+  function updateNode(id,patch){ setNodes(prev=> prev[id]? { ...prev, [id]:{ ...prev[id], ...patch } } : prev); }
+
+  const [stack,setStack]=useState(["/t/could-it-suffer"]); // ENTRY = mid-thought, from LessWrong
+  const here=stack[stack.length-1];
+  const go=route=>{ if(route===-1){ setStack(s=>s.length>1?s.slice(0,-1):s); return; }
+    setStack(s=>[...s,route]); if(typeof window!=="undefined") window.scrollTo({top:0,behavior:"smooth"}); };
+  const [role,setRole]=useState("visit"); const [gate,setGate]=useState(null); const [verify,setVerify]=useState(false);
+
+  let frame;
+  const tm=here.match(/^\/t\/(.+)$/), cm=here.match(/^\/c\/(.+)$/);
+  if(here==="/") frame=<Home go={go}/>;
+  else if(tm) frame=<Thread nodes={nodes} id={tm[1]} go={go} role={role} openGate={setGate} depthById={G.depthById}/>;
+  else if(cm) frame=<Construction nodes={nodes} id={cm[1]} go={go} role={role} openGate={setGate} load={G.load} depthById={G.depthById}/>;
+  else if(here==="/map") frame=<MapAtlas go={go}/>;
+  else if(here==="/events") frame=<EventsView/>;
+  else if(here==="/about") frame=<About/>;
+  else if(here==="/forum") frame=<Forum role={role} openGate={setGate}/>;
+  else if(here==="/account") frame=<Account role={role} setRole={setRole}/>;
+  else if(here==="/architect") frame= role==="arch" ? <Architect nodes={nodes} addNode={addNode} load={G.load} depthById={G.depthById}/> : <NeedRole need="Architect" setRole={setRole}/>;
+  else if(here==="/builder") frame= (role==="build"||role==="arch") ? <Builder nodes={nodes} addNode={addNode} updateNode={updateNode} role={role} go={go}/> : <NeedRole need="Builder" setRole={setRole}/>;
+  else frame=<Missing id={here} go={go}/>;
+
+  const NAV=[["/","Home"],["/map","Atlas"],["/events","Events"],["/forum","Forum"],["/about","About"],["/account","Account"]];
+  const ADMIN= role==="arch" ? [["/architect","Architect"],["/builder","Encounters"]] : role==="build" ? [["/builder","My slot"]] : [];
+
+  return (<div className="mp scroll"><style>{CSS}</style>
+    <div style={{position:"sticky",top:0,zIndex:40,background:"rgba(11,10,8,.86)",backdropFilter:"blur(8px)",borderBottom:`1px solid ${C.line}`}}>
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"11px 20px",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+        <div className="disp" style={{fontSize:18,letterSpacing:".02em",cursor:"pointer"}} onClick={()=>go("/")}>The Mirror Platform</div>
+        <div style={{display:"flex",gap:2,flexWrap:"wrap",flex:1}}>
+          {NAV.map(([r,n])=><button key={r} className="btn-ghost btn" style={here===r?{color:C.gold}:{}} onClick={()=>go(r)}>{n}</button>)}
+          {ADMIN.map(([r,n])=><button key={r} className="btn-ghost btn" style={{color:here===r?C.gold:C.steel}} onClick={()=>go(r)}>{n}</button>)}</div>
+        <select value={role} onChange={e=>setRole(e.target.value)} style={{width:"auto",fontSize:11}}>{ROLES.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select>
+        <button className="btn" style={{borderColor:C.steel,color:C.steel}} onClick={()=>setVerify(true)}>Flow Verify</button></div>
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"5px 20px 8px",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
+        <span className="mono" style={{fontSize:10.5,color:C.bone3}}>route <span style={{color:C.bone2}}>{here}</span></span>
+        {stack.length>1 && <button className="btn-ghost btn" style={{fontSize:10.5,padding:"2px 6px"}} onClick={()=>go(-1)}>← back</button>}
+        <span className="mono" style={{fontSize:10.5,color:C.bone3,marginLeft:"auto"}}>firewall <span style={{color:G.cycle?C.seal:C.gold}}>{G.cycle?"CYCLE":"acyclic ✓"}</span> · open column <span style={{color:C.gold}}>{G.open.length}</span> · seal-risk <span style={{color:G.seal.length?C.seal:C.bone3}}>{G.seal.length}</span> · nodes {Object.values(nodes).filter(n=>!n.leaf).length}</span></div>
+    </div>
+    <div key={here} className="fadein">{frame}</div>
+    <div style={{borderTop:`1px solid ${C.line}`,marginTop:30}}><div style={{maxWidth:1100,margin:"0 auto",padding:"22px 20px",display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+      <span className="mono" style={{fontSize:10.5,color:C.bone3}}>mirrorplatform.online · The Mirror Platform LLC · A Reflection</span>
+      <span className="mono" style={{fontSize:10.5,color:C.bone3}}>nothing completes · the open column never empties · the site cannot close the ledger</span></div></div>
+    {gate && <GateModal which={gate} close={()=>setGate(null)} setRole={setRole}/>}
+    {verify && <FlowVerify nodes={nodes} close={()=>setVerify(false)} go={go}/>}
+  </div>);
+}

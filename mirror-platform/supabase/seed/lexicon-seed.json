@@ -1,0 +1,676 @@
+{
+  "_meta": {
+    "what": "Lexicon SHELLS for The Mirror Platform entering wing + System surface. Structure, dispositions, collisions, the requires-DAG, and demote/banned values are filled. TEACH first_glosses are PLACEHOLDERS — authored by A Reflection (AI-prose ban §17). resolveTerm reads from this.",
+    "rules": [
+      "Do NOT generate any TEACH first_gloss — ingest the placeholder; the architect fills it.",
+      "DEMOTE 'plain' and BANNED 'say_instead' are interface chrome (System register), not transmission prose — ingest as written.",
+      "BINDING (§B′): collision=inverts TEACH terms are 'author-marked' — author-placed spans ONLY, never string-matched. 'mild' → suggest-queue. 'none' → auto. EXPERIENCE → never surfaced.",
+      "No GLOSS event / readerVocab write without a confirmed span. readerVocab is felt, never counted (no score UI).",
+      "defines_node links a term to its construction in the spine seed (§F join)."
+    ],
+    "counts": {
+      "teach": 12,
+      "demote": 6,
+      "experience": 6,
+      "banned": 5
+    }
+  },
+  "terms": [
+    {
+      "term": "encounter",
+      "surface_forms": [
+        "encounter",
+        "encountered"
+      ],
+      "register": "transmission",
+      "our_meaning": "meeting what you did not author; the only thing that settles a verdict",
+      "defines_node": "B1-§35",
+      "source": "Book One §35 / The Process of Encounter",
+      "reader_assumptions": [
+        "a meeting",
+        "a run-in"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [
+        "lesswrong",
+        "ea"
+      ],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'encounter' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. name the not-authored part.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears only 'conversation' and misses the not-authored part"
+    },
+    {
+      "term": "valence",
+      "surface_forms": [
+        "valence",
+        "valenced"
+      ],
+      "register": "transmission",
+      "our_meaning": "the for-and-against in force; the good-or-bad-for-it that makes anything matter",
+      "defines_node": "B1-§53",
+      "source": "Book One §53 'The Ground'",
+      "reader_assumptions": [
+        "chemistry/bonding",
+        "linguistics"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'valence' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. the felt for-or-against, not the technical sense.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who imports the chemistry sense"
+    },
+    {
+      "term": "stake",
+      "surface_forms": [
+        "stake",
+        "stakes"
+      ],
+      "register": "transmission",
+      "our_meaning": "what is at risk in a claim; what makes being wrong cost something",
+      "defines_node": "B1-§13",
+      "source": "Book One §13",
+      "reader_assumptions": [
+        "gambling bet",
+        "wooden stake",
+        "a share/ownership"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'stake' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. what's at risk, what wrongness would cost.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears 'bet' or 'ownership share'"
+    },
+    {
+      "term": "the-ground",
+      "surface_forms": [
+        "the ground",
+        "ground",
+        "grounds",
+        "grounding"
+      ],
+      "register": "transmission",
+      "our_meaning": "valence as the non-truth-apt floor beneath the truth-apt (§53)",
+      "defines_node": "B1-§53",
+      "source": "Book One §53 'The Ground'",
+      "reader_assumptions": [
+        "dirt / the floor",
+        "reasons/justification",
+        "coffee grounds"
+      ],
+      "collision": "inverts",
+      "disposition": "teach",
+      "requires": [
+        "valence",
+        "stake"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "author-marked",
+      "first_gloss": "[[PASTE gloss — 'the-ground' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. what the whole thing rests on, that isn't itself true or false.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who still hears 'reasons' or 'foundation-as-argument'"
+    },
+    {
+      "term": "wrongness",
+      "surface_forms": [
+        "wrongness",
+        "wrong"
+      ],
+      "register": "transmission",
+      "our_meaning": "being-wrong as a structured condition (stake, one-way settlement, detection-independence, bearing)",
+      "defines_node": "B1-§13",
+      "source": "Book One §13",
+      "reader_assumptions": [
+        "being incorrect (flat)",
+        "moral wrong"
+      ],
+      "collision": "none",
+      "disposition": "teach",
+      "requires": [
+        "stake"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'wrongness' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. the richer cousin of falsehood.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who flattens it to 'incorrect'"
+    },
+    {
+      "term": "mattering",
+      "surface_forms": [
+        "matter",
+        "mattering",
+        "does it matter"
+      ],
+      "register": "transmission",
+      "our_meaning": "a stake borne by someone; the question of who bears the cost",
+      "defines_node": "B1-§53",
+      "source": "the wedge / Book One §53",
+      "reader_assumptions": [
+        "importance (vague)"
+      ],
+      "collision": "none",
+      "disposition": "teach",
+      "requires": [
+        "valence",
+        "stake"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'mattering' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. a stake, and a stake is borne by someone.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who keeps it vague/importance-in-general"
+    },
+    {
+      "term": "the-other",
+      "surface_forms": [
+        "the other",
+        "the other person"
+      ],
+      "register": "transmission",
+      "our_meaning": "what you did not author, that pushes back; structurally required to settle anything",
+      "defines_node": "B1-§30",
+      "source": "Book One §30 'The Unauthored Author'",
+      "reader_assumptions": [
+        "another person (flat)",
+        "othering / out-group"
+      ],
+      "collision": "inverts",
+      "disposition": "teach",
+      "requires": [
+        "encounter"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "author-marked",
+      "first_gloss": "[[PASTE gloss — 'the-other' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. the part you did not write, pushing back.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears only 'other people' or 'othering'"
+    },
+    {
+      "term": "residue",
+      "surface_forms": [
+        "residue"
+      ],
+      "register": "transmission",
+      "our_meaning": "what is deposited and persists across change; the permanent trace",
+      "defines_node": "B1-§36",
+      "source": "Book One §36 'What Stays'",
+      "reader_assumptions": [
+        "leftover",
+        "chemical residue"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'residue' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. what stays after; the deposit that doesn't move back.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears only 'leftover'"
+    },
+    {
+      "term": "holds",
+      "surface_forms": [
+        "holds",
+        "hold",
+        "held"
+      ],
+      "register": "transmission",
+      "our_meaning": "withstands the pressure of the other; truth = what holds (§43)",
+      "defines_node": "B1-§43",
+      "source": "Book One §43 'What Holds'",
+      "reader_assumptions": [
+        "physically grasping",
+        "holding an opinion"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [
+        "wrongness"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'holds' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. withstands pressure, doesn't shrink under the other.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears 'grip' or 'mere opinion'"
+    },
+    {
+      "term": "severing",
+      "surface_forms": [
+        "severing",
+        "severs",
+        "training-on-descriptions"
+      ],
+      "register": "transmission",
+      "our_meaning": "training on descriptions of states severs signal-from-state, the weld the wedge turns on",
+      "defines_node": "IT-6",
+      "source": "the wedge essay (firewall §)",
+      "reader_assumptions": [
+        "cutting (generic)"
+      ],
+      "collision": "none",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": false,
+      "arrival_early": [
+        "lesswrong",
+        "ea"
+      ],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'severing' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. the one move that makes behavior stop being evidence.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who misses why the AI case differs from the bat"
+    },
+    {
+      "term": "the-wall-it-invites",
+      "surface_forms": [
+        "the wall it invites",
+        "the wall",
+        "refuter"
+      ],
+      "register": "transmission",
+      "our_meaning": "what an opponent must DO to break a claim",
+      "defines_node": null,
+      "source": "apparatus / the honest ledger",
+      "reader_assumptions": [
+        "a barrier (generic)",
+        "limitation/caveat"
+      ],
+      "collision": "none",
+      "disposition": "teach",
+      "requires": [],
+      "tier0": false,
+      "arrival_early": [
+        "lesswrong",
+        "ea"
+      ],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'the-wall-it-invites' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. the move that would break this.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who reads it as a hedge/caveat"
+    },
+    {
+      "term": "carried-vs-derived",
+      "surface_forms": [
+        "carried",
+        "derived",
+        "carried, not derived"
+      ],
+      "register": "transmission",
+      "our_meaning": "verdict provenance: carried = inherited/internal; derived = earned by an external encounter",
+      "defines_node": null,
+      "source": "apparatus / the honest ledger",
+      "reader_assumptions": [
+        "delivered/transported",
+        "verified (loose)"
+      ],
+      "collision": "mild",
+      "disposition": "teach",
+      "requires": [
+        "encounter"
+      ],
+      "tier0": false,
+      "arrival_early": [],
+      "binding": "auto",
+      "first_gloss": "[[PASTE gloss — 'carried-vs-derived' in A Reflection’s voice, ~one line, taught in-breath. AI-prose ban (§17) holds. not settled from inside; only an outside encounter settles it.]]",
+      "gloss_verdict": "untested",
+      "gloss_refuter": "a reader who hears 'verified' and assumes it's proven"
+    },
+    {
+      "term": "continuation",
+      "surface_forms": [
+        "continuation",
+        "continuations"
+      ],
+      "register": "system",
+      "our_meaning": "an A-layer reader-facing thread",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "a serialized installment",
+        "to-be-continued"
+      ],
+      "collision": "mild",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "keep reading from here"
+    },
+    {
+      "term": "the-spine",
+      "surface_forms": [
+        "the spine",
+        "live spine",
+        "spine"
+      ],
+      "register": "system",
+      "our_meaning": "the live core of continuations",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "book spine",
+        "backbone"
+      ],
+      "collision": "inverts",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "the rest of the writing"
+    },
+    {
+      "term": "construction",
+      "surface_forms": [
+        "construction",
+        "constructions"
+      ],
+      "register": "system",
+      "our_meaning": "a B-layer formal grounding (proof/section)",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "building site"
+      ],
+      "collision": "inverts",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "the rigorous version underneath"
+    },
+    {
+      "term": "pulls-toward",
+      "surface_forms": [
+        "pulls toward",
+        "pulls to"
+      ],
+      "register": "system",
+      "our_meaning": "the soft grounding/significance edge",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "gravity/attraction (mystical)"
+      ],
+      "collision": "mild",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "connects to"
+    },
+    {
+      "term": "leads-to",
+      "surface_forms": [
+        "leads to"
+      ],
+      "register": "system",
+      "our_meaning": "the computed reverse dependency",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "causes / results in"
+      ],
+      "collision": "none",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "what builds on this"
+    },
+    {
+      "term": "wing",
+      "surface_forms": [
+        "wing",
+        "entering wing"
+      ],
+      "register": "system",
+      "our_meaning": "a content domain / area of the corpus",
+      "defines_node": null,
+      "source": "interface",
+      "reader_assumptions": [
+        "building wing",
+        "bird wing"
+      ],
+      "collision": "inverts",
+      "disposition": "demote",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "n/a (label, not prose-bound)",
+      "plain": "area"
+    },
+    {
+      "term": "rests_on",
+      "surface_forms": [
+        "rests_on",
+        "rests on"
+      ],
+      "register": "system",
+      "our_meaning": "construction dependency (depends_on)",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "frontier",
+      "surface_forms": [
+        "frontier"
+      ],
+      "register": "system",
+      "our_meaning": "a node nothing yet builds on",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "membrane",
+      "surface_forms": [
+        "membrane"
+      ],
+      "register": "system",
+      "our_meaning": "the construction showing through prose",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "stage",
+      "surface_forms": [
+        "stage",
+        "captured",
+        "in_protocol",
+        "verdict_in"
+      ],
+      "register": "system",
+      "our_meaning": "the status machine",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "load",
+      "surface_forms": [
+        "load",
+        "structural load",
+        "depth",
+        "dependents"
+      ],
+      "register": "system",
+      "our_meaning": "the engine weight/depth",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "seal-risk",
+      "surface_forms": [
+        "seal-risk",
+        "the open column"
+      ],
+      "register": "system",
+      "our_meaning": "the firewall/openness telemetry",
+      "defines_node": null,
+      "source": "engine",
+      "reader_assumptions": [
+        "raw machine handle"
+      ],
+      "collision": "inverts",
+      "disposition": "experience",
+      "requires": [],
+      "tier0": true,
+      "arrival_early": [],
+      "binding": "never surfaced on a reader surface",
+      "note": "reader experiences the thing; never reads the word"
+    },
+    {
+      "term": "unlock",
+      "register": "system",
+      "disposition": "banned",
+      "our_meaning": "(forbidden) gamified retail register; off-constitution",
+      "say_instead": "open",
+      "note": "build lint fails on any surface use"
+    },
+    {
+      "term": "engagement",
+      "register": "system",
+      "disposition": "banned",
+      "our_meaning": "(forbidden) engagement-optimization removes the exit (IT-3, IT-8)",
+      "say_instead": "(do not motivate by retention at all)",
+      "note": "build lint fails on any surface use"
+    },
+    {
+      "term": "complete / finished / done / settled / 100%",
+      "register": "system",
+      "disposition": "banned",
+      "our_meaning": "(forbidden) nothing completes (§47/§59)",
+      "say_instead": "open · in force · captured",
+      "note": "build lint fails on any surface use"
+    },
+    {
+      "term": "delete (of content)",
+      "register": "system",
+      "disposition": "banned",
+      "our_meaning": "(forbidden) content is never removable; residue (§36)",
+      "say_instead": "leave · depart · keep (remove applies only to conduct)",
+      "note": "build lint fails on any surface use"
+    },
+    {
+      "term": "streak / notification-bait",
+      "register": "system",
+      "disposition": "banned",
+      "our_meaning": "(forbidden) retention mechanics the constitution forbids",
+      "say_instead": "(nothing)",
+      "note": "build lint fails on any surface use"
+    }
+  ],
+  "term_edges": [
+    {
+      "from": "the-ground",
+      "to": "valence",
+      "kind": "requires"
+    },
+    {
+      "from": "the-ground",
+      "to": "stake",
+      "kind": "requires"
+    },
+    {
+      "from": "wrongness",
+      "to": "stake",
+      "kind": "requires"
+    },
+    {
+      "from": "mattering",
+      "to": "valence",
+      "kind": "requires"
+    },
+    {
+      "from": "mattering",
+      "to": "stake",
+      "kind": "requires"
+    },
+    {
+      "from": "the-other",
+      "to": "encounter",
+      "kind": "requires"
+    },
+    {
+      "from": "holds",
+      "to": "wrongness",
+      "kind": "requires"
+    },
+    {
+      "from": "carried-vs-derived",
+      "to": "encounter",
+      "kind": "requires"
+    }
+  ]
+}
