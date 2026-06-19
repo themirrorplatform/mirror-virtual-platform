@@ -1,0 +1,60 @@
+name: Deploy Mirror Platform
+
+# Continuous deploy for the "encounter-platform" Netlify site (mirrorplatform.online).
+# Builds mirror-platform/app and publishes straight to PRODUCTION with `--prod`,
+# so a successful build is always the live deploy — no dangling unpublished drafts.
+#
+# One-time setup: add a repository secret named NETLIFY_AUTH_TOKEN
+#   (Settings → Secrets and variables → Actions → New repository secret).
+# The site ID below is not sensitive, so it is committed directly.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/themirrorplatform-git-source-l6xl56
+    paths:
+      - 'mirror-platform/app/**'
+      - '.github/workflows/deploy-mirror-platform.yml'
+  workflow_dispatch: {}
+
+# Never let two deploys race; cancel an in-flight one if a newer push lands.
+concurrency:
+  group: deploy-mirror-platform
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mirror-platform/app
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: 839288b5-e7de-4458-b4b0-46fcf5d9e47b
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mirror-platform/app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Runs from mirror-platform/app, so netlify.toml is read and the edge
+      # functions (head / sitemap / robots) are bundled alongside dist/.
+      - name: Deploy to production
+        run: >-
+          npx --yes netlify-cli@^26 deploy
+          --prod
+          --dir=dist
+          --site="$NETLIFY_SITE_ID"
+          --message="CI: ${{ github.sha }}"
