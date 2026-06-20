@@ -152,3 +152,5 @@ the engine port (**P3** — pure TS from `protocol.py`), the crest design tokens
 (**P4**), and the client read-gate pipeline + repo scaffold (**P1**, minus the
 Supabase init). The Supabase init, tables/RLS (P2), and the commit edge function
 (P3) wire in the moment the `sbp_` token lands.
+
+<!-- re-trigger Supabase migration deploy (working dir now mirror-platform) -->
